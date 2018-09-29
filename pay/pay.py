@@ -22,7 +22,6 @@ class PayAPI:
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.backup_capital = dataIO.load_json("data/capital/data.json")
         self.sys_defaut = {"MONNAIE": {"SINGULIER": "crédit", "PLURIEL": "crédits", "SYMBOLE": "cds"}}
         self.default = {"USERS": {}, "SYSTEM": self.sys_defaut}
         self.cooldown = {}
