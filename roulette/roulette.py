@@ -90,7 +90,7 @@ class Russianroulette:
     @setroulette.command(name="paycheck", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _pay_verify(self, ctx):
-        """Vérifie que le système Iota Pay est connecté"""
+        """Vérifie que le système Turing Pay est connecté"""
         pay = self.bot.get_cog("Pay").pay
         try:
             pay.api_pong()

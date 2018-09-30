@@ -18,7 +18,7 @@ from .utils.dataIO import fileIO, dataIO
 # s'en servir de base
 
 class PayAPI:
-    """API Iota Pay | Système de monnaie globale par serveur"""
+    """API Turing Pay | Système de monnaie globale par serveur"""
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
@@ -86,7 +86,7 @@ class PayAPI:
         return Account(user, data["SOLDE"], data["TRSAC"], data["CREE"], data["OPEN"])
 
     def get_account(self, user: discord.Member, w: bool = False, m: bool = False, ignore_close: bool = False):
-        """Renvoie le compte Iota Pay du membre
+        """Renvoie le compte Turing Pay du membre
 
         -w : 'Write', renvoie les données en brut
         -m : 'Make', créé un compte si le membre n'en a pas"""
@@ -173,9 +173,9 @@ class PayAPI:
                 return False
         elif rep.reaction.emoji == "❔":
             await self.bot.delete_message(msg)
-            em = discord.Embed(color= user.color, title="Ouvrir un compte Iota Pay",
+            em = discord.Embed(color= user.color, title="Ouvrir un compte Turing Pay",
                                description= "Certaines fonctionnalités sur ce bot utilisent un système monétaire appelé"
-                                            " *Iota Pay* permettant par exemple de pouvoir participer à divers jeux.\n"
+                                            " *Turing Pay* permettant par exemple de pouvoir participer à divers jeux.\n"
                                             "Il est important de savoir que cette monnaie est **virtuelle** et ne "
                                             "pourra être échangée contre de l'argent réel.\n"
                                             "A la création du compte, aucune information ne te sera demandée.")
@@ -527,7 +527,7 @@ class Pay:
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def pay_account(self, ctx, membre: discord.Member = None):
-        """Ensemble de commandes relatives au compte Iota Pay
+        """Ensemble de commandes relatives au compte Turing Pay
 
         En absence de mention, renvoie les détails du compte de l'invocateur"""
         if ctx.invoked_subcommand is None:
@@ -546,7 +546,7 @@ class Pay:
 
     @pay_account.command(pass_context=True)
     async def compte(self, ctx, user: discord.Member = None):
-        """Voir son compte Iota Pay sur ce serveur
+        """Voir son compte Turing Pay sur ce serveur
 
         [user] - permet de voir le compte d'un autre membre"""
         user = user if user else ctx.message.author
@@ -576,11 +576,11 @@ class Pay:
                         desc = i.desc if len(i.desc) <= 40 else i.desc[:40] + "..."
                         txt += "**{}** ─ *{}* `#{}`\n".format(somme, desc, i.id)
                     em.add_field(name="Historique", value=txt)
-                em.set_footer(text="Iota Pay | {0}pay histo ─ Voir historique".format(ctx.prefix))
+                em.set_footer(text="Turing Pay | {0}pay histo ─ Voir historique".format(ctx.prefix))
                 await self.bot.say(embed=em)
             return
         else:
-            await self.bot.say("**Compte introuvable** ─ Ce membre ne possède pas de compte Iota Pay valide")
+            await self.bot.say("**Compte introuvable** ─ Ce membre ne possède pas de compte Turing Pay valide")
 
     @pay_account.command(aliases=["histo"], pass_context=True)
     async def historique(self, ctx, user: discord.Member = None):
@@ -603,13 +603,13 @@ class Pay:
                 txt += "{} | **{}** ─ *{}* `#{}`\n".format(temps, t.somme, t.desc, t.id)
                 if len(txt) > 1980 * n:
                     em = discord.Embed(title="Historique de {}".format(user.name), description=txt, color= user.color)
-                    em.set_footer(text="Iota Pay | Page {}".format(n))
+                    em.set_footer(text="Turing Pay | Page {}".format(n))
                     await self.bot.say(embed=em)
                     txt = ""
                     n += 1
 
             em = discord.Embed(title="Historique de {}".format(user.name), description=txt, color=user.color)
-            em.set_footer(text="Iota Pay | Page {}".format(n))
+            em.set_footer(text="Turing Pay | Page {}".format(n))
             await self.bot.say(embed=em)
 
     @pay_account.command(aliases=["trs"], pass_context=True)
@@ -739,7 +739,7 @@ class Pay:
                                    description="• **Revenu journalier** ─ **{}**{}{}{}".format(
                                        rj, money, save_txt, bonus_txt),
                                    color= user.color)
-                em.set_footer(text="Iota Pay | Tu as désormais {} {}".format(self.pay.get_account(user).solde,
+                em.set_footer(text="Turing Pay | Tu as désormais {} {}".format(self.pay.get_account(user).solde,
                                                                              self.pay.get_money_name(server, rj)))
                 await self.bot.say(embed=em)
             else:
@@ -859,12 +859,12 @@ class Pay:
             else:
                 await self.bot.say("**Solde insuffisant** ─ Réduisez votre offre si possible")
         else:
-            await self.bot.say("**Refusé** ─ Tu as besoin d'un compte *Iota Pay* valide y jouer")
+            await self.bot.say("**Refusé** ─ Tu as besoin d'un compte *Turing Pay* valide y jouer")
 
     @commands.group(name="modpay", aliases=["modbank", "mb"], pass_context=True)
     @checks.admin_or_permissions(ban_members=True)
     async def _modpay(self, ctx):
-        """Paramètres de Iota Pay"""
+        """Paramètres de Turing Pay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
@@ -908,7 +908,7 @@ class Pay:
 
     @_modpay.command(pass_context=True)
     async def forcenew(self, ctx, user: discord.Member):
-        """Ouvre de force un compte Iota Pay à un membre"""
+        """Ouvre de force un compte Turing Pay à un membre"""
         if not self.pay.get_account(user, ignore_close=True):
             self.pay.new_account(user)
             await self.bot.say("**Succès** ─ Le compte bancaire de {} à été créé".format(user.mention))
