@@ -140,7 +140,7 @@ class Russianroulette:
                     self.player_add(settings, user, bet)
                     self.subtract_credits(settings, user, bet)
                     money = pay.get_money(server, bet)
-                    txt = "{} à lancé une partie de Roulette avec une offre de départ de **{} {}**.".format(user.mention, bet,
+                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{} {}**.".format(user.mention, bet,
                                                                                                         money)
                     em = discord.Embed(title="Roulette russe", description=txt, color=0x6b554e)
                     em.set_footer(text="Le jeu commence dans 45 secondes ou si 5 autres joueurs y participe. "
