@@ -120,7 +120,7 @@ class Companion:
         self.api.forcesave()
 
     @compset.command(pass_context=True)
-    async def disclamer(self, ctx):
+    async def rgpd(self):
         """Affiche le disclamer de Turing conformément aux dispositions du Règlement Général sur la Protection des Données"""
         await asyncio.sleep(1)
         em = discord.Embed(title="Disclamer concernant le RGPD", description=self.disclamer, color=0x3162e0)
