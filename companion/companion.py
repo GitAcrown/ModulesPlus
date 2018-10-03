@@ -108,10 +108,10 @@ class Companion:
         m = self.api.get_member(ctx.message.author)
         if m.get("assistant_ignore", False):
             m["assistant_ignore"] = False
-            await self.bot.say("**Assistant** ─ Activé\nInfo : Lisez attentivement le *disclamer* concernant les "
+            await self.bot.say("**Assistant** ─ Activé\nInfo : Lisez attentivement le *disclaimer* concernant les "
                                "données exploitées par le bot conformément au RGPD.".format(ctx.prefix))
             await asyncio.sleep(1)
-            em = discord.Embed(title="Disclamer concernant le RGPD", description=self.disclamer, color=0x3162e0)
+            em = discord.Embed(title="Disclaimer concernant le RGPD", description=self.disclamer, color=0x3162e0)
             em.set_footer(text="Ce texte est valable pour tous les services proposés par Turing")
             await self.bot.say(embed=em)
         else:
@@ -121,9 +121,9 @@ class Companion:
 
     @compset.command()
     async def rgpd(self):
-        """Affiche le disclamer de Turing conformément aux dispositions du Règlement Général sur la Protection des Données"""
+        """Affiche le disclaimer de Turing conformément aux dispositions du Règlement Général sur la Protection des Données"""
         await asyncio.sleep(1)
-        em = discord.Embed(title="Disclamer concernant le RGPD", description=self.disclamer, color=0x3162e0)
+        em = discord.Embed(title="Disclaimer concernant le RGPD", description=self.disclamer, color=0x3162e0)
         em.set_footer(text="Ce texte est valable pour tous les services proposés par Turing")
         await self.bot.say(embed=em)
 
