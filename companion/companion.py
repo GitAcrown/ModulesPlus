@@ -69,7 +69,7 @@ class Companion:
                          "Conformément au *Règlement Général sur la Protection des Données* (RGPD), voici les " \
                          "données qu'il est susceptible d'exploiter et dans quel but :\n\n" \
                          "**1) Analyse constante de vos messages et réactions** dans l'optique de proposer" \
-                         "des corrections automatique de liens, des fonctionnalités non proposées par Discord telles " \
+                         " des corrections automatique de liens, des fonctionnalités non proposées par Discord telles " \
                          "que la citation ou la balise spoil ou encore la détection de reposts.\n" \
                          "**2) Extraire de votre utilisation du serveur des données statistiques** afin d'améliorer " \
                          "certains services tels que l'assistant personnel et proposer ces mêmes statistiques à la " \
@@ -77,9 +77,9 @@ class Companion:
                          "**3) Surveiller les changements apportés à votre profil** afin d'en garder un historique " \
                          "utile dans des fonctions de modération et pour vous proposer, notamment, le service de " \
                          "notification personnalisé *Reflet*. Cela comprend votre statut et les programmes lancés que " \
-                         "ous laissez apparaître sur votre compte.\n" \
+                         "vous laissez apparaître sur votre compte.\n" \
                          "**4) Mettre en mémoire les données que vous fournissez** dans un serveur appartenant à " \
-                         "un tiers (Acrown#4424). En dehors de quelques rares informations, aucune donnée fournie à " \
+                         "un tiers (<@172376505354158080>). En dehors de quelques rares informations, aucune donnée fournie à " \
                          "Turing n'est cryptée bien que le serveur en question est théoriquement protégé des attaques." \
                          "\n**5) Garder des traces de votre présence même après votre départ du serveur**, qui sont " \
                          "néanmoins inexploitable en votre absence (profils Network par exemple). Il est prévu de " \
