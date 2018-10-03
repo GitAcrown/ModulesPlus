@@ -119,7 +119,7 @@ class Companion:
             await self.bot.say("**Assistant** ─ Turing ne vous assistera plus")
         self.api.forcesave()
 
-    @compset.command(pass_context=True)
+    @compset.command()
     async def rgpd(self):
         """Affiche le disclamer de Turing conformément aux dispositions du Règlement Général sur la Protection des Données"""
         await asyncio.sleep(1)
