@@ -45,6 +45,8 @@ class Justice:
             self.sys[server.id] = self.base_sys
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
+        if "HISTORIQUE" not in self.sys[server.id]:
+            self.sys[server.id]["HISTORIQUE"] = []
         if type in ["+", "-", ">", "<", "!<", "x<", "r>"]:  # Ajout, Réduction, Entrée, Sortie, Sortie forcée, Sortie erreur, Retour en prison
             self.sys[server.id]["HISTORIQUE"].append([jour, heure, type, temps, user.id, author.id if author else None])
             self.save()
