@@ -229,10 +229,10 @@ class Swift:
     async def annexes(self, ctx):
         """Gestion des services annexes"""
         sys = self.get_server(ctx.message.server, update_services=True)["SERVICES"]
-        txt = ""
         msg = None
         if sys["annexes"]:
             while True:
+                txt = ""
                 for a in sys["annexes"]:
                     txt += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
                 em = discord.Embed(title="Services annexes disponibles", description=txt, color=0x3162e0)
