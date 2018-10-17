@@ -244,11 +244,11 @@ class Swift:
                 rep = await self.bot.wait_for_message(channel=ctx.message.channel,
                                                       author=ctx.message.author,
                                                       timeout=30)
-                if rep is None or rep.lower() == "quit":
+                if rep is None or rep.content.lower() == "quit":
                     await self.bot.delete_message(msg)
                     return
-                elif rep.lower() in sys["annexes"]:
-                    sys["annexes"][rep.lower()] = not sys["annexes"][rep.lower()]
+                elif rep.content.lower() in sys["annexes"]:
+                    sys["annexes"][rep.content.lower()] = not sys["annexes"][rep.content.lower()]
                     em.set_footer(text="Service modifié avec succès !")
                     await self.bot.edit_message(msg, embed=em)
                     await asyncio.sleep(2)
