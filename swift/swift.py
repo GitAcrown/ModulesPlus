@@ -393,7 +393,7 @@ class Swift:
         if not hasattr(message, "server"):
             return
         author = message.author
-        if not self.sfw.get_member(author)["IGNORE"]:
+        if not self.swf.get_member(author)["IGNORE"]:
             server, channel = message.server, message.channel
             content = message.content
             opts, cache = self.get_server(server)["SERVICES"], self.get_server(server)["CACHE"]
