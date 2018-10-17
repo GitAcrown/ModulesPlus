@@ -134,8 +134,8 @@ class Swift:
                                "*Attention : Un nombre important de fonctionnalités ne sont plus disponibles*")
         self.swf.save()
 
-    @_swiftset.command()
-    async def rgpd(self):
+    @_swiftset.command(name="rgpd")
+    async def rgpd_disclamer(self):
         """Affiche le disclaimer RGPD de Turing"""
         em = discord.Embed(title="Disclaimer concernant le RGPD", description=self.rgpd, color=0x3162e0)
         em.set_footer(text="─ Ce texte est valable pour tous les services proposés par Turing ─")
