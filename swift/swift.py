@@ -135,7 +135,7 @@ class Swift:
         self.swf.save()
 
     @_swiftset.command(pass_context=True)
-    async def rgpd(self):
+    async def rgpd(self, ctx):
         """Affiche le disclaimer RGPD de Turing"""
         em = discord.Embed(title="Disclaimer concernant le RGPD", description=self.rgpd, color=0x3162e0)
         em.set_footer(text="─ Ce texte est valable pour tous les services proposés par Turing ─")
@@ -340,8 +340,8 @@ class Swift:
                             await self.bot.delete_message(message)
 
                     if opts["quote"]:
-                        if author.id in session["QUOTES"]:
-                            q = session["QUOTES"][author.id]
+                        if author.id in session["CITATONS"]:
+                            q = session["CITATONS"][author.id]
                             em = discord.Embed(description=q["contenu"], color=q["color"], timestamp=q["timestamp"])
                             em.set_author(name=q["auteur"], icon_url=q["avatar"], url=q["msg_url"])
                             em.add_field(name="• Message de {}".format(author.name), value=content)
@@ -350,7 +350,7 @@ class Swift:
                                 em.set_thumbnail(url=q["img"])
                             await self.bot.delete_message(message)
                             await self.bot.send_message(channel, embed=em)
-                            del session["QUOTES"][author.id]
+                            del session["CITATONS"][author.id]
 
                     if opts["annexes"].get("noelshack", True):
                         if "noelshack" in content.lower():
@@ -414,7 +414,7 @@ class Swift:
                             print("Impossible d'envoyer le Spoil à {} (Bloqué)".format(user.name))
 
                 if reaction.emoji in ["💬","🗨"] and opts["quote"]:
-                    if user.id not in session["QUOTES"]:
+                    if user.id not in session["CITATONS"]:
                         contenu = content if content else ""
                         if message.embeds:
                             if "description" in message.embeds[0]:
@@ -431,7 +431,7 @@ class Swift:
                         reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
                         if reg:
                             img = reg[0]
-                        session["QUOTES"][user.id] = {"contenu": contenu,
+                        session["CITATONS"][user.id] = {"contenu": contenu,
                                                       "color": author.color,
                                                       "auteur": author.name,
                                                       "avatar": author.avatar_url,
