@@ -48,6 +48,11 @@ class Community:
 
     # Partie expérimentale ==========
 
+    @commands.command(pass_context=True, no_pm=True)
+    async def testembed(self, ctx):
+        em = discord.Embed(title="Ceci est un titre", description="Ceci est un contenu", color=0x000000)
+        await self.bot.say("Voici un Embed", embed=em)
+
     @commands.command(pass_context=True, no_pm=True, hidden=True)
     async def aijebesoindunpsy(self, ctx):
         """Vous indique si vous avez besoin d'un psy"""
