@@ -1,17 +1,17 @@
 import os
 import random
 import re
-# from copy import deepcopy
+from copy import deepcopy
 
 import asyncio
 import time
 import aiohttp
 import discord
-# import wikipedia
-# import wikipediaapi
+import wikipedia
+import wikipediaapi
 from __main__ import send_cmd_help
 from discord.ext import commands
-# from sympy import sympify
+from sympy import sympify
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
@@ -46,7 +46,7 @@ class Swift:
         self.swf = SwiftAPI(bot, "data/swift/data.json")
         self.sys = dataIO.load_json("data/swift/sys.json")
         self.context = {"last_save": 0, "servers": {}}
-        # self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession()
         self.rgpd = "Turing exploite par le biais de différents modules vos données dans le but de vous offrir " \
                     "divers services. Ces données proviennent d'une part de Discord et d'autre part de l'analyse de " \
                     "vos messages et de votre présence sur les différents serveurs.\n" \
@@ -73,8 +73,8 @@ class Swift:
                     "De ce fait, la seule présence de Turing sur votre serveur vaut consentement.\n" \
                     "Pour toute réclamation, contactez <@172376505354158080>."
 
-    """def __unload(self):
-        self.session.close()"""
+    def __unload(self):
+        self.session.close()
 
     def sys_save(self, force: bool = False):
         if force:
@@ -110,6 +110,120 @@ class Swift:
                     self.sys[server.id]["SERVICES"]["annexes"][service] = True
             self.sys_save()
         return self.sys[server.id]
+
+
+    # GREFFONS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    def redux(self, string: str, separateur: str = ".", limite: int = 2000):
+        n = -1
+        while len(separateur.join(string.split(separateur)[:n])) >= limite:
+            n -= 1
+        return separateur.join(string.split(separateur)[:n]) + separateur
+
+    async def _wikipedia(self, message: discord.Message):
+        """Traite la demande de recherche Wikipedia"""
+        output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
+        if output:
+            langue = 'fr'
+            search = output[0]
+            while True:
+                wikipedia.set_lang(langue)
+                wiki = wikipediaapi.Wikipedia(langue)
+                page = wiki.page(search)
+                if page.exists():
+                    simil = wikipedia.search(search, 6, True)
+                    txtsimil = ""
+                    if simil:
+                        if len(simil[0]) > 1:
+                            txtsimil = "Résultats similaires • " + ", ".join(simil[0][1:])
+                    txt = self.redux(page.summary)
+                    em = discord.Embed(title=page.title, description=txt, color=0xeeeeee, url=page.fullurl)
+                    em.set_footer(text=txtsimil,
+                                  icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
+                                           "logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
+                    msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
+                                         "J'ai trouvé ça :"])
+                    await self.bot.send_message(message.channel, msg, embed=em)
+                elif langue == 'en':
+                    wikipedia.set_lang('fr')
+                    search = wikipedia.search(search, 8, True)
+                    if search:
+                        em = discord.Embed(title="Pages suggérées", description="\n".join(["• {}".format(i.title()) for i
+                                                                                           in search[0]]))
+                        msg = random.choice(["Je n'ai rien trouvé en particulier...",
+                                             "Désolé mais je n'ai rien trouvé avec ce nom...",
+                                             "Je ne peux que vous proposer des pages similaires.",
+                                             "Je suis désolé mais je n'ai trouvé que ça :"])
+                        await self.bot.send_message(message.channel, msg, embed=em)
+                    else:
+                        wikipedia.set_lang('en')
+                        search = wikipedia.search(search, 8, True)
+                        if search:
+                            em = discord.Embed(title="Pages suggérées",
+                                               description="\n".join(["• {}".format(i.title()) for i
+                                                                      in search[0]]))
+                            msg = random.choice(["Je n'ai rien trouvé en particulier...",
+                                                 "Désolé mais je n'ai rien trouvé avec ce nom...",
+                                                 "Je ne peux que vous proposer des pages similaires.",
+                                                 "Je suis désolé mais je n'ai trouvé que ça :"])
+                            await self.bot.send_message(message.channel, msg, embed=em)
+                else:
+                    langue = 'en'
+        return False
+
+    """def oldwiki(self, recherche: str, langue: str = 'fr', souple: bool = True):
+        wikipedia.set_lang(langue)
+        wikiplus = wikipediaapi.Wikipedia(langue)
+        s = wikipedia.search(recherche, 8, True)
+        try:
+            if s[1]:
+                r = s[1]
+            else:
+                r = s[0][0] if s[0] else None
+            if r:
+                page = wikipedia.page(r, auto_suggest=souple)
+                images = page.images
+                image = images[0]
+                for i in images:
+                    if i.endswith(".png") or i.endswith(".gif") or i.endswith(".jpg") or i.endswith(".jpeg"):
+                        image = i
+                resum = page.summary
+                if not resum:
+                    resum = "Contenu indisponible"
+                if len(resum) + len(r) > 1995:
+                    resum = self.redux(resum, limite=1960)
+                p = wikiplus.page(r)
+                resum += "\n\n[En savoir plus...]({})".format(p.fullurl)
+                em = discord.Embed(title=r.title(), description=resum, color=0xeeeeee)
+                em.set_thumbnail(url=image)
+                em.set_footer(text="Similaire: {}".format(", ".join(s[0])))
+                return em
+            else:
+                if langue == "en":
+                    return "Impossible de trouver {}".format(recherche)
+                else:
+                    return self.wiki(recherche, "en")
+        except:
+            if langue == "en":
+                if souple:
+                    if s[0]:
+                        if len(s[0]) >= 2:
+                            wikipedia.set_lang("fr")
+                            s = wikipedia.search(recherche, 3, True)
+                            return "**Introuvable** | Réessayez peut-être avec *{}* ?".format(s[0][1])
+                        else:
+                            return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
+                    else:
+                        return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
+                else:
+                    return self.wiki(recherche, "en", False)
+            else:
+                if souple:
+                    return self.wiki(recherche, "en")
+                else:
+                    return self.wiki(recherche, "fr", False)"""
+
+    # COMMANDES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.group(name="swiftset", pass_context=True)
     async def _swiftset(self, ctx):
@@ -255,7 +369,7 @@ class Swift:
                 else:
                     em.set_footer(text="Service inconnu.")
                     await self.bot.edit_message(msg, embed=em)
-                    await asyncio.sleep(2.5)
+                    await asyncio.sleep(2.25)
         else:
             await self.bot.say("**Aucun service annexe n'est disponible**")
 
@@ -387,6 +501,10 @@ class Swift:
                                         txt += "🔗 https://www.reddit.com/r/{}/\n".format(r)
                                 if txt:
                                     await self.bot.send_message(channel, txt)
+
+                    if await self._wikipedia(message):
+                        return
+
 
     async def onreactionadd(self, reaction, user):
         message = reaction.message
