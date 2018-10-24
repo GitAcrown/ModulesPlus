@@ -144,6 +144,7 @@ class Swift:
                     msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
                                          "J'ai trouvé ça :"])
                     await self.bot.send_message(message.channel, msg, embed=em)
+                    return
                 elif langue == 'en':
                     wikipedia.set_lang('fr')
                     search = wikipedia.search(search, 8, True)
