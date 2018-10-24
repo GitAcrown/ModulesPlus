@@ -159,6 +159,10 @@ class Swift:
                                              "Désolé mais je n'ai rien trouvé avec ce nom...",
                                              "Je ne peux que vous proposer des pages similaires.",
                                              "Je suis désolé mais je n'ai trouvé que ça :"])
+                        rdfot = random.choice(
+                            ["Que vouliez-vous exactement ?", "Quel était votre recherche dans cette liste ?",
+                             "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                        em.set_footer(text=rdfot)
                         msg = await self.bot.send_message(message.channel, msg, embed=em)
                         rep = await self.bot.wait_for_message(channel=message.channel,
                                                               author=message.author,
