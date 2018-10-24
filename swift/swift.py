@@ -124,6 +124,7 @@ class Swift:
         """Traite la demande de recherche Wikipedia"""
         output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
         if output:
+            await self.bot.send_typing(message.channel)
             langue = 'fr'
             search = output[0]
             while True:
@@ -131,12 +132,15 @@ class Swift:
                 wiki = wikipediaapi.Wikipedia(langue)
                 page = wiki.page(search)
                 if page.exists():
+
                     simil = wikipedia.search(search, 6, True)
                     txtsimil = ""
                     if simil:
                         if len(simil[0]) > 1:
                             txtsimil = "Résultats similaires • " + ", ".join(simil[0][1:])
                     txt = self.redux(page.summary)
+                    if len(txt) == 1:
+                        txt = "*Cliquez sur le titre pour accéder à la page d'homonymie*"
                     em = discord.Embed(title=page.title, description=txt, color=0xeeeeee, url=page.fullurl)
                     em.set_footer(text=txtsimil,
                                   icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
