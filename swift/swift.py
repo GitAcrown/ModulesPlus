@@ -167,12 +167,18 @@ class Swift:
                         rep = await self.bot.wait_for_message(channel=message.channel,
                                                               author=message.author,
                                                               timeout=10)
-                        if rep is None or rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
-                                                                  "ca sera tout", "ça sera tout"]:
+                        if rep is None:
                             await self.bot.delete_message(msg)
                             return
-                        elif rep.lower() in [l.lower() for l in search[0]]:
-                            search = rep.lower()
+                        elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                     "ca sera tout", "ça sera tout", "non merci"]:
+                            poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
+                            await self.bot.send_message(message.channel, poli)
+                            await self.bot.delete_message(msg)
+                            return
+                        elif rep.content.lower() in [l.lower() for l in search[0]]:
+                            search = rep.content.lower()
+                            await self.bot.delete_message(msg)
                         else:
                             return
                     else:
@@ -193,12 +199,18 @@ class Swift:
                             rep = await self.bot.wait_for_message(channel=message.channel,
                                                                   author=message.author,
                                                                   timeout=10)
-                            if rep is None or rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
-                                                                      "ca sera tout", "ça sera tout"]:
+                            if rep is None:
                                 await self.bot.delete_message(msg)
                                 return
-                            elif rep.lower() in [l.lower() for l in search[0]]:
-                                search = rep.lower()
+                            elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                       "ca sera tout", "ça sera tout", "non merci"]:
+                                poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
+                                await self.bot.send_message(message.channel, poli)
+                                await self.bot.delete_message(msg)
+                                return
+                            elif rep.content.lower() in [l.lower() for l in search[0]]:
+                                search = rep.content.lower()
+                                await self.bot.delete_message(msg)
                             else:
                                 return
                 else:
