@@ -156,6 +156,7 @@ class Swift:
                                              "Je ne peux que vous proposer des pages similaires.",
                                              "Je suis désolé mais je n'ai trouvé que ça :"])
                         await self.bot.send_message(message.channel, msg, embed=em)
+                        return
                     else:
                         wikipedia.set_lang('en')
                         search = wikipedia.search(search, 8, True)
@@ -168,6 +169,7 @@ class Swift:
                                                  "Je ne peux que vous proposer des pages similaires.",
                                                  "Je suis désolé mais je n'ai trouvé que ça :"])
                             await self.bot.send_message(message.channel, msg, embed=em)
+                            return
                 else:
                     langue = 'en'
         return False
