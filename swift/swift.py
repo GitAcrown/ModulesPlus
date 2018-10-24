@@ -124,10 +124,10 @@ class Swift:
         """Traite la demande de recherche Wikipedia"""
         output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
         if output:
-            await self.bot.send_typing(message.channel)
             langue = 'fr'
             search = output[0]
             while True:
+                await self.bot.send_typing(message.channel)
                 wikipedia.set_lang(langue)
                 wiki = wikipediaapi.Wikipedia(langue)
                 page = wiki.page(search)
@@ -154,26 +154,49 @@ class Swift:
                     search = wikipedia.search(search, 8, True)
                     if search:
                         em = discord.Embed(title="Pages suggérées", description="\n".join(["• {}".format(i.title()) for i
-                                                                                           in search[0]]))
+                                                                                           in search[0]]), color=0xeeeeee)
                         msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                              "Désolé mais je n'ai rien trouvé avec ce nom...",
                                              "Je ne peux que vous proposer des pages similaires.",
                                              "Je suis désolé mais je n'ai trouvé que ça :"])
-                        await self.bot.send_message(message.channel, msg, embed=em)
-                        return
+                        msg = await self.bot.send_message(message.channel, msg, embed=em)
+                        rep = await self.bot.wait_for_message(channel=message.channel,
+                                                              author=message.author,
+                                                              timeout=10)
+                        if rep is None or rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                                  "ca sera tout", "ça sera tout"]:
+                            await self.bot.delete_message(msg)
+                            return
+                        elif rep.lower() in [l.lower() for l in search[0]]:
+                            search = rep.lower()
+                        else:
+                            return
                     else:
                         wikipedia.set_lang('en')
                         search = wikipedia.search(search, 8, True)
                         if search:
-                            em = discord.Embed(title="Pages suggérées",
+                            em = discord.Embed(title="Pages suggérées (en anglais)",
                                                description="\n".join(["• {}".format(i.title()) for i
-                                                                      in search[0]]))
+                                                                      in search[0]]), color=0xeeeeee)
                             msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                  "Désolé mais je n'ai rien trouvé avec ce nom...",
                                                  "Je ne peux que vous proposer des pages similaires.",
                                                  "Je suis désolé mais je n'ai trouvé que ça :"])
-                            await self.bot.send_message(message.channel, msg, embed=em)
-                            return
+                            rdfot = random.choice(["Que vouliez-vous exactement ?", "Quel était votre recherche dans cette liste ?",
+                                                  "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                            em.set_footer(text=rdfot)
+                            msg = await self.bot.send_message(message.channel, msg, embed=em)
+                            rep = await self.bot.wait_for_message(channel=message.channel,
+                                                                  author=message.author,
+                                                                  timeout=10)
+                            if rep is None or rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                                      "ca sera tout", "ça sera tout"]:
+                                await self.bot.delete_message(msg)
+                                return
+                            elif rep.lower() in [l.lower() for l in search[0]]:
+                                search = rep.lower()
+                            else:
+                                return
                 else:
                     langue = 'en'
         return False
