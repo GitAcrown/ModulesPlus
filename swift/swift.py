@@ -509,7 +509,7 @@ class Swift:
                                 if txt:
                                     await self.bot.send_message(channel, txt)
 
-                    if message.content.lower().startswith("turing") or self.bot.user.id in [u.id for u in message.mentions]:
+                    if message.content.lower().startswith("turing") or message.content.lower().startswith("swift") or self.bot.user.id in [u.id for u in message.mentions]:
                         if await self._wikipedia(message):
                             return
 
