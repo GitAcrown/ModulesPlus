@@ -177,9 +177,10 @@ class Swift:
                             await self.bot.delete_message(msg)
                             return
                         elif rep.content.lower() in [l.lower() for l in search[0]]:
-                            search = rep.content.lower()
+                            search = rep.content
                             await self.bot.delete_message(msg)
                         else:
+                            await self.bot.delete_message(msg)
                             return
                     else:
                         wikipedia.set_lang('en')
@@ -209,9 +210,10 @@ class Swift:
                                 await self.bot.delete_message(msg)
                                 return
                             elif rep.content.lower() in [l.lower() for l in search[0]]:
-                                search = rep.content.lower()
+                                search = rep.content
                                 await self.bot.delete_message(msg)
                             else:
+                                await self.bot.delete_message(msg)
                                 return
                 else:
                     langue = 'en'
