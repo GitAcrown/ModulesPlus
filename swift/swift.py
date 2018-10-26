@@ -593,7 +593,8 @@ class Swift:
                                 else:
                                     message = msg
                                     first = False
-                            return
+                            else:
+                                return
 
 
     async def onreactionadd(self, reaction, user):
