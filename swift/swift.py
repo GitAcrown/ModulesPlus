@@ -151,7 +151,7 @@ class Swift:
                         em.set_footer(text=txtsimil,
                                       icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
                                                "logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-                        msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
+                        msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà :", "Voilà pour vous :", "Tout de suite :",
                                              "J'ai trouvé ça :"])
                         await self.bot.send_message(message.channel, msg, embed=em)
                         return True
@@ -567,7 +567,7 @@ class Swift:
 
                             if first:
                                 await self.bot.send_typing(message.channel)
-                                await asyncio.sleep(1.5)
+                                await asyncio.sleep(0.75)
                                 rmsg = random.choice(["Que puis-je pour vous {user.name} ?", "Oui ?",
                                                       "Vous avez besoin de moi ?",
                                                       "Que puis-je faire pour vous servir {user.name} ?",
