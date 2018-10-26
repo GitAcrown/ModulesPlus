@@ -125,7 +125,7 @@ class Swift:
         if self.get_server(message.server)["SERVICES"]["annexes"].get("ia_wikipedia", True):
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
             if output:
-                await self.bot.send_messag(message.channel, "*Note : les expressions `cherche X` et `recherche X` vont"
+                await self.bot.send_message(message.channel, "*Note : les expressions `cherche X` et `recherche X` vont"
                                                             " bientôt tomber en désuétude, il est conseillé d'utiliser "
                                                             "`c'est quoi X` ou `qu'est-ce que X`*")
             else:
