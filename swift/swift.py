@@ -154,7 +154,7 @@ class Swift:
                         msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
                                              "J'ai trouvé ça :"])
                         await self.bot.send_message(message.channel, msg, embed=em)
-                        return
+                        return True
                     elif langue == 'en':
                         wikipedia.set_lang('fr')
                         search = wikipedia.search(search, 8, True)
@@ -175,19 +175,19 @@ class Swift:
                                                                   timeout=10)
                             if rep is None:
                                 await self.bot.delete_message(msg)
-                                return
+                                return True
                             elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
                                                          "ca sera tout", "ça sera tout", "non merci"]:
                                 poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
                                 await self.bot.send_message(message.channel, poli)
                                 await self.bot.delete_message(msg)
-                                return
+                                return True
                             elif rep.content.lower() in [l.lower() for l in search[0]]:
                                 search = rep.content
                                 await self.bot.delete_message(msg)
                             else:
                                 await self.bot.delete_message(msg)
-                                return
+                                return True
                         else:
                             wikipedia.set_lang('en')
                             search = wikipedia.search(search, 8, True)
@@ -205,22 +205,22 @@ class Swift:
                                 msg = await self.bot.send_message(message.channel, msg, embed=em)
                                 rep = await self.bot.wait_for_message(channel=message.channel,
                                                                       author=message.author,
-                                                                      timeout=10)
+                                                                      timeout=15)
                                 if rep is None:
                                     await self.bot.delete_message(msg)
-                                    return
+                                    return True
                                 elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
                                                            "ca sera tout", "ça sera tout", "non merci"]:
                                     poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
                                     await self.bot.send_message(message.channel, poli)
                                     await self.bot.delete_message(msg)
-                                    return
+                                    return True
                                 elif rep.content.lower() in [l.lower() for l in search[0]]:
                                     search = rep.content
                                     await self.bot.delete_message(msg)
                                 else:
                                     await self.bot.delete_message(msg)
-                                    return
+                                    return True
                     else:
                         langue = 'en'
 
@@ -560,12 +560,27 @@ class Swift:
                                     await self.bot.send_message(channel, txt)
 
                     if message.content.lower().startswith("turing") or self.bot.user.id in [u.id for u in message.mentions]:
-                        await self._wikipedia(message)
-                        try:
-                            await asyncio.sleep(8)
-                            await self.bot.delete_message(message)
-                        except:
-                            pass
+                        first = True
+                        while True:
+                            if await self._wikipedia(message):
+                                return
+
+                            if first:
+                                await self.bot.send_typing(message.channel)
+                                await asyncio.sleep(1.5)
+                                rmsg = random.choice(["Que puis-je pour vous {user.name} ?", "Oui ?",
+                                                      "Vous avez besoin de moi ?",
+                                                      "Que puis-je faire pour vous servir {user.name} ?",
+                                                      "Avez-vous besoin de quelque chose ?"])
+                                resp = await self.bot.send_message(message.channel, rmsg.format(user=message.author))
+
+                                msg = await self.bot.wait_for_message(channel=channel, author=author, timeout=12)
+                                if msg is None:
+                                    await self.bot.delete_message(resp)
+                                    return
+                                else:
+                                    message = msg
+                                    first = False
 
 
     async def onreactionadd(self, reaction, user):
