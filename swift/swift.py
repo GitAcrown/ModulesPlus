@@ -157,12 +157,12 @@ class Swift:
                         return True
                     elif langue == 'en':
                         wikipedia.set_lang('fr')
-                        search = wikipedia.search(search, 8, True)
+                        search = wikipedia.search(search, 8, True)[0]
                         if search:
                             ltxt = ""
                             liste = []
                             n = 1
-                            for i in search[0]:
+                            for i in search:
                                 liste.append([n, i])
                                 n += 1
                             for _ in liste:
@@ -189,7 +189,7 @@ class Swift:
                                 await self.bot.send_message(message.channel, poli)
                                 await self.bot.delete_message(msg)
                                 return True
-                            elif rep.content.lower() in [l.lower() for l in search[0]]:
+                            elif rep.content.lower() in [l.lower() for l in search]:
                                 search = rep.content
                                 await self.bot.delete_message(msg)
                             elif int(rep.content) in [i[0] for i in liste]:
@@ -207,12 +207,12 @@ class Swift:
                                 return True
                         else:
                             wikipedia.set_lang('en')
-                            search = wikipedia.search(search, 8, True)
+                            search = wikipedia.search(search, 8, True)[0]
                             if search:
                                 ltxt = ""
                                 liste = []
                                 n = 1
-                                for i in search[0]:
+                                for i in search:
                                     liste.append([n, i])
                                     n += 1
                                 for _ in liste:
@@ -240,7 +240,7 @@ class Swift:
                                     await self.bot.send_message(message.channel, poli)
                                     await self.bot.delete_message(msg)
                                     return True
-                                elif rep.content.lower() in [l.lower() for l in search[0]]:
+                                elif rep.content.lower() in [l.lower() for l in search]:
                                     search = rep.content
                                     await self.bot.delete_message(msg)
                                 elif int(rep.content) in [i[0] for i in liste]:
