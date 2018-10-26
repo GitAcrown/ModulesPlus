@@ -159,8 +159,15 @@ class Swift:
                         wikipedia.set_lang('fr')
                         search = wikipedia.search(search, 8, True)
                         if search:
-                            em = discord.Embed(title="Pages suggérées", description="\n".join(["• {}".format(i.title()) for i
-                                                                                               in search[0]]), color=0xeeeeee)
+                            ltxt = ""
+                            liste = []
+                            n = 1
+                            for i in search[0]:
+                                liste.append([n, i])
+                                n += 1
+                            for _ in liste:
+                                ltxt += "**{}**• {}\n".format(_[0], _[1].capitalize())
+                            em = discord.Embed(title="Pages suggérées", description=ltxt, color=0xeeeeee)
                             msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                  "Désolé mais je n'ai rien trouvé avec ce nom...",
                                                  "Je ne peux que vous proposer des pages similaires.",
@@ -185,6 +192,14 @@ class Swift:
                             elif rep.content.lower() in [l.lower() for l in search[0]]:
                                 search = rep.content
                                 await self.bot.delete_message(msg)
+                            elif rep.content in [i[0] for i in liste]:
+                                for i in liste:
+                                    if rep.content == i[0]:
+                                        search = i[1]
+                                        await self.bot.delete_message(msg)
+                                        continue
+                                await self.bot.delete_message(msg)
+                                return
                             else:
                                 await self.bot.delete_message(msg)
                                 return True
@@ -192,25 +207,33 @@ class Swift:
                             wikipedia.set_lang('en')
                             search = wikipedia.search(search, 8, True)
                             if search:
-                                em = discord.Embed(title="Pages suggérées (en anglais)",
-                                                   description="\n".join(["• {}".format(i.title()) for i
-                                                                          in search[0]]), color=0xeeeeee)
+                                ltxt = ""
+                                liste = []
+                                n = 1
+                                for i in search[0]:
+                                    liste.append([n, i])
+                                    n += 1
+                                for _ in liste:
+                                    ltxt += "**{}**• {}\n".format(_[0], _[1].capitalize())
+                                em = discord.Embed(title="Pages suggérées (en Anglais)", description=ltxt, color=0xeeeeee)
                                 msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                      "Désolé mais je n'ai rien trouvé avec ce nom...",
                                                      "Je ne peux que vous proposer des pages similaires.",
                                                      "Je suis désolé mais je n'ai trouvé que ça :"])
-                                rdfot = random.choice(["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
-                                                      "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                                rdfot = random.choice(
+                                    ["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
+                                     "Quel sujet est le bon ?",
+                                     "Voulez-vous bien m'indiquer la bonne page à charger ?"])
                                 em.set_footer(text=rdfot)
                                 msg = await self.bot.send_message(message.channel, msg, embed=em)
                                 rep = await self.bot.wait_for_message(channel=message.channel,
                                                                       author=message.author,
-                                                                      timeout=15)
+                                                                      timeout=10)
                                 if rep is None:
                                     await self.bot.delete_message(msg)
                                     return True
                                 elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
-                                                           "ca sera tout", "ça sera tout", "non merci"]:
+                                                             "ca sera tout", "ça sera tout", "non merci"]:
                                     poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
                                     await self.bot.send_message(message.channel, poli)
                                     await self.bot.delete_message(msg)
@@ -218,6 +241,14 @@ class Swift:
                                 elif rep.content.lower() in [l.lower() for l in search[0]]:
                                     search = rep.content
                                     await self.bot.delete_message(msg)
+                                elif rep.content in [i[0] for i in liste]:
+                                    for i in liste:
+                                        if rep.content == i[0]:
+                                            search = i[1]
+                                            await self.bot.delete_message(msg)
+                                            continue
+                                    await self.bot.delete_message(msg)
+                                    return
                                 else:
                                     await self.bot.delete_message(msg)
                                     return True
