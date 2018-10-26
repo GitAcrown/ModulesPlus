@@ -578,6 +578,17 @@ class Swift:
                                 if msg is None:
                                     await self.bot.delete_message(resp)
                                     return
+                                elif msg.content.lower() in ["non", "non merci", "ça ira", "ca ira"]:
+                                    await self.bot.send_typing()
+                                    await asyncio.sleep(0.6)
+                                    rmsg = random.choice(["Si vous avez besoin de moi, n'hésitez pas.", "Entendu.",
+                                                          "Très bien.", "Je reste à votre *entière* disposition.",
+                                                          "Je reste à votre disposition."])
+                                    await self.bot.send_message(message.channel, rmsg)
+                                    return
+                                elif msg.content.lower() in ["jtm", "je t'aime", "je tem", "je taime"]:
+                                    emoji = random.choice(["😍","😏","☺","😘","😅"])
+                                    await self.bot.add_reaction(msg, emoji)
                                 else:
                                     message = msg
                                     first = False
