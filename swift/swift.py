@@ -520,7 +520,7 @@ class Swift:
                             if q["img"]:
                                 em.set_thumbnail(url=q["img"])
                             await self.bot.delete_message(message)
-                            await self.bot.send_message(channel, embed=em)
+                            await self.bot.send_message(channel, q["mention"], embed=em)
                             del session["CITATIONS"][author.id]
 
                     if opts["annexes"].get("noelshack", True):
@@ -647,7 +647,8 @@ class Swift:
                                                       "msg_url": msgurl,
                                                       "img": img,
                                                       "timestamp": timestamp,
-                                                      "channel": channel.name}
+                                                      "channel": channel.name,
+                                                         "mention": author.mention}
                         await self.bot.remove_reaction(message, reaction.emoji, user)
 
 
