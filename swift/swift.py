@@ -122,7 +122,7 @@ class Swift:
 
     async def _wikipedia(self, message: discord.Message):
         """Traite la demande de recherche Wikipedia"""
-        if self.get_server(message.server, update_services=True)["SERVICES"]["annexes"]["ia_wikipedia"]:
+        if self.get_server(message.server)["SERVICES"]["annexes"].get("ia_wikipedia", True):
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
             if output:
                 langue = 'fr'
