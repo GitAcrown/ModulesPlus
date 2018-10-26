@@ -105,7 +105,7 @@ class Swift:
                                    "ACTIF": False}
             fileIO("data/swift/sys.json", "save", self.sys)
         if update_services:
-            for service in ["noelshack", "mobiletwitter", "subreddit"]:
+            for service in ["noelshack", "mobiletwitter", "subreddit", "ia_wikipedia"]:
                 if service not in self.sys[server.id]["SERVICES"]["annexes"]:
                     self.sys[server.id]["SERVICES"]["annexes"][service] = True
             self.sys_save()
@@ -122,79 +122,47 @@ class Swift:
 
     async def _wikipedia(self, message: discord.Message):
         """Traite la demande de recherche Wikipedia"""
-        output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
-        if output:
-            langue = 'fr'
-            search = output[0]
-            while True:
-                await self.bot.send_typing(message.channel)
-                wikipedia.set_lang(langue)
-                wiki = wikipediaapi.Wikipedia(langue)
-                page = wiki.page(search)
-                if page.exists():
+        if self.get_server(message.server, update_services=True)["SERVICES"]["annexes"]["ai_wikipedia"]:
+            output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
+            if output:
+                langue = 'fr'
+                search = output[0]
+                while True:
+                    await self.bot.send_typing(message.channel)
+                    wikipedia.set_lang(langue)
+                    wiki = wikipediaapi.Wikipedia(langue)
+                    page = wiki.page(search)
+                    if page.exists():
 
-                    simil = wikipedia.search(search, 6, True)
-                    txtsimil = ""
-                    if simil:
-                        if len(simil[0]) > 1:
-                            txtsimil = "Résultats similaires • " + ", ".join(simil[0][1:])
-                    txt = self.redux(page.summary)
-                    if len(txt) == 1:
-                        txt = "*Cliquez sur le titre pour accéder à la page d'homonymie*"
-                    em = discord.Embed(title=page.title, description=txt, color=0xeeeeee, url=page.fullurl)
-                    em.set_footer(text=txtsimil,
-                                  icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
-                                           "logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-                    msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
-                                         "J'ai trouvé ça :"])
-                    await self.bot.send_message(message.channel, msg, embed=em)
-                    return
-                elif langue == 'en':
-                    wikipedia.set_lang('fr')
-                    search = wikipedia.search(search, 8, True)
-                    if search:
-                        em = discord.Embed(title="Pages suggérées", description="\n".join(["• {}".format(i.title()) for i
-                                                                                           in search[0]]), color=0xeeeeee)
-                        msg = random.choice(["Je n'ai rien trouvé en particulier...",
-                                             "Désolé mais je n'ai rien trouvé avec ce nom...",
-                                             "Je ne peux que vous proposer des pages similaires.",
-                                             "Je suis désolé mais je n'ai trouvé que ça :"])
-                        rdfot = random.choice(
-                            ["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
-                             "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
-                        em.set_footer(text=rdfot)
-                        msg = await self.bot.send_message(message.channel, msg, embed=em)
-                        rep = await self.bot.wait_for_message(channel=message.channel,
-                                                              author=message.author,
-                                                              timeout=10)
-                        if rep is None:
-                            await self.bot.delete_message(msg)
-                            return
-                        elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
-                                                     "ca sera tout", "ça sera tout", "non merci"]:
-                            poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
-                            await self.bot.send_message(message.channel, poli)
-                            await self.bot.delete_message(msg)
-                            return
-                        elif rep.content.lower() in [l.lower() for l in search[0]]:
-                            search = rep.content
-                            await self.bot.delete_message(msg)
-                        else:
-                            await self.bot.delete_message(msg)
-                            return
-                    else:
-                        wikipedia.set_lang('en')
+                        simil = wikipedia.search(search, 6, True)
+                        txtsimil = ""
+                        if simil:
+                            if len(simil[0]) > 1:
+                                txtsimil = "Résultats similaires • " + ", ".join(simil[0][1:])
+                        txt = self.redux(page.summary)
+                        if len(txt) == 1:
+                            txt = "*Cliquez sur le titre pour accéder à la page d'homonymie*"
+                        em = discord.Embed(title=page.title, description=txt, color=0xeeeeee, url=page.fullurl)
+                        em.set_footer(text=txtsimil,
+                                      icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
+                                               "logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
+                        msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà !", "Voilà pour vous.", "Tout de suite.",
+                                             "J'ai trouvé ça :"])
+                        await self.bot.send_message(message.channel, msg, embed=em)
+                        return
+                    elif langue == 'en':
+                        wikipedia.set_lang('fr')
                         search = wikipedia.search(search, 8, True)
                         if search:
-                            em = discord.Embed(title="Pages suggérées (en anglais)",
-                                               description="\n".join(["• {}".format(i.title()) for i
-                                                                      in search[0]]), color=0xeeeeee)
+                            em = discord.Embed(title="Pages suggérées", description="\n".join(["• {}".format(i.title()) for i
+                                                                                               in search[0]]), color=0xeeeeee)
                             msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                  "Désolé mais je n'ai rien trouvé avec ce nom...",
                                                  "Je ne peux que vous proposer des pages similaires.",
                                                  "Je suis désolé mais je n'ai trouvé que ça :"])
-                            rdfot = random.choice(["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
-                                                  "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                            rdfot = random.choice(
+                                ["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
+                                 "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
                             em.set_footer(text=rdfot)
                             msg = await self.bot.send_message(message.channel, msg, embed=em)
                             rep = await self.bot.wait_for_message(channel=message.channel,
@@ -204,7 +172,7 @@ class Swift:
                                 await self.bot.delete_message(msg)
                                 return
                             elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
-                                                       "ca sera tout", "ça sera tout", "non merci"]:
+                                                         "ca sera tout", "ça sera tout", "non merci"]:
                                 poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
                                 await self.bot.send_message(message.channel, poli)
                                 await self.bot.delete_message(msg)
@@ -215,9 +183,41 @@ class Swift:
                             else:
                                 await self.bot.delete_message(msg)
                                 return
-                else:
-                    langue = 'en'
-        return False
+                        else:
+                            wikipedia.set_lang('en')
+                            search = wikipedia.search(search, 8, True)
+                            if search:
+                                em = discord.Embed(title="Pages suggérées (en anglais)",
+                                                   description="\n".join(["• {}".format(i.title()) for i
+                                                                          in search[0]]), color=0xeeeeee)
+                                msg = random.choice(["Je n'ai rien trouvé en particulier...",
+                                                     "Désolé mais je n'ai rien trouvé avec ce nom...",
+                                                     "Je ne peux que vous proposer des pages similaires.",
+                                                     "Je suis désolé mais je n'ai trouvé que ça :"])
+                                rdfot = random.choice(["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
+                                                      "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                                em.set_footer(text=rdfot)
+                                msg = await self.bot.send_message(message.channel, msg, embed=em)
+                                rep = await self.bot.wait_for_message(channel=message.channel,
+                                                                      author=message.author,
+                                                                      timeout=10)
+                                if rep is None:
+                                    await self.bot.delete_message(msg)
+                                    return
+                                elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                           "ca sera tout", "ça sera tout", "non merci"]:
+                                    poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
+                                    await self.bot.send_message(message.channel, poli)
+                                    await self.bot.delete_message(msg)
+                                    return
+                                elif rep.content.lower() in [l.lower() for l in search[0]]:
+                                    search = rep.content
+                                    await self.bot.delete_message(msg)
+                                else:
+                                    await self.bot.delete_message(msg)
+                                    return
+                    else:
+                        langue = 'en'
 
     """def oldwiki(self, recherche: str, langue: str = 'fr', souple: bool = True):
         wikipedia.set_lang(langue)
@@ -394,10 +394,14 @@ class Swift:
         msg = None
         if sys["annexes"]:
             while True:
-                txt = ""
+                txt = spe = ""
                 for a in sys["annexes"]:
-                    txt += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
+                    if a.startswith("ai"):
+                        spe += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
+                    else:
+                        txt += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
                 em = discord.Embed(title="Services annexes disponibles", description=txt, color=0x3162e0)
+                em.add_field(name="Greffons d'Assistant", value=spe)
                 em.set_footer(text="Saisissez le nom du service pour changer son état ••• ['quit' pour Quitter]")
                 if not msg:
                     msg = await self.bot.say(embed=em)
@@ -550,11 +554,8 @@ class Swift:
                                 if txt:
                                     await self.bot.send_message(channel, txt)
 
-                    if message.content.lower().startswith("turing") or \
-                            message.content.lower().startswith(self.bot.user.display_name.lower()) or \
-                            self.bot.user.id in [u.id for u in message.mentions]:
-                        if await self._wikipedia(message):
-                            return
+                    if message.content.lower().startswith("turing") or self.bot.user.id in [u.id for u in message.mentions]:
+                        await self._wikipedia(message)
 
 
     async def onreactionadd(self, reaction, user):
