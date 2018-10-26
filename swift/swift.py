@@ -166,7 +166,7 @@ class Swift:
                                 liste.append([n, i])
                                 n += 1
                             for _ in liste:
-                                ltxt += "**{}**• {}\n".format(_[0], _[1].capitalize())
+                                ltxt += "**{}** • {}\n".format(_[0], _[1].capitalize())
                             em = discord.Embed(title="Pages suggérées", description=ltxt, color=0xeeeeee)
                             msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                  "Désolé mais je n'ai rien trouvé avec ce nom...",
@@ -214,7 +214,7 @@ class Swift:
                                     liste.append([n, i])
                                     n += 1
                                 for _ in liste:
-                                    ltxt += "**{}**• {}\n".format(_[0], _[1].capitalize())
+                                    ltxt += "**{}** • {}\n".format(_[0], _[1].capitalize())
                                 em = discord.Embed(title="Pages suggérées (en Anglais)", description=ltxt, color=0xeeeeee)
                                 msg = random.choice(["Je n'ai rien trouvé en particulier...",
                                                      "Désolé mais je n'ai rien trouvé avec ce nom...",
@@ -242,13 +242,14 @@ class Swift:
                                     search = rep.content
                                     await self.bot.delete_message(msg)
                                 elif rep.content in [i[0] for i in liste]:
+                                    search = False
                                     for i in liste:
                                         if rep.content == i[0]:
                                             search = i[1]
-                                            await self.bot.delete_message(msg)
-                                            continue
+                                            break
                                     await self.bot.delete_message(msg)
-                                    return
+                                    if not search:
+                                        return
                                 else:
                                     await self.bot.delete_message(msg)
                                     return True
