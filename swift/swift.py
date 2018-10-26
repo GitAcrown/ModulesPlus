@@ -579,7 +579,7 @@ class Swift:
                                     await self.bot.delete_message(resp)
                                     return
                                 elif msg.content.lower() in ["non", "non merci", "ça ira", "ca ira"]:
-                                    await self.bot.send_typing()
+                                    await self.bot.send_typing(message.channel)
                                     await asyncio.sleep(0.6)
                                     rmsg = random.choice(["Si vous avez besoin de moi, n'hésitez pas.", "Entendu.",
                                                           "Très bien.", "Je reste à votre *entière* disposition.",
