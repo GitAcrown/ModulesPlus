@@ -259,58 +259,6 @@ class Swift:
                     else:
                         langue = 'en'
 
-    """def oldwiki(self, recherche: str, langue: str = 'fr', souple: bool = True):
-        wikipedia.set_lang(langue)
-        wikiplus = wikipediaapi.Wikipedia(langue)
-        s = wikipedia.search(recherche, 8, True)
-        try:
-            if s[1]:
-                r = s[1]
-            else:
-                r = s[0][0] if s[0] else None
-            if r:
-                page = wikipedia.page(r, auto_suggest=souple)
-                images = page.images
-                image = images[0]
-                for i in images:
-                    if i.endswith(".png") or i.endswith(".gif") or i.endswith(".jpg") or i.endswith(".jpeg"):
-                        image = i
-                resum = page.summary
-                if not resum:
-                    resum = "Contenu indisponible"
-                if len(resum) + len(r) > 1995:
-                    resum = self.redux(resum, limite=1960)
-                p = wikiplus.page(r)
-                resum += "\n\n[En savoir plus...]({})".format(p.fullurl)
-                em = discord.Embed(title=r.title(), description=resum, color=0xeeeeee)
-                em.set_thumbnail(url=image)
-                em.set_footer(text="Similaire: {}".format(", ".join(s[0])))
-                return em
-            else:
-                if langue == "en":
-                    return "Impossible de trouver {}".format(recherche)
-                else:
-                    return self.wiki(recherche, "en")
-        except:
-            if langue == "en":
-                if souple:
-                    if s[0]:
-                        if len(s[0]) >= 2:
-                            wikipedia.set_lang("fr")
-                            s = wikipedia.search(recherche, 3, True)
-                            return "**Introuvable** | Réessayez peut-être avec *{}* ?".format(s[0][1])
-                        else:
-                            return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
-                    else:
-                        return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
-                else:
-                    return self.wiki(recherche, "en", False)
-            else:
-                if souple:
-                    return self.wiki(recherche, "en")
-                else:
-                    return self.wiki(recherche, "fr", False)"""
-
     # COMMANDES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.group(name="swiftset", pass_context=True)
@@ -613,7 +561,7 @@ class Swift:
                                 if msg is None:
                                     await self.bot.delete_message(resp)
                                     return
-                                elif msg.content.lower() in ["non", "non merci", "ça ira", "ca ira"]:
+                                elif msg.content.lower() in ["non", "non merci", "ça ira", "ca ira", "non rien"]:
                                     await self.bot.send_typing(message.channel)
                                     await asyncio.sleep(0.6)
                                     rmsg = random.choice(["Si vous avez besoin de moi, n'hésitez pas.", "Entendu.",
