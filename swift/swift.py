@@ -556,6 +556,11 @@ class Swift:
 
                     if message.content.lower().startswith("turing") or self.bot.user.id in [u.id for u in message.mentions]:
                         await self._wikipedia(message)
+                        try:
+                            await asyncio.sleep(8)
+                            await self.bot.delete_message(message)
+                        except:
+                            pass
 
 
     async def onreactionadd(self, reaction, user):
