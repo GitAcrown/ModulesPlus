@@ -589,9 +589,11 @@ class Swift:
                                 elif msg.content.lower() in ["jtm", "je t'aime", "je tem", "je taime"]:
                                     emoji = random.choice(["😍","😏","☺","😘","😅"])
                                     await self.bot.add_reaction(msg, emoji)
+                                    return
                                 else:
                                     message = msg
                                     first = False
+                            return
 
 
     async def onreactionadd(self, reaction, user):
