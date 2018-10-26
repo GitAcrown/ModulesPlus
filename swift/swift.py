@@ -122,7 +122,7 @@ class Swift:
 
     async def _wikipedia(self, message: discord.Message):
         """Traite la demande de recherche Wikipedia"""
-        if self.get_server(message.server, update_services=True)["SERVICES"]["annexes"]["ai_wikipedia"]:
+        if self.get_server(message.server, update_services=True)["SERVICES"]["annexes"]["ia_wikipedia"]:
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(message.content)
             if output:
                 langue = 'fr'
@@ -396,7 +396,7 @@ class Swift:
             while True:
                 txt = spe = ""
                 for a in sys["annexes"]:
-                    if a.startswith("ai"):
+                    if a.startswith("ia"):
                         spe += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
                     else:
                         txt += "• `{}` ─ *{}*\n".format(a.upper(), "Activé" if sys["annexes"][a] else "Désactivé")
