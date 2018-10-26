@@ -192,14 +192,15 @@ class Swift:
                             elif rep.content.lower() in [l.lower() for l in search[0]]:
                                 search = rep.content
                                 await self.bot.delete_message(msg)
-                            elif rep.content in [i[0] for i in liste]:
+                            elif int(rep.content) in [i[0] for i in liste]:
                                 search = False
                                 for i in liste:
-                                    if rep.content == i[0]:
+                                    if int(rep.content) == i[0]:
                                         search = i[1]
                                         break
                                 await self.bot.delete_message(msg)
                                 if not search:
+                                    await self.bot.send_message(message.channel, "Aucun résulat.")
                                     return
                             else:
                                 await self.bot.delete_message(msg)
@@ -242,14 +243,15 @@ class Swift:
                                 elif rep.content.lower() in [l.lower() for l in search[0]]:
                                     search = rep.content
                                     await self.bot.delete_message(msg)
-                                elif rep.content in [i[0] for i in liste]:
+                                elif int(rep.content) in [i[0] for i in liste]:
                                     search = False
                                     for i in liste:
-                                        if rep.content == i[0]:
+                                        if int(rep.content) == i[0]:
                                             search = i[1]
                                             break
                                     await self.bot.delete_message(msg)
                                     if not search:
+                                        await self.bot.send_message(message.channel, "Aucun résulat.")
                                         return
                                 else:
                                     await self.bot.delete_message(msg)
