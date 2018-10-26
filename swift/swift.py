@@ -133,13 +133,12 @@ class Swift:
             if output:
                 langue = 'fr'
                 search = output[0]
+                wikipedia.set_lang(langue)
+                wiki = wikipediaapi.Wikipedia(langue)
                 while True:
                     await self.bot.send_typing(message.channel)
-                    wikipedia.set_lang(langue)
-                    wiki = wikipediaapi.Wikipedia(langue)
                     page = wiki.page(search)
                     if page.exists():
-
                         simil = wikipedia.search(search, 6, True)
                         txtsimil = ""
                         if simil:
