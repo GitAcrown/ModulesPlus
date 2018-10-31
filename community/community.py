@@ -96,7 +96,7 @@ class Community:
             else:
                 await self.bot.say("**Proposition déjà présente !**")
         else:
-            txt = "\n".join(["• {}".format(i) for i in props])
+            txt = "\n".join(["• {}".format(i.title()) for i in props])
             em = discord.Embed(title="Propositions soumises pour renommer Entre Kheys", description=txt)
             await self.bot.say(embed=em)
 
@@ -116,7 +116,7 @@ class Community:
             else:
                 await self.bot.say("**Proposition absente**")
         else:
-            txt = "\n".join(["• {}".format(i) for i in props])
+            txt = "\n".join(["• {}".format(i.title()) for i in props])
             em = discord.Embed(title="Propositions soumises pour renommer Entre Kheys", description=txt)
             await self.bot.say(embed=em)
 
