@@ -46,61 +46,79 @@ class Community:
             return self.sys[server.id][sub.upper()]
         return self.sys[server.id]
 
-    # Partie expérimentale ==========
+    def levenshtein(self, s1, s2):
+        if len(s1) < len(s2):
+            m = s1
+            s1 = s2
+            s2 = m
+        if len(s2) == 0:
+            return len(s1)
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[
+                                 j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        return previous_row[-1]
 
-    @commands.command(pass_context=True, no_pm=True)
-    async def testembed(self, ctx):
-        em = discord.Embed(title="Ceci est un titre", description="Ceci est un contenu", color=0x000000)
-        await self.bot.send_message(ctx.message.channel, "Voici un Embed", embed=em)
-
-    @commands.command(pass_context=True, no_pm=True, hidden=True)
-    async def aijebesoindunpsy(self, ctx):
-        """Vous indique si vous avez besoin d'un psy"""
-        author = ctx.message.author
-        await self.bot.send_typing(ctx.message.channel)
-        await asyncio.sleep(2.2)
-        await self.bot.say("Est-ce que vous êtes **Emmo** ?")
-        rep = await self.bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel, timeout=60)
-        if rep is None:
-            await self.bot.say("Si vous me répondez pas je peux pas savoir... Tant pis pour vous.")
-            return
-        elif rep.content.lower() in ["oui", "o", "ouais", "absolument", "yes", "y"]:
-            if author.id == "262698796616646657":
-                await self.bot.send_typing(ctx.message.channel)
-                await asyncio.sleep(2)
-                r = random.choice(["Alors oui, tu as besoin d'un Psy.", "Oui évidemment que tu as besoin d'un psy",
-                                        "Bah pourquoi tu viens me voir t'es conne, il te faut un psy oui.",
-                                        "Duh, bien sûr que oui t'as besoin d'un psy."])
-                await self.bot.say(r)
+    @commands.command(pass_context=True, no_pm=True, hidden=True) # Exclusif à EK
+    async def propose(self, ctx, *nom):
+        """Permet de proposer un nom pour le renommage du serveur EK"""
+        if "EK_name_propositions" not in self.sys:
+            self.sys["EK_name_propositions"] = []
+            self.save()
+        props = self.sys["EK_name_propositions"]
+        if nom:
+            nom = " ".join(nom).lower()
+            if nom not in [i.lower() for i in props]:
+                for i in props:
+                    if self.levenshtein(i.lower(), nom) == 1:
+                        msg = await self.bot.say("**{}** est une proposition similaire déjà présente.\n"
+                                                 "Est-ce votre proposition ?(O/N)".format(i.title()))
+                        rep = await self.bot.wait_for_message(channel=ctx.message.channel,
+                                                              author=ctx.message.author,
+                                                              timeout=15)
+                        if rep is None or rep.content.lower in ["n", "non", "no"]:
+                            await self.bot.delete_message(msg)
+                            self.sys["EK_name_propositions"].append(nom)
+                            self.save()
+                            await self.bot.say("**Proposition ajoutée !**")
+                        else:
+                            await self.bot.say("**Proposition annulée**")
+                            return
+                self.sys["EK_name_propositions"].append(nom)
+                self.save()
+                await self.bot.say("**Proposition ajoutée !**")
             else:
-                await self.bot.send_typing(ctx.message.channel)
-                await asyncio.sleep(2)
-                r = random.choice(["T'as cru me berner ? Bien sûr que non t'es pas Emmo, allez ouste !",
-                                   "Tu me prend pour un con ? "
-                                   "Oui t'as besoin d'un psy, qui voudrait se faire passer pour Emmo devant un bot ?!",
-                                   "Ahahah, trop mdr. Je sais très bien que t'es pas Emmo petit chenapan.",
-                                   "Hey, t'as vraiment crû prendre un bot qui connait plus de détails de ta vie "
-                                   "trépidante que tes propres parents pour un con ?",
-                                   "Oui t'as besoin d'un psy, sale mythomane."])
-                await self.bot.say(r)
-        elif rep.content.lower() in ["non", "n", "nan", "absolument pas", "no"]:
-            await self.bot.send_typing(ctx.message.channel)
-            await asyncio.sleep(1.8)
-            r = random.choice(["Non ça va tu peux partir, ça fera 150€",
-                               "Nope t'es clean, en revanche tu devrais arrêter de faire ce dont à quoi je pense...",
-                               "M'ouais... bon ça va tu peux y aller.", "Nope c'est bon, pas besoin d'un psy",
-                               "C'est pas d'un psy que t'as besoin mais d'un médecin, désolé."])
-            await self.bot.say(r)
+                await self.bot.say("**Proposition déjà présente !**")
         else:
-            await self.bot.send_typing(ctx.message.channel)
-            await asyncio.sleep(1.8)
-            r = random.choice(["Etant donné ton incapacité à me donner une réponse convainquante, "
-                               "c'est pas d'un psy que t'as besoin là.",
-                               "Pardon, vous parlez bien la même langue que moi ?",
-                               "Hein ? Vas-y cause toujours j'y comprend rien.",
-                               "Désolé je ne vous écoutais pas, vous disiez ?",
-                               "Ecoutez, j'ai mieux à faire qu'essayer de décrypter votre réponse là."])
-            await self.bot.say(r)
+            txt = "\n".join(["• {}".format(i) for i in props])
+            em = discord.Embed(title="Propositions soumises pour renommer Entre Kheys", description=txt)
+            await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)  # Exclusif à EK
+    async def propremove(self, ctx, *nom):
+        """Permet de retirer une proposition de nom pour le renommage du serveur EK"""
+        if "EK_name_propositions" not in self.sys:
+            self.sys["EK_name_propositions"] = []
+            self.save()
+        props = self.sys["EK_name_propositions"]
+        if nom:
+            nom = " ".join(nom).lower()
+            if nom in props:
+                self.sys["EK_name_propositions"].remove(nom)
+                self.save()
+                await self.bot.say("**Propositions retirée**")
+            else:
+                await self.bot.say("**Proposition absente**")
+        else:
+            txt = "\n".join(["• {}".format(i) for i in props])
+            em = discord.Embed(title="Propositions soumises pour renommer Entre Kheys", description=txt)
+            await self.bot.say(embed=em)
 
     def find_poll(self, message: discord.Message):
         """Retrouve le poll lié à un message"""
@@ -156,7 +174,6 @@ class Community:
             em.set_footer(text="{} | Expire {}".format(consigne, datedur))
             return em
         return False
-
 
     @commands.command(aliases=["sp"], pass_context=True)
     async def simplepoll(self, ctx, *termes):
