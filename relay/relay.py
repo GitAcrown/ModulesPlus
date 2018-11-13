@@ -68,7 +68,7 @@ class Relay:
     @_relayset.command(pass_context=True, hidden=True)
     async def reset(self, ctx):
         """Reset les paramètres du serveur en cours"""
-        self.api.get_server(reset=True)
+        self.api.get_server(ctx.message.server, reset=True)
         await self.bot.say("**Reset effectué avec succès**")
 
     @_relayset.command(pass_context=True)
