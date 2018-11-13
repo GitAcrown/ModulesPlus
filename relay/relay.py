@@ -46,18 +46,7 @@ class Relay:
     def __init__(self, bot):
         self.bot = bot
         self.api = RelayAPI(bot, "data/relay/data.json")
-        self.meta = {"CHANNELS": []}
-        self.load_channels()
-
-    def load_channels(self):
-        """Charge le module Relay"""
-        self.meta["CHANNELS"] = []
-        channels = self.api.get_all_servers()
-        for c in channels:
-            self.meta["CHANNELS"].append(self.bot.get_channel(c))
-        if len(self.meta["CHANNELS"]) > 0:
-            return True # Signifiant Succès
-        return False
+        self.chans = self.api.get_all_servers()
 
     @commands.group(name="relayset", aliases=["rs"], pass_context=True)
     async def _relayset(self, ctx):
@@ -120,7 +109,7 @@ class Relay:
             em = discord.Embed(title="Charte du réseau Relay", description=txt, color=0xFF7373)
             em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/PxAqP1C.png")
             await self.bot.send_message(channel, embed=em)
-            self.load_channels()
+            self.chans = self.api.get_all_server()
             await self.bot.say("**Connecté sur** {}".format(channel.mention))
         else:
             await self.bot.say("**Erreur** • Vous n'avez défini aucun channel source\n"
@@ -134,9 +123,9 @@ class Relay:
             if sys["CHANNEL"] == channel.id:
                 em = discord.Embed(title=author.display_name, description=message.content, color=sys["COLOR"])
                 await self.bot.delete_message(message)
-                if self.meta["CHANNELS"]:
-                    for chan in self.meta["CHANNELS"]:
-                        await self.bot.send_message(chan, embed=em)
+                if self.chans:
+                    for chan in self.chans:
+                        await self.bot.send_message(self.bot.get_channel(chan), embed=em)
                 else:
                     await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
 
