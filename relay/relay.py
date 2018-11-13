@@ -24,10 +24,10 @@ class RelayAPI:
     def save(self):
         fileIO("data/relay/data.json", "save", self.data)
 
-    def get_server(self, server: discord.Server):
-        if server.id not in self.data:
+    def get_server(self, server: discord.Server, reset=False):
+        if server.id not in self.data or reset:
             r = lambda: random.randint(0, 255)
-            color = '0x%02X%02X%02X' % (r(), r(), r())
+            color = int('0x%02X%02X%02X' % (r(), r(), r()), 16)
             self.data[server.id] = {"CHANNEL": None,
                                     "GLOBALBAN": False,
                                     "BANLIST": [],
@@ -64,6 +64,12 @@ class Relay:
         """Gestion du réseau Relay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @_relayset.command(pass_context=True, hidden=True)
+    async def reset(self, ctx):
+        """Reset les paramètres du serveur en cours"""
+        self.api.get_server(reset=True)
+        await self.bot.say("**Reset effectué avec succès**")
 
     @_relayset.command(pass_context=True)
     async def color(self, ctx, hex):
