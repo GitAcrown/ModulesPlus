@@ -163,7 +163,7 @@ class Relay:
                 em.set_author(name=author.display_name, icon_url=author.avatar_url, url=authorurl)
                 em.set_footer(text="─ " + server.name)
                 if img:
-                    em.set_thumbnail(url=img)
+                    em.set_image(url=img)
                 if self.load:
                     for chan in self.load:
                         if chan.id != channel.id:
