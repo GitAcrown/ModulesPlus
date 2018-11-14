@@ -38,13 +38,13 @@ class RelayAPI:
     def load_channels(self):
         liste = []
         for i in self.data:
-            try:
-                chan = self.bot.get_channel(self.data[i]["CHANNEL"])
+            chan = self.bot.get_channel(self.data[i]["CHANNEL"])
+            if chan:
                 liste.append(chan)
-            except:
+            else:
                 self.data[i]["CHANNEL"] = None
                 self.save()
-        return liste if len(liste) > 0 else False
+        return liste if len(liste) > 0 else []
 
 class Relay:
     """Système de communication de données entre serveurs"""
