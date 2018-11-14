@@ -142,17 +142,35 @@ class Relay:
                 self.reload_needed = False
             sys = self.api.get_server(server)
             if sys["CHANNEL"] == channel.id:
-                em = discord.Embed(description=message.content, color=sys["COLOR"])
-                em.set_author(name=author.display_name, icon_url=author.avatar_url)
+                content = message.content if message.content else ""
+                if message.embeds:
+                    if "description" in message.embeds[0]:
+                        content += "\n```{}```".format(message.embeds[0]["description"])
+                authorurl = "https://discordapp.com/users/{}".format(author.id)
+                img = False
+                if message.attachments:
+                    up = message.attachments[0]["url"]
+                    for i in ["png", "jpeg", "jpg", "gif", "mp4", "wav", "mp3"]:
+                        if i in up.lower():
+                            img = up
+                            content += " [{}]({})".format(i, up)
+                            break
+                if "http" in content:
+                    reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
+                    if reg:
+                        img = reg[0]
+                em = discord.Embed(description=content, color=sys["COLOR"])
+                em.set_author(name=author.display_name, icon_url=author.avatar_url, url=authorurl)
                 em.set_footer(text="─ " + server.name)
-                await self.bot.delete_message(message)
+                em.set_thumbnail(url=img)
                 if self.load:
                     for chan in self.load:
-                        try:
-                            await self.bot.send_message(chan, embed=em)
-                        except:
-                            self.reload_needed = True
-                            await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
+                        if chan.id != channel.id:
+                            try:
+                                await self.bot.send_message(chan, embed=em)
+                            except:
+                                self.reload_needed = True
+                                await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
                 else:
                     await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
 
