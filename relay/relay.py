@@ -94,7 +94,7 @@ class Relay:
             return
         await self.bot.say("**Erreur** • Impossible de changer la couleur")
 
-    @_relayset.command(pass_context=True)
+    @_relayset.command(pass_context=True, aliases=["disconnect"])
     async def connect(self, ctx, channel: discord.Channel = None):
         """Se connecter au réseau Relay"""
         server = ctx.message.server
