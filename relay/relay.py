@@ -52,6 +52,7 @@ class Relay:
         self.bot = bot
         self.api = RelayAPI(bot, "data/relay/data.json")
         self.load = self.api.load_channels()
+        self.reload_needed = False
 
     async def global_msg(self, content: str):
         """Envoie un message à tous les serveurs connectés au réseau"""
@@ -136,6 +137,9 @@ class Relay:
         server, channel = message.server, message.channel
         author = message.author
         if not author.bot:
+            if self.reload_needed:
+                self.load = self.api.load_channels()
+                self.reload_needed = False
             sys = self.api.get_server(server)
             if sys["CHANNEL"] == channel.id:
                 em = discord.Embed(description=message.content, color=sys["COLOR"])
@@ -147,7 +151,7 @@ class Relay:
                         try:
                             await self.bot.send_message(chan, embed=em)
                         except:
-                            self.load = self.api.load_channels()
+                            self.reload_needed = True
                             await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
                 else:
                     await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
