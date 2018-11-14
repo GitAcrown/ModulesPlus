@@ -64,6 +64,17 @@ class Relay:
                 pass
         return True
 
+    @commands.command(aliases=["relaylist"], pass_context=True)
+    async def relay(self, ctx):
+        txt = ""
+        for channel in self.load:
+            txt += "• {} (#{})\n".format(channel.server.name, channel.name)
+        if ctx.message.channel.id not in [c.id for c in self.load]:
+            txt += "\n**Se connecter :** `.rs connect #channel`"
+        em = discord.Embed(title="Serveurs connectés à Relay", description=txt, color=0xFF7373)
+        em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/xmwEzu4.png")
+        await self.bot.say(embed=em)
+
     @commands.group(name="relayset", aliases=["rs"], pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def _relayset(self, ctx):
@@ -76,16 +87,6 @@ class Relay:
         """Reset les paramètres du serveur en cours"""
         self.api.get_server(ctx.message.server, reset=True)
         await self.bot.say("**Reset effectué avec succès**")
-
-    @_relayset.command(pass_context=True)
-    async def list(self, ctx):
-        """Affiche la liste des serveurs connectés"""
-        txt = ""
-        for channel in self.load:
-            txt += "• {} (#{})\n".format(channel.server.name, channel.name)
-        em = discord.Embed(title="Serveurs connectés à Relay", description=txt, color=0xFF7373)
-        em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/xmwEzu4.png")
-        await self.bot.say(embed=em)
 
     @_relayset.command(pass_context=True)
     async def color(self, ctx, hex):
