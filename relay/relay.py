@@ -38,7 +38,8 @@ class RelayAPI:
     def get_all_servers(self):
         liste = []
         for serv in self.data:
-            liste.append(serv)
+            if self.data[serv]["CHANNEL"]:
+                liste.append(self.data[serv]["CHANNEL"])
         return liste
 
 class Relay:
