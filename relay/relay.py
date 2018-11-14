@@ -121,7 +121,7 @@ class Relay:
             em = discord.Embed(title="Charte du réseau Relay", description=txt, color=0xFF7373)
             em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/PxAqP1C.png")
             await self.bot.send_message(channel, embed=em)
-            self.chans = self.api.get_all_server()
+            self.chans = self.api.get_all_servers()
             await self.bot.say("**Connecté sur** {}".format(channel.mention))
         else:
             await self.bot.say("**Erreur** • Vous n'avez défini aucun channel source\n"
