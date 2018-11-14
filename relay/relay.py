@@ -162,7 +162,8 @@ class Relay:
                 em = discord.Embed(description=content, color=sys["COLOR"])
                 em.set_author(name=author.display_name, icon_url=author.avatar_url, url=authorurl)
                 em.set_footer(text="─ " + server.name)
-                em.set_thumbnail(url=img)
+                if img:
+                    em.set_thumbnail(url=img)
                 if self.load:
                     for chan in self.load:
                         if chan.id != channel.id:
