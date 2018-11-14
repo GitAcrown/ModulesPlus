@@ -66,8 +66,9 @@ class Relay:
         liste = self.api.get_all_servers()
         txt = ""
         for c in liste:
-            channel = self.bot.get_channel(c)
-            txt += "• {} ({})\n".format(channel.name, channel.server.name)
+            txt += "• {}\n".format(c)
+            # channel = self.bot.get_channel(c)
+            # txt += "• {} ({})\n".format(channel.name, channel.server.name)
         await self.bot.say(txt)
 
     @_relayset.command(pass_context=True)
