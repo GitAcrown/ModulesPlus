@@ -35,23 +35,28 @@ class RelayAPI:
             self.save()
         return self.data[server.id]
 
-    def get_all_servers(self):
+    def load_channels(self):
         liste = []
-        for serv in self.data:
-            if self.data[serv]["CHANNEL"]:
-                liste.append(self.data[serv]["CHANNEL"])
-        return liste
+        for i in self.data:
+            try:
+                chan = self.bot.get_channel(self.data[i]["CHANNEL"])
+                liste.append(chan)
+            except:
+                self.data[i]["CHANNEL"] = None
+                self.save()
+        return liste if len(liste) > 0 else False
 
 class Relay:
     """Système de communication de données entre serveurs"""
     def __init__(self, bot):
         self.bot = bot
         self.api = RelayAPI(bot, "data/relay/data.json")
-        self.chans = self.api.get_all_servers()
+        self.load = self.api.load_channels()
 
     @commands.group(name="relayset", aliases=["rs"], pass_context=True)
+    @checks.admin_or_permissions(manage_channels=True)
     async def _relayset(self, ctx):
-        """Gestion du réseau Relay"""
+        """Gestion de la connexion Relay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
@@ -62,23 +67,12 @@ class Relay:
         await self.bot.say("**Reset effectué avec succès**")
 
     @_relayset.command(pass_context=True)
-    async def liste(self, ctx):
-        """Obtenir la liste des serveurs connectés"""
-        liste = self.api.get_all_servers()
-        txt = ""
-        for c in liste:
-            txt += "• {}\n".format(c)
-            # channel = self.bot.get_channel(c)
-            # txt += "• {} ({})\n".format(channel.name, channel.server.name)
-        await self.bot.say(txt)
-
-    @_relayset.command(pass_context=True)
     async def color(self, ctx, hex):
         """Change la couleur des membres de votre serveur sur le réseau Relay"""
         server = ctx.message.server
         sys = self.api.get_server(server)
         if "#" in hex:
-            col = hex[1:]
+            hex = hex[1:]
         elif "0x" in hex:
             hex = hex[2:]
         if hex == "000000":
@@ -96,7 +90,7 @@ class Relay:
 
     @_relayset.command(pass_context=True, aliases=["disconnect"])
     async def connect(self, ctx, channel: discord.Channel = None):
-        """Se connecter au réseau Relay"""
+        """Se connecter/déconnecter au réseau Relay"""
         server = ctx.message.server
         sys = self.api.get_server(server)
         if not channel:
@@ -107,6 +101,7 @@ class Relay:
             await self.bot.say("**Déconnexion...**")
             sys["CHANNEL"] = False
             self.api.save()
+            self.load = self.api.load_channels()
             await asyncio.sleep(2)
             await self.bot.say("Votre serveur est désormais déconnecté du réseau **Relay**.")
         elif channel:
@@ -114,18 +109,18 @@ class Relay:
             sys["CHANNEL"] = channel.id
             self.api.save()
             txt = "Le réseau Relay permet aux membres de chaque serveur de discuter entre eux à travers ce bot. " \
-                  "Tout membre ou serveur ne respectant pas les règles ci-dessous pourront se voir censurés de ce réseau.\n\n" \
+                  "Tout membre ou serveur ne respectant pas les règles ci-dessous pourront se voir censurés de ce réseau.\n" \
                   "**1° Ne pas envoyer de nombreux messages dans un court laps de temps** comme le flood ou le spam, que ces messages aient un sens ou non.\n" \
                   "**2° Soyez sympas entre vous**, il est hors de question qu'il y ai des guerres entre les serveurs à travers ce réseau.\n" \
                   "**3° Ne pas abuser de la promotion de votre serveur**, ce n'est pas un espace publicitaire. Vous êtes autorisés à faire de la publicité pour votre serveur dans la limite du raisonnable (tant que ça ne dérange personne)."
             em = discord.Embed(title="Charte du réseau Relay", description=txt, color=0xFF7373)
-            em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/PxAqP1C.png")
+            em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/xmwEzu4.png")
             await self.bot.send_message(channel, embed=em)
-            self.chans = self.api.get_all_servers()
+            self.load = self.api.load_channels()
             await self.bot.say("**Connecté sur** {}".format(channel.mention))
         else:
             await self.bot.say("**Erreur** • Vous n'avez défini aucun channel source\n"
-                               "**Aide :** `.rs connect #channel` __ou__ nommez un salon `vcs`, ìrc` ou `relay`")
+                               "**Aide :** `.rs connect #channel` ou nommez un salon `vcs`, ìrc` ou `relay`")
 
     async def relay_msg(self, message):
         server, channel = message.server, message.channel
@@ -137,9 +132,19 @@ class Relay:
                 em.set_author(name=author.display_name, icon_url=author.avatar_url)
                 em.set_footer(text="─ " + server.name)
                 await self.bot.delete_message(message)
-                if self.chans:
-                    for chan in self.chans:
-                        await self.bot.send_message(self.bot.get_channel(chan), embed=em)
+                if self.load:
+                    for chan in self.load:
+                        try:
+                            await self.bot.send_message(chan, embed=em)
+                        except:
+                            self.load = self.api.load_channels() # On recharge la liste
+                            for chan in self.load:
+                                try:
+                                    await asyncio.sleep(1.5)
+                                    em = discord.Embed(title=chan.server.name, description="Ce serveur s'est déconnecté du réseau **Relay**.", color=0xFF7373)
+                                    await self.bot.send_message(chan, embed=em)
+                                except:
+                                    pass
                 else:
                     await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
 
