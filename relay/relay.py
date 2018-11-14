@@ -133,7 +133,9 @@ class Relay:
         if not author.bot:
             sys = self.api.get_server(server)
             if sys["CHANNEL"] == channel.id:
-                em = discord.Embed(title=author.display_name, description=message.content, color=sys["COLOR"])
+                em = discord.Embed(description=message.content, color=sys["COLOR"])
+                em.set_author(name=author.display_name, icon_url=author.avatar_url)
+                em.set_footer(text="─ " + server.name)
                 await self.bot.delete_message(message)
                 if self.chans:
                     for chan in self.chans:
