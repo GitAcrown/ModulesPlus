@@ -150,7 +150,7 @@ class Relay:
                 img = False
                 if message.attachments:
                     up = message.attachments[0]["url"]
-                    for i in ["png", "jpeg", "jpg", "gif", "mp4", "wav", "mp3"]:
+                    for i in ["png", "jpeg", "jpg", "gif"]:
                         if i in up.lower():
                             img = up
                             content += " [({})]({})".format(i, up)
