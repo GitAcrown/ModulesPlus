@@ -61,6 +61,16 @@ class Relay:
         await self.bot.say("**Reset effectué avec succès**")
 
     @_relayset.command(pass_context=True)
+    async def liste(self, ctx):
+        """Obtenir la liste des serveurs connectés"""
+        liste = self.api.get_all_servers()
+        txt = ""
+        for c in liste:
+            channel = self.bot.get_channel(c)
+            txt += "• {} ({})\n".format(channel.name, channel.server.name)
+        await self.bot.say(txt)
+
+    @_relayset.command(pass_context=True)
     async def color(self, ctx, hex):
         """Change la couleur des membres de votre serveur sur le réseau Relay"""
         server = ctx.message.server
