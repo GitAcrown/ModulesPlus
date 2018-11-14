@@ -78,6 +78,16 @@ class Relay:
         await self.bot.say("**Reset effectué avec succès**")
 
     @_relayset.command(pass_context=True)
+    async def list(self, ctx):
+        """Affiche la liste des serveurs connectés"""
+        txt = ""
+        for channel in self.load:
+            txt += "• {} (#{})\n".format(channel.server.name, channel.name)
+        em = discord.Embed(title="Serveurs connectés à Relay", description=txt, color=0xFF7373)
+        em.set_footer(text="Relay [ALPHA]", icon_url="https://i.imgur.com/xmwEzu4.png")
+        await self.bot.say(embed=em)
+
+    @_relayset.command(pass_context=True)
     async def color(self, ctx, hex):
         """Change la couleur des membres de votre serveur sur le réseau Relay"""
         server = ctx.message.server
@@ -142,38 +152,39 @@ class Relay:
                 self.reload_needed = False
             sys = self.api.get_server(server)
             if sys["CHANNEL"] == channel.id:
-                content = message.content if message.content else ""
-                if message.embeds:
-                    if "description" in message.embeds[0]:
-                        content += "\n```{}```".format(message.embeds[0]["description"])
-                authorurl = "https://discordapp.com/users/{}".format(author.id)
-                img = False
-                if message.attachments:
-                    up = message.attachments[0]["url"]
-                    for i in ["png", "jpeg", "jpg", "gif"]:
-                        if i in up.lower():
-                            img = up
-                            content += " [({})]({})".format(i, up)
-                            break
-                if "http" in content:
-                    reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
-                    if reg:
-                        img = reg[0]
-                em = discord.Embed(description=content, color=sys["COLOR"])
-                em.set_author(name=author.display_name, icon_url=author.avatar_url, url=authorurl)
-                em.set_footer(text="─ " + server.name)
-                if img:
-                    em.set_image(url=img)
-                if self.load:
-                    for chan in self.load:
-                        if chan.id != channel.id:
-                            try:
-                                await self.bot.send_message(chan, embed=em)
-                            except:
-                                self.reload_needed = True
-                                await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
-                else:
-                    await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
+                if not message.content.startswith("."):
+                    content = message.content if message.content else ""
+                    if message.embeds:
+                        if "description" in message.embeds[0]:
+                            content += "\n```{}```".format(message.embeds[0]["description"])
+                    authorurl = "https://discordapp.com/users/{}".format(author.id)
+                    img = False
+                    if message.attachments:
+                        up = message.attachments[0]["url"]
+                        for i in ["png", "jpeg", "jpg", "gif"]:
+                            if i in up.lower():
+                                img = up
+                                content += " [({})]({})".format(i, up)
+                                break
+                    if "http" in content:
+                        reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
+                        if reg:
+                            img = reg[0]
+                    em = discord.Embed(description=content, color=sys["COLOR"])
+                    em.set_author(name=author.display_name, icon_url=author.avatar_url, url=authorurl)
+                    em.set_footer(text="─ " + server.name)
+                    if img:
+                        em.set_image(url=img)
+                    if self.load:
+                        for chan in self.load:
+                            if chan.id != channel.id:
+                                try:
+                                    await self.bot.send_message(chan, embed=em)
+                                except:
+                                    self.reload_needed = True
+                                    await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
+                    else:
+                        await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
 
 """self.load = self.api.load_channels() # On recharge la liste
                             for chan in self.load:
