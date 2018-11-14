@@ -153,7 +153,7 @@ class Relay:
                     for i in ["png", "jpeg", "jpg", "gif", "mp4", "wav", "mp3"]:
                         if i in up.lower():
                             img = up
-                            content += " [{}]({})".format(i, up)
+                            content += " [({})]({})".format(i, up)
                             break
                 if "http" in content:
                     reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
