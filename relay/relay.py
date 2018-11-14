@@ -137,16 +137,18 @@ class Relay:
                         try:
                             await self.bot.send_message(chan, embed=em)
                         except:
-                            self.load = self.api.load_channels() # On recharge la liste
+                            pass
+                else:
+                    await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
+
+"""self.load = self.api.load_channels() # On recharge la liste
                             for chan in self.load:
                                 try:
                                     await asyncio.sleep(1.5)
                                     em = discord.Embed(title=chan.server.name, description="Ce serveur s'est déconnecté du réseau **Relay**.", color=0xFF7373)
                                     await self.bot.send_message(chan, embed=em)
                                 except:
-                                    pass
-                else:
-                    await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
+                                    pass"""
 
 def check_folders():
     if not os.path.exists("data/relay"):
