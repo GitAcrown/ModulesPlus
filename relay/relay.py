@@ -53,6 +53,16 @@ class Relay:
         self.api = RelayAPI(bot, "data/relay/data.json")
         self.load = self.api.load_channels()
 
+    async def global_msg(self, content: str):
+        """Envoie un message à tous les serveurs connectés au réseau"""
+        self.load = self.api.load_channels()
+        for channel in self.load:
+            try:
+                await self.bot.send_message(channel, content)
+            except:
+                pass
+        return True
+
     @commands.group(name="relayset", aliases=["rs"], pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def _relayset(self, ctx):
@@ -137,7 +147,8 @@ class Relay:
                         try:
                             await self.bot.send_message(chan, embed=em)
                         except:
-                            pass
+                            self.load = self.api.load_channels()
+                            await self.global_msg("**{}** s'est déconnecté du réseau **Relay**.".format(chan.server.name))
                 else:
                     await self.bot.send_message(channel, "{} • Votre message n'a pas été envoyé".format(author.name))
 
