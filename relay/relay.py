@@ -390,7 +390,8 @@ class Relay:
     async def relay_msg(self, message):
         author = message.author
         if not author.bot:
-            await self.transmit_msg(message)
+            if self.is_connected(message.server):
+                await self.transmit_msg(message)
 
 
 def check_folders():
