@@ -64,10 +64,10 @@ class RelayAPI:
             load[c] = []
             for s in self.data["SERVERS"]:
                 if self.data["SERVERS"][s]["CHANNELS"][c]:
-                    chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
-                    if chan:
+                    try:
+                        chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
                         load[c].append(chan)
-                    else:
+                    except:
                         self.data["SERVERS"][s]["CHANNELS"][c] = False
                         change = True
         if change: self.save()
@@ -170,7 +170,7 @@ class Relay:
             em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
             await self.bot.say(embed=em)
 
-    @_relay.command(pass_context=True)
+    @_relay.command(aliases=["connect"], pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def channels(self, ctx):
         """Gestion des canaux connectés"""
@@ -184,7 +184,7 @@ class Relay:
                 else:
                     txt += "/**{}**/ ─ Non connecté\n".format(canal)
             em = discord.Embed(title="Canaux Relay connectés", description=txt, color=0xfd4c5e)
-            em.set_footer(text="Relay β ─ Tapez le nom du canal (sans slash) pour changer son statu ('quit' pour quitter)",
+            em.set_footer(text="Relay β ─ Tapez le nom du canal (sans slash) pour changer son statut ('quit' pour quitter)",
                           icon_url="https://i.imgur.com/ybbABbm.png")
             msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(channel=ctx.message.channel,
@@ -236,7 +236,7 @@ class Relay:
                     else:
                         await self.bot.delete_message(sup)
                         await self.bot.say("**Invalide** ─ Vous devez seulement mentionner le salon que vous voulez "
-                                           "relié au canal.")
+                                           "relier au canal.")
             elif rep.content.lower() in ["quit", "stop"]:
                 await self.bot.delete_message(msg)
                 return
