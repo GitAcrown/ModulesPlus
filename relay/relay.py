@@ -185,7 +185,7 @@ class Relay:
                 else:
                     txt += "/**{}**/ ─ Non connecté\n".format(canal)
             em = discord.Embed(title="Canaux Relay connectés", description=txt, color=0xfd4c5e)
-            em.set_footer(text="Relay β ─ Tapez le nom du canal (sans slash) pour changer son statut",
+            em.set_footer(text="Relay β ─ Tapez le nom du canal (sans slash) pour changer son statu ('quit' pour quitter)",
                           icon_url="https://i.imgur.com/ybbABbm.png")
             msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(channel=ctx.message.channel,
@@ -210,7 +210,7 @@ class Relay:
                     await self.bot.say("Votre serveur à été déconnecté de /**{}**/ avec succès.".format(canal))
                 else:
                     await self.bot.delete_message(msg)
-                    sup = await self.bot.say("**Mentionnez un channel sur lequel connecter /**{}**/ :**".format(canal))
+                    sup = await self.bot.say("Mentionnez un channel sur lequel connecter /**{}**/:".format(canal))
                     conf = await self.bot.wait_for_message(channel=ctx.message.channel,
                                                           author=ctx.message.author,
                                                           timeout=30)
@@ -295,19 +295,15 @@ class Relay:
     async def extra(self, ctx):
         """Options supplémentaires annexes"""
         server = ctx.message.server
-        msg = None
         while True:
             sys = self.api.get_server(server)
             txt = ""
             for opt in sys["OPTS"]:
                 txt += "`{}` ─ *{}*\n".format(opt, "Activée" if sys["OPTS"][opt] else "Désactivée")
             em = discord.Embed(title="Options annexes du Relay", description=txt, color=0xfd4c5e)
-            em.set_footer(text="Relay β ─ Tapez le nom de l'option pour activer/désactiver",
+            em.set_footer(text="Relay β ─ Tapez le nom de l'option pour activer/désactiver ('quit' pour quitter)",
                           icon_url="https://i.imgur.com/ybbABbm.png")
-            if msg:
-                await self.bot.edit_message(msg, embed=em)
-            else:
-                msg = await self.bot.say(embed=em)
+            msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(channel=ctx.message.channel,
                                                   author=ctx.message.author,
                                                   timeout=20)
@@ -315,6 +311,7 @@ class Relay:
                 await self.bot.delete_message(msg)
                 return
             elif rep.content.lower() in [o for o in sys["OPTS"]]:
+                await self.bot.delete_message(msg)
                 sys["OPTS"][rep.content.lower()] = not sys["OPTS"][rep.content.lower()]
                 self.api.save()
                 em.set_footer(text="Relay β ─ Changement réalisé avec succès !",
@@ -325,7 +322,11 @@ class Relay:
                     await self.bot.delete_message(rep)
                 except:
                     pass
+            elif rep.content.lower() in ["quit", "stop"]:
+                await self.bot.delete_message(msg)
+                return
             else:
+                await self.bot.delete_message(msg)
                 await self.bot.say("**Invalide** ─ Cette option n'existe pas")
 
     @_relay.command(pass_context=True)
