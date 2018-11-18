@@ -59,19 +59,18 @@ class RelayAPI:
 
     def load_channels(self):
         load = {}
+        change = False
         for c in self.channels:
             load[c] = []
             for s in self.data["SERVERS"]:
-                if s not in self.data["GLOBAL"]["serverbans"]:
-                    if c in self.data["SERVERS"][s]["CHANNELS"]:
-                        chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
-                        if chan:
-                            load[c].append(chan)
-                        else:
-                            self.data["SERVERS"][s]["CHANNELS"][c] = False
+                if self.data["SERVERS"][s]["CHANNELS"][c]:
+                    chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
+                    if chan:
+                        load[c].append(chan)
                     else:
                         self.data["SERVERS"][s]["CHANNELS"][c] = False
-        self.save()
+                        change = True
+        if change: self.save()
         return load if load else None
 
 class Relay:
@@ -372,54 +371,54 @@ class Relay:
         await self.bot.say("**Succès** ─ La liste des personnes censurées à été synchronisée avec les bannis de ce serveur.")
 
     async def transmit_msg(self, message: discord.Message):
-        if message.author.id not in self.api.get_global().users_bans:
-            if message.server.id not in self.api.get_global().servers_bans:
-                if not message.content.startswith("+"):
-                    dest = self.charge_dest(message.channel)
-                    canal = self.find_dest(message.channel)
-                    if dest:
-                        sys = self.api.get_server(message.server)
-                        thumbnail = image = None
-                        content = message.content if message.content else ""
-                        author_url = "https://discordapp.com/users/" + message.author.id
-                        if message.embeds:
-                            if "description" in message.embeds[0]:
-                                content += "\n```" + message.embeds[0]["description"] + "```"
-                            if "image" in message.embeds[0]:
-                                thumbnail = message.embeds[0]["image"]["url"]
-                        if message.attachments:
-                            if [i for i in ["png", "jpeg", "jpg", "gif"] if i in message.attachments[0]["url"]]:
-                                image = message.attachments[0]["url"]
-                        if "http" in content:
-                            reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
-                            image = reg[0] if reg else image
-                        em = discord.Embed(description=content, color=sys["COLOR"])
-                        avatar = message.author.avatar_url if message.author.avatar_url else random.choice(["https://i.imgur.com/zg0DPMU.png",
-                                                                                                            "https://i.imgur.com/u3ncV77.png",
-                                                                                                            "https://i.imgur.com/vS6lIOR.png",
-                                                                                                            "https://i.imgur.com/pNFXVgr.png"])
-                        name = message.author.display_name
-                        if sys["OPTS"].get("send_names", False):
-                            name = message.author.name
-                        em.set_author(name=name, icon_url=avatar, url=author_url)
-                        em.set_footer(text="/{}/ ─ {}".format(canal, message.server.name))
-                        if image:
-                            em.set_image(url=image)
-                        if thumbnail:
-                            em.set_thumbnail(url=thumbnail)
-                        for chan in dest:
-                            if not self.api.hidden(chan.server, [message.server.id, message.author.id]):
-                                try:
-                                    await self.bot.send_message(chan, embed=em)
-                                except:
-                                    self.load = self.api.load_channels()
-                                    await self.send_global_msg(chan.server.name, self.error_msg["disconnect"][canal], canal)
+        dest = self.charge_dest(message.channel)
+        canal = self.find_dest(message.channel)
+        if dest:
+            sys = self.api.get_server(message.server)
+            thumbnail = image = None
+            content = message.content if message.content else ""
+            author_url = "https://discordapp.com/users/" + message.author.id
+            if message.embeds:
+                if "description" in message.embeds[0]:
+                    content += "\n```" + message.embeds[0]["description"] + "```"
+                if "image" in message.embeds[0]:
+                    thumbnail = message.embeds[0]["image"]["url"]
+            if message.attachments:
+                if [i for i in ["png", "jpeg", "jpg", "gif"] if i in message.attachments[0]["url"]]:
+                    image = message.attachments[0]["url"]
+            if "http" in content:
+                reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
+                image = reg[0] if reg else image
+            em = discord.Embed(description=content, color=sys["COLOR"])
+            avatar = message.author.avatar_url if message.author.avatar_url else random.choice(["https://i.imgur.com/zg0DPMU.png",
+                                                                                                "https://i.imgur.com/u3ncV77.png",
+                                                                                                "https://i.imgur.com/vS6lIOR.png",
+                                                                                                "https://i.imgur.com/pNFXVgr.png"])
+            name = message.author.display_name
+            if sys["OPTS"].get("send_names", False):
+                name = message.author.name
+            em.set_author(name=name, icon_url=avatar, url=author_url)
+            em.set_footer(text="/{}/ ─ {}".format(canal, message.server.name))
+            if image:
+                em.set_image(url=image)
+            if thumbnail:
+                em.set_thumbnail(url=thumbnail)
+            for chan in dest:
+                if not self.api.hidden(chan.server, [message.server.id, message.author.id]):
+                    try:
+                        await self.bot.send_message(chan, embed=em)
+                    except:
+                        self.load = self.api.load_channels()
+                        await self.send_global_msg(chan.server.name, self.error_msg["disconnect"][canal], canal)
 
     async def relay_msg(self, message):
         author = message.author
         if not author.bot:
-            if self.any_receiver(message.server):
-                await self.transmit_msg(message)
+            if not message.content.startswith("+"):
+                if self.any_receiver(message.server):
+                    bans = self.api.get_global()
+                    if author.id not in bans.users_bans and message.server.id not in bans.servers_bans:
+                        await self.transmit_msg(message)
 
 
 def check_folders():
