@@ -139,7 +139,7 @@ class Relay:
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.info)
 
-    @_relay.commands(pass_context=True)
+    @_relay.command(pass_context=True)
     async def info(self, ctx):
         """Informations à propos de votre connexion au Relay"""
         server = ctx.message.server
@@ -161,7 +161,7 @@ class Relay:
             em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
             await self.bot.say(embed=em)
 
-    @_relay.commands(pass_context=True)
+    @_relay.command(pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def channels(self, ctx):
         """Gestion des canaux connectés"""
@@ -233,7 +233,7 @@ class Relay:
             else:
                 await self.bot.say("**Invalide** ─ Ce canal n'existe pas.")
 
-    @_relay.commands(pass_context=True)
+    @_relay.command(pass_context=True)
     async def list(self, ctx):
         """Affiche des la liste des serveurs connectés"""
         txt = ""
