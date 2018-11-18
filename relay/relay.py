@@ -37,6 +37,13 @@ class RelayAPI:
             self.save()
         return self.data["SERVERS"][server.id]
 
+    def delete_server(self, server: discord.Server):
+        if server.id in self.data["SERVERS"]:
+            del self.data["SERVERS"][server.id]
+            self.save()
+            return True
+        return False
+
     def get_all_servers(self):
         total = {}
         for server in self.data["SERVERS"]:
@@ -124,6 +131,14 @@ class Relay:
                 if len(self.load[e[0]]) > 1:
                     return True
         return False
+
+    def raw_channels(self):
+        """Renvoie les ID de tous les channels connectés peu importe le canal"""
+        l = []
+        for i in self.load:
+            for e in self.load[i]:
+                l.append(e.id)
+        return l
 
     async def send_global_msg(self, title:str, content:str, channel: str = None):
         if channel:
@@ -284,11 +299,15 @@ class Relay:
             return
         await self.bot.say("**Erreur** — Impossible de changer la couleur")
 
-    @_relay.command(pass_context=True)
+    @_relay.command(pass_context=True, hidden+True)
     @checks.admin_or_permissions(manage_channels=True)
-    async def reset(self, ctx):
-        self.api.get_server(ctx.message.server, reset=True)
-        await self.bot.say("**Reset effectué avec succès**")
+    async def reset(self, ctx, delete: bool= False):
+        if not delete:
+            self.api.get_server(ctx.message.server, reset=True)
+            await self.bot.say("**Reset effectué avec succès**")
+        else:
+            self.api.delete_server(ctx.message.server)
+            await self.bot.say("**Suppression effectuée avec succès**")
 
     @_relay.command(pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
