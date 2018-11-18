@@ -400,7 +400,7 @@ class Relay:
                         name = message.author.display_name
                         if sys["OPTS"].get("send_names", False):
                             name = message.author.name
-                        em.set_author(name=name, icon_url=avatar)
+                        em.set_author(name=name, icon_url=avatar, url=author_url)
                         em.set_footer(text="/{}/ ─ {}".format(canal, message.server.name))
                         if image:
                             em.set_image(url=image)
