@@ -200,7 +200,7 @@ class Relay:
                     await self.bot.delete_message(msg)
                     await self.bot.say("**Déconnexion...**")
                     await asyncio.sleep(1)
-                    if ctx.message.channel.id != self.bot.get_channel(sys["CHANNELS"][canal].id):
+                    if ctx.message.channel.id != self.bot.get_channel(sys["CHANNELS"][canal]).id:
                         await self.bot.send_message(self.bot.get_channel(sys["CHANNELS"][canal]),
                                                     "Ce channel à été déconnecté de /**{}**/.".format(canal))
                     sys["CHANNELS"][canal] = False
@@ -221,7 +221,7 @@ class Relay:
                         await self.bot.delete_message(sup)
                         await self.bot.say("**Connexion...**")
                         sys["CHANNELS"][canal] = conf.channel_mentions[0].id
-                        await self.send_global_msg(ctx.message.server, self.error_msg["connect"][canal], canal)
+                        await self.send_global_msg(ctx.message.server.name, self.error_msg["connect"][canal], canal)
                         self.api.save()
                         self.load = self.api.load_channels()
                         await asyncio.sleep(1.5)
