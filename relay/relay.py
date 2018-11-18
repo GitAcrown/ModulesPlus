@@ -128,8 +128,9 @@ class Relay:
         liste = self.is_connected(server)
         if liste:
             for e in liste:
-                if len(self.load[e[0]]) > 1:
-                    return True
+                if e[0] in self.load:
+                    if len(self.load[e[0]]) > 1:
+                        return True
         return False
 
     def raw_channels(self):
@@ -434,7 +435,7 @@ class Relay:
         author = message.author
         if not author.bot:
             if not message.content.startswith("+"):
-                if self.any_receiver(message.server):
+                if self.is_connected(message.server):
                     bans = self.api.get_global()
                     if author.id not in bans.users_bans and message.server.id not in bans.servers_bans:
                         await self.transmit_msg(message)
