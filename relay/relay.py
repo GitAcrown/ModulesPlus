@@ -42,9 +42,9 @@ class RelayAPI:
         total = {}
         for server in self.data["SERVERS"]:
             total[server] = {"SERVER": self.bot.get_server(server),
-                             "CHANNELS": self.data["SERVERS"]["CHANNELS"],
-                             "COLOR": self.data["SERVERS"]["COLOR"],
-                             "HIDE": self.data["SERVERS"]["HIDE"]}
+                             "CHANNELS": self.data["SERVERS"][server]["CHANNELS"],
+                             "COLOR": self.data["SERVERS"][server]["COLOR"],
+                             "HIDE": self.data["SERVERS"][server]["HIDE"]}
         return total
 
     def hidden(self, server: discord.Server, verif: list):
