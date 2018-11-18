@@ -206,6 +206,7 @@ class Relay:
                     sys["CHANNELS"][canal] = False
                     self.api.save()
                     self.load = self.api.load_channels()
+                    await self.send_global_msg(ctx.message.server.name, self.error_msg["disconnect"][canal], canal)
                     await asyncio.sleep(0.75)
                     await self.bot.say("Votre serveur à été déconnecté de /**{}**/ avec succès.".format(canal))
                 else:
