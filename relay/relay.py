@@ -431,6 +431,11 @@ class Relay:
                         self.load = self.api.load_channels()
                         await self.send_global_msg(chan.server.name, self.error_msg["disconnect"][canal], canal)
 
+    @commands.command(pass_context=True, hidden=True)
+    async def reloadchannels(self):
+        self.load = self.api.load_channels()
+        await self.bot.say("**Succès**")
+
     async def relay_msg(self, message):
         author = message.author
         if not author.bot:
