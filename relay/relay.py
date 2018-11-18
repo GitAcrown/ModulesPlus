@@ -254,9 +254,9 @@ class Relay:
                 if servs[serv]["CHANNELS"][chan]:
                     salons.append("**{}**/#{}".format(chan, self.bot.get_channel(servs[serv]["CHANNELS"][chan]).name))
             if servs[serv]["SERVER"].id == ctx.message.server.id:
-                txt += "• __{} ({})__\n".format(servs[serv]["SERVER"].name, ", ".join(salons))
+                txt += "• __**{}** ({})__\n".format(servs[serv]["SERVER"].name, ", ".join(salons))
             else:
-                txt += "• {} ({})\n".format(servs[serv]["SERVER"].name, ", ".join(salons))
+                txt += "• **{}** ({})\n".format(servs[serv]["SERVER"].name, ", ".join(salons))
         em = discord.Embed(title="Serveurs connectés au Relay", description=txt, color=0xfd4c5e)
         em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
         await self.bot.say(embed=em)
