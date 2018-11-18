@@ -387,8 +387,7 @@ class Relay:
                                 image = message.attachments[0]["url"]
                         if "http" in content:
                             reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(message.content)
-                            image = reg[0] if reg[0] else image
-
+                            image = reg[0] if reg else image
                         em = discord.Embed(description=content, color=sys["COLOR"])
                         avatar = message.author.avatar_url if message.author.avatar_url else random.choice(["https://i.imgur.com/zg0DPMU.png",
                                                                                                             "https://i.imgur.com/u3ncV77.png",
