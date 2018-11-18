@@ -358,7 +358,11 @@ class Relay:
     @checks.admin_or_permissions(manage_channels=True)
     async def hidebans(self, ctx):
         """Synchronise la liste des bannis de votre serveur avec la liste des personnes censurées sur le Relay"""
-        bans = await self.bot.get_bans(ctx.message.server)
+        try:
+            bans = await self.bot.get_bans(ctx.message.server)
+        except:
+            await self.bot.say("**Erreur** ─ Impossible d'accéder à la liste des bannis. (Accès refusé)")
+            return
         sys = self.api.get_server(ctx.message.server)
         for user in bans:
             if user.id not in sys["HIDE"]:
