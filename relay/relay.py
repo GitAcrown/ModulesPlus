@@ -95,26 +95,38 @@ class Relay:
                                       "fr": "Ce serveur vient de se connecter.",
                                       "en": "This server has just connected."}}
 
-    def charge_dest(self, channel: discord.Message):
+    def charge_dest(self, channel: discord.Channel):
+        """Charge les channels qui vont recevoir le message"""
         for canal in self.load:
             if channel.id in [chan.id for chan in self.load[canal]]:
                 loaded = [chan for chan in self.load[canal] if chan.id != channel.id]
                 return loaded
         return None
 
-    def find_dest(self, channel: discord.Message):
+    def find_dest(self, channel: discord.Channel):
+        """Trouve le canal de destination (fr/en/g)"""
         for canal in self.load:
             if channel.id in [c.id for c in self.load[canal]]:
                 return canal
         return None
 
     def is_connected(self, server: discord.Server):
+        """Vérifie si le serveur est connecté à des canaux"""
         sys = self.api.get_server(server)
         liste = []
         for canal in sys["CHANNELS"]:
             if sys["CHANNELS"][canal]:
                 liste.append([canal, self.bot.get_server(sys["CHANNELS"][canal])])
         return liste
+
+    def any_receiver(self, server: discord.Server):
+        """Vérifie si il y a au moins un receveur au message"""
+        liste = self.is_connected(server)
+        if liste:
+            for e in liste:
+                if len(self.load[e[0]]) > 1:
+                    return True
+        return False
 
     async def send_global_msg(self, title:str, content:str, channel: str = None):
         if channel:
@@ -390,7 +402,7 @@ class Relay:
     async def relay_msg(self, message):
         author = message.author
         if not author.bot:
-            if self.is_connected(message.server):
+            if self.any_receiver(message.server):
                 await self.transmit_msg(message)
 
 
