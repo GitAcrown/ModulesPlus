@@ -64,10 +64,10 @@ class RelayAPI:
             load[c] = []
             for s in self.data["SERVERS"]:
                 if self.data["SERVERS"][s]["CHANNELS"][c]:
-                    try:
-                        chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
+                    chan = self.bot.get_channel(self.data["SERVERS"][s]["CHANNELS"][c])
+                    if chan:
                         load[c].append(chan)
-                    except:
+                    else:
                         self.data["SERVERS"][s]["CHANNELS"][c] = False
                         change = True
         if change: self.save()
@@ -78,7 +78,7 @@ class Relay:
     def __init__(self, bot):
         self.bot = bot
         self.api = RelayAPI(bot, "data/relay/data.json")
-        self.load = self.api.load_channels()
+        self.load = {}
         self.error_msg = {"disconnect": {"g": "Serveur déconnecté | Server disconnected",
                                          "fr": "Ce serveur s'est déconnecté.",
                                          "en": "This server has disconnected."},
@@ -420,6 +420,9 @@ class Relay:
                     if author.id not in bans.users_bans and message.server.id not in bans.servers_bans:
                         await self.transmit_msg(message)
 
+    async def relay_load(self):
+        if not self.load:
+            self.load = self.api.load_channels()
 
 def check_folders():
     if not os.path.exists("data/relay"):
@@ -438,5 +441,6 @@ def setup(bot):
     check_folders()
     check_files()
     n = Relay(bot)
+    bot.add_listener(n.relay_load, "on_ready")
     bot.add_listener(n.relay_msg, "on_message")
     bot.add_cog(n)
