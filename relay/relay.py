@@ -183,7 +183,7 @@ class Relay:
             txt = ""
             for canal in sys["CHANNELS"]:
                 if sys["CHANNELS"][canal]:
-                    txt += "/**{}**/ ─ {}\n".format(canal, self.bot.get_channel(sys["CHANNELS"][canal].mention))
+                    txt += "/**{}**/ ─ {}\n".format(canal, self.bot.get_channel(sys["CHANNELS"][canal]).mention)
                 else:
                     txt += "/**{}**/ ─ Non connecté\n".format(canal)
             em = discord.Embed(title="Canaux Relay connectés", description=txt, color=0xfd4c5e)
