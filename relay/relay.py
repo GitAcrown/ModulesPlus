@@ -175,7 +175,7 @@ class Relay:
                 else:
                     txt += "/**{}**/ ─ Non connecté\n".format(canal)
             em = discord.Embed(title="Canaux Relay connectés", description=txt, color=0xfd4c5e)
-            em.set_footer(text="Relay β ─ Tapez le nom du canal pour changer son statut",
+            em.set_footer(text="Relay β ─ Tapez le nom du canal (sans slash) pour changer son statut",
                           icon_url="https://i.imgur.com/ybbABbm.png")
             msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(channel=ctx.message.channel,
@@ -211,6 +211,7 @@ class Relay:
                         await self.bot.delete_message(sup)
                         await self.bot.say("**Connexion...**")
                         sys["CHANNELS"][canal] = conf.channel_mentions[0].id
+                        await self.send_global_msg(ctx.message.server, self.error_msg["connect"][canal], canal)
                         self.api.save()
                         self.load = self.api.load_channels()
                         await asyncio.sleep(1.5)
