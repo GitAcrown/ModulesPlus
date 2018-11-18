@@ -386,8 +386,6 @@ class Relay:
                                 except:
                                     self.load = self.api.load_channels()
                                     await self.send_global_msg(chan.server.name, self.error_msg["disconnect"][canal], canal)
-                    else:
-                        await self.bot.send_message(message.channel, self.error_msg["no_servers"][canal])
 
     async def relay_msg(self, message):
         author = message.author
