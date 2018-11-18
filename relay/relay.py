@@ -299,7 +299,7 @@ class Relay:
             return
         await self.bot.say("**Erreur** — Impossible de changer la couleur")
 
-    @_relay.command(pass_context=True, hidden+True)
+    @_relay.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def reset(self, ctx, delete: bool= False):
         if not delete:
