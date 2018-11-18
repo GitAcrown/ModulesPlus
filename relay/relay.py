@@ -311,7 +311,6 @@ class Relay:
                 await self.bot.delete_message(msg)
                 return
             elif rep.content.lower() in [o for o in sys["OPTS"]]:
-                await self.bot.delete_message(msg)
                 sys["OPTS"][rep.content.lower()] = not sys["OPTS"][rep.content.lower()]
                 self.api.save()
                 em.set_footer(text="Relay β ─ Changement réalisé avec succès !",
