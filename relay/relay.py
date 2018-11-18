@@ -114,7 +114,7 @@ class Relay:
         liste = []
         for canal in sys["CHANNELS"]:
             if sys["CHANNELS"][canal]:
-                liste.append([canal, self.bot.get_server(sys["CHANNELS"][canal])])
+                liste.append([canal, self.bot.get_channel(sys["CHANNELS"][canal])])
         return liste
 
     def any_receiver(self, server: discord.Server):
