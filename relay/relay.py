@@ -33,8 +33,7 @@ class RelayAPI:
                                                             "en": False},
                                                "COLOR": color,
                                                "HIDE": [],
-                                               "OPTS": {"autohide_bans": False,
-                                                        "send_names": False}}
+                                               "OPTS": {"send_names": False}}
             self.save()
         return self.data["SERVERS"][server.id]
 
@@ -48,10 +47,9 @@ class RelayAPI:
         return total
 
     def hidden(self, server: discord.Server, verif: list):
-        bans = [user.id for user in self.bot.get_bans(server)]
         if server.id in self.data["SERVERS"]:
             for i in verif:
-                if i in self.data["SERVERS"][server.id]["HIDE"] or i in bans:
+                if i in self.data["SERVERS"][server.id]["HIDE"]:
                     return True
         return False
 
@@ -351,8 +349,22 @@ class Relay:
             await self.bot.say("**Les messages de la cible ne seront plus cachés**")
         else:
             sys["HIDE"].append(cible)
+            if cible in self.api.get_all_servers():
+                self.api.get_all_servers()[cible]["HIDE"].append(ctx.message.server.id)
             self.api.save()
             await self.bot.say("**Les messages de la cible seront désormais cachés**")
+
+    @_relay.command(pass_context=True)
+    @checks.admin_or_permissions(manage_channels=True)
+    async def hidebans(self, ctx):
+        """Synchronise la liste des bannis de votre serveur avec la liste des personnes censurées sur le Relay"""
+        bans = await self.bot.get_bans(ctx.message.server)
+        sys = self.api.get_server(ctx.message.server)
+        for user in bans:
+            if user.id not in sys["HIDE"]:
+                sys["HIDE"].append(user.id)
+        self.api.save()
+        await self.bot.say("**Succès** ─ La liste des personnes censurées à été synchronisée avec les bannis de ce serveur.")
 
     async def transmit_msg(self, message: discord.Message):
         if message.author.id not in self.api.get_global().users_bans:
