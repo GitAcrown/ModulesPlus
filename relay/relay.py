@@ -106,8 +106,11 @@ class Relay:
                                       "fr": "Ce message à été censuré par la modération Relay.",
                                       "en": "This message has been censored by Relay's mods."},
                      "censure_title": {"g": "Censuré · Censored",
-                                            "fr": "Censuré",
-                                            "en": "Censored"}}
+                                       "fr": "Censuré",
+                                       "en": "Censored"},
+                     "censure_delete": {"g": "Global delete of {0}'s message n°`{1}` [(?)]({2})\nSuppression générale du message de {0} n°`{1}` [(?)]({2})",
+                                        "fr": "Le message de {0}, n°`{1}` [(?)]({2}) à été **censuré** sur tous les autres serveurs.",
+                                        "en": "{0}'s message, n°`{1}` [(?)]({2}) has been **censored** globally."}}
 
     def charge_dest(self, channel: discord.Channel):
         """Charge les channels qui vont recevoir le message"""
@@ -151,7 +154,7 @@ class Relay:
                 l.append(e.id)
         return l
 
-    def load_msg_group(self, mid):
+    def load_msg_group(self, mid: str):
         """Retrouve le groupe d'un message à partir de son ID"""
         for group in self.meta["msg_save"]:
             for msg in group:
@@ -232,14 +235,21 @@ class Relay:
         if msggroup:
             txt = ""
             for msg in msggroup:
-                try:
-                    lang = self.find_dest(msg.channel)
-                    em = discord.Embed(title=self.trad["censure_title"][lang], description=self.trad["censure"][lang],
-                                       color=0xfd4c5e)
-                    em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
-                    await self.bot.edit_message(msg, embed=em)
-                except:
-                    txt += "• {}\n".format(msg.id)
+                lang = self.find_dest(msg.channel)
+                if msg.author.bot:
+                    try:
+                        em = discord.Embed(title=self.trad["censure_title"][lang], description=self.trad["censure"][lang],
+                                           color=0xfd4c5e)
+                        em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
+                        await self.bot.edit_message(msg, embed=em)
+                    except:
+                        txt += "• {}\n".format(msg.id)
+                else:
+                    try:
+                        await self.bot.delete_message(msg)
+                    except:
+                        msgurl = "https://discordapp.com/channels/" + msg.server.id + "/" + msg.channel.id + "/" + msg.id
+                        await self.bot.send_message(msg.channel, self.trad["censure_delete"][lang].format(msg.author.name, msg.id, msgurl))
             if txt:
                 await self.bot.say("**Messages censurés** — Ceux-ci n'ont pas pu être censurés "
                                    "(permissions invalides) :\n" + txt)
@@ -507,7 +517,7 @@ class Relay:
                 em.set_image(url=image)
             if thumbnail:
                 em.set_thumbnail(url=thumbnail)
-            msggroup = []
+            msggroup = [message]
             for chan in dest:
                 if not self.api.hidden(chan.server, [message.server.id, message.author.id]):
                     try:
