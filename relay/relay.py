@@ -316,6 +316,10 @@ class Relay:
                 em.set_footer(text="Relay β",
                               icon_url="https://i.imgur.com/ybbABbm.png")
                 await self.bot.edit_message(msg, embed=em)
+                try:
+                    await self.bot.clear_reactions(msg)
+                except:
+                    pass
                 return
             elif rep.reaction.emoji == "🇫":
                 lang = "fr"
