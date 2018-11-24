@@ -189,6 +189,9 @@ class Relay:
                 pass
         self.add_msg_group(msggroup)
 
+    def check(self, reaction, user):
+        return not user.bot
+
     @commands.group(name="relay", aliases=["rs"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def _relay(self, ctx):
         """Gestion de la connexion au Relay | Relay connection management"""
@@ -263,6 +266,57 @@ class Relay:
                 await self.bot.say("**Messages censurés avec succès**")
         else:
             await self.bot.say("**Message introuvable** — Il est peut-être trop vieux ?")
+
+    @_relay.command(pass_context=True)
+    async def help(self, ctx):
+        """Affiche une aide pour les commandes du Relay | Shows help for Relay commands"""
+        lang = "fr"
+        msg = em = None
+        while True:
+            emo = ["🇪", "🇫"]
+            if lang is "fr":
+                txt = "• `+relay invite` — Obtenir un lien d'invitation de Relay\n" \
+                      "• `+relay info` — Informations concernant les connexions de votre serveur\n" \
+                      "• `+relay list` — Affiche la liste des serveurs connectés au Relay (et les channels dédiés)\n" \
+                      "\n**Modération seulement**\n" \
+                      "• `+relay channels` — Permet d'attribuer des salons à des canaux et s'y connecter\n" \
+                      "• `+relay color` — Modifie la couleur d'affichage de vos membres sur les serveurs externes\n" \
+                      "• `+relay extra` — Options d'affichage secondaires\n" \
+                      "• `+relay hide` — Permet de cacher les messages provenant d'un membre ou d'un serveur (via ID)\n" \
+                      "• `+relay hidebans` — Synchronise votre blacklist Relay avec la liste des bannis de votre serveur"
+                em = discord.Embed(title="Aide Relay", description=txt, color=0xfd4c5e)
+                em.set_footer(text="Relay β — Click on 🇪 to have it in English", icon_url="https://i.imgur.com/ybbABbm.png")
+                emo = ["🇪"]
+            elif lang is "en":
+                txt = "• `+relay invite` — Get Relay's invitation link" \
+                      "• `+relay info` — Info about your server connection to the Relay network" \
+                      "• `+relay list` — Shows the list of servers connected to the Relay network" \
+                      "\n**Mods only**\n" \
+                      "• `+relay channels` — Assign and connect your channels to Relay channels" \
+                      "• `+relay color` — Change the display color of your members on external servers" \
+                      "• `+relay extra` — Secondary display options" \
+                      "• `+relay hide` — Hide messages from a member or server (via ID)" \
+                      "• `+relay hidebans` — Synchronize your Relay blacklist with the ban list of your server"
+                em = discord.Embed(title="Relay Help", description=txt, color=0xfd4c5e)
+                em.set_footer(text="Relay β — Cliquez sur 🇫 pour le Français", icon_url="https://i.imgur.com/ybbABbm.png")
+                emo = ["🇫"]
+            if msg:
+                msg = await self.bot.edit_message(msg, embed=em)
+            else:
+                msg = await self.bot.say(embed=em)
+            rep = await self.bot.wait_for_reaction(emo, message=msg, timeout=45,
+                                                   check=self.check, user=ctx.message.author)
+            if rep is None:
+                em.set_footer(text="Relay β",
+                              icon_url="https://i.imgur.com/ybbABbm.png")
+                await self.bot.edit_message(msg, embed=em)
+                return
+            elif rep.reaction.emoji == "🇫":
+                lang = "fr"
+            elif rep.reaction.emoji == "🇪":
+                lang = "en"
+            else:
+                pass
 
     @_relay.command(pass_context=True)
     async def invite(self, ctx):
