@@ -288,14 +288,14 @@ class Relay:
                 em.set_footer(text="Relay β — Click on 🇪 to have it in English", icon_url="https://i.imgur.com/ybbABbm.png")
                 emo = ["🇪"]
             elif lang is "en":
-                txt = "• `+relay invite` — Get Relay's invitation link" \
-                      "• `+relay info` — Info about your server connection to the Relay network" \
-                      "• `+relay list` — Shows the list of servers connected to the Relay network" \
+                txt = "• `+relay invite` — Get Relay's invitation link\n" \
+                      "• `+relay info` — Info about your server connection to the Relay network\n" \
+                      "• `+relay list` — Shows the list of servers connected to the Relay network\n" \
                       "\n**Mods only**\n" \
-                      "• `+relay channels` — Assign and connect your channels to Relay channels" \
-                      "• `+relay color` — Change the display color of your members on external servers" \
-                      "• `+relay extra` — Secondary display options" \
-                      "• `+relay hide` — Hide messages from a member or server (via ID)" \
+                      "• `+relay channels` — Assign and connect your channels to Relay channels\n" \
+                      "• `+relay color` — Change the display color of your members on external servers\n" \
+                      "• `+relay extra` — Secondary display options\n" \
+                      "• `+relay hide` — Hide messages from a member or server (via ID)\n" \
                       "• `+relay hidebans` — Synchronize your Relay blacklist with the ban list of your server"
                 em = discord.Embed(title="Relay Help", description=txt, color=0xfd4c5e)
                 em.set_footer(text="Relay β — Cliquez sur 🇫 pour le Français", icon_url="https://i.imgur.com/ybbABbm.png")
