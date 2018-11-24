@@ -192,7 +192,7 @@ class Relay:
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.info)
 
-    @_relay.group(name="modrelay", aliases=["mr"], pass_context=True)
+    @_relay.group(name="mod", aliases=["mr"], pass_context=True)
     @checks.is_owner()
     async def _relay_mod(self, ctx):
         """Modération du Relat"""
