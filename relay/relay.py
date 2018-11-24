@@ -60,9 +60,12 @@ class RelayAPI:
                     return True
         return False
 
-    def get_global(self):
-        System = namedtuple('System', ['servers_bans', 'users_bans'])
-        return System(self.data["GLOBAL"]["serverbans"], self.data["GLOBAL"]["userbans"])
+    def get_global(self, raw: bool = False):
+        if raw:
+            return self.data["GLOBAL"]
+        else:
+            System = namedtuple('System', ['servers_bans', 'users_bans'])
+            return System(self.data["GLOBAL"]["serverbans"], self.data["GLOBAL"]["userbans"])
 
     def load_channels(self):
         load = {}
@@ -86,18 +89,25 @@ class Relay:
         self.bot = bot
         self.api = RelayAPI(bot, "data/relay/data.json")
         self.load = {}
-        self.error_msg = {"disconnect": {"g": "Serveur déconnecté | Server disconnected",
+        self.meta = {"msg_save": []}
+        self.trad = {"disconnect": {"g": "Serveur déconnecté | Server disconnected",
                                          "fr": "Ce serveur s'est déconnecté.",
                                          "en": "This server has disconnected."},
                           "no_servers": {"g": "Aucun serveur connecté | Servers not found",
                                          "fr": "Aucun autre serveur n'est connecté à ce canal.",
                                          "en": "No server is connected to this channel."},
-                          "not_send": {"g": "Erreur | Error",
+                     "not_send": {"g": "Erreur | Error",
                                        "fr": "**Erreur** ─ Votre message n'a pas été envoyé.",
                                        "en": "**Error** ─ Your message has not been sent."},
-                          "connect": {"g": "Serveur connecté | Server connected",
+                     "connect": {"g": "Serveur connecté | Server connected",
                                       "fr": "Ce serveur vient de se connecter.",
-                                      "en": "This server has just connected."}}
+                                      "en": "This server has just connected."},
+                     "censure": {"g": "Ce message à été censuré. | This message has been censored.",
+                                      "fr": "Ce message à été censuré par la modération Relay.",
+                                      "en": "This message has been censored by Relay's mods."},
+                     "censure_title": {"g": "Censuré · Censored",
+                                            "fr": "Censuré",
+                                            "en": "Censored"}}
 
     def charge_dest(self, channel: discord.Channel):
         """Charge les channels qui vont recevoir le message"""
@@ -141,6 +151,21 @@ class Relay:
                 l.append(e.id)
         return l
 
+    def load_msg_group(self, mid: str):
+        """Retrouve le groupe d'un message à partir de son ID"""
+        for group in self.meta["msg_save"]:
+            for msg in group:
+                if msg.id == mid:
+                    return group
+        return []
+
+    def add_msg_group(self, msglist: list):
+        """Lie des ID de messages entre eux entre les serveurs"""
+        self.meta["msg_save"].append(msglist)
+        if len(self.meta["msg_save"]) > 50:
+            self.meta["msg_save"] = self.meta["msg_save"][-50:]
+        return True
+
     async def send_global_msg(self, title:str, content:str, channel: str = None):
         if channel:
             dest = self.load[channel]
@@ -152,17 +177,76 @@ class Relay:
         em = discord.Embed(title=title, description=content, color=0xfd4c5e)
         em.set_footer(text="/{}/ ─ Relay β".format(channel if channel else "all"),
                       icon_url="https://i.imgur.com/ybbABbm.png")
+        msggroup = []
         for chan in dest:
             try:
-                await self.bot.send_message(chan, embed=em)
+                mess = await self.bot.send_message(chan, embed=em)
+                msggroup.append(mess.id)
             except:
                 pass
+        self.add_msg_group(msggroup)
 
     @commands.group(name="relay", aliases=["rs"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def _relay(self, ctx):
         """Gestion de la connexion au Relay | Relay connection management"""
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.info)
+
+    @_relay.group(name="modrelay", aliases=["mr"], pass_context=True)
+    @checks.is_owner()
+    async def _relay_mod(self, ctx):
+        """Modération du Relat"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @_relay_mod.command(aliases=["deban"], pass_context=True)
+    async def ban(self, ctx, userid: str):
+        """Ban/deban un membre du Relay"""
+        glob = self.api.get_global(True)
+        if userid not in glob["userbans"]:
+            glob["userbans"].append(userid)
+            self.api.save()
+            await self.bot.say("**ID ajouté à la Blacklist**")
+        else:
+            glob["userbans"].remove(userid)
+            self.api.save()
+            await self.bot.say("**ID retiré de la Blacklist**")
+
+    @_relay_mod.command(aliases=["deblock"], pass_context=True)
+    async def block(self, ctx, userid: str):
+        """Bloque ou débloque un serveur"""
+        glob = self.api.get_global(True)
+        if userid not in glob["serverbans"]:
+            glob["serverbans"].append(userid)
+            self.api.save()
+            await self.bot.say("**ID ajouté à la Blacklist des serveurs**")
+        else:
+            glob["serverbans"].remove(userid)
+            self.api.save()
+            await self.bot.say("**ID retiré de la Blacklist des serveurs**")
+
+    @_relay_mod.command(aliases=["cs"], pass_context=True)
+    async def censure(self, ctx, msgid: str):
+        """Censure un message sur tous les serveurs"""
+        msggroup = self.load_msg_group(msgid)
+        if msggroup:
+            txt = ""
+            for msg in msggroup:
+                try:
+                    lang = self.find_dest(msg.channel)
+                    em = discord.Embed(title=self.trad["censure_title"][lang], description=self.trad["censure"][lang],
+                                       color=0xfd4c5e)
+                    em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
+                    await self.bot.edit_message(msg, embed=em)
+                except:
+                    txt += "• {}\n".format(msg.id)
+            if txt:
+                await self.bot.say("**Messages censurés** — Ceux-ci n'ont pas pu être censurés "
+                                   "(permissions invalides) :\n" + txt)
+            else:
+                await self.bot.say("**Messages censurés avec succès**")
+        else:
+            await self.bot.say("**Message introuvable** — Il est peut-être trop vieux ?")
 
     @_relay.command(pass_context=True)
     async def info(self, ctx):
@@ -221,7 +305,7 @@ class Relay:
                     sys["CHANNELS"][canal] = False
                     self.api.save()
                     self.load = self.api.load_channels()
-                    await self.send_global_msg(ctx.message.server.name, self.error_msg["disconnect"][canal], canal)
+                    await self.send_global_msg(ctx.message.server.name, self.trad["disconnect"][canal], canal)
                     await asyncio.sleep(0.75)
                     await self.bot.say("Votre serveur à été déconnecté de /**{}**/ avec succès.".format(canal))
                 else:
@@ -237,7 +321,7 @@ class Relay:
                         await self.bot.delete_message(sup)
                         await self.bot.say("**Connexion...**")
                         sys["CHANNELS"][canal] = conf.channel_mentions[0].id
-                        await self.send_global_msg(ctx.message.server.name, self.error_msg["connect"][canal], canal)
+                        await self.send_global_msg(ctx.message.server.name, self.trad["connect"][canal], canal)
                         self.api.save()
                         self.load = self.api.load_channels()
                         await asyncio.sleep(1.5)
@@ -423,13 +507,16 @@ class Relay:
                 em.set_image(url=image)
             if thumbnail:
                 em.set_thumbnail(url=thumbnail)
+            msggroup = []
             for chan in dest:
                 if not self.api.hidden(chan.server, [message.server.id, message.author.id]):
                     try:
-                        await self.bot.send_message(chan, embed=em)
+                        mess = await self.bot.send_message(chan, embed=em)
+                        msggroup.append(mess.id)
                     except:
                         self.load = self.api.load_channels()
-                        await self.send_global_msg(chan.server.name, self.error_msg["disconnect"][canal], canal)
+                        await self.send_global_msg(chan.server.name, self.trad["disconnect"][canal], canal)
+            self.add_msg_group(msggroup)
 
     @commands.command(pass_context=True, hidden=True)
     async def reloadchannels(self):
