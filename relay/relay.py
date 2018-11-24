@@ -302,8 +302,14 @@ class Relay:
                 emo = ["🇫"]
             if msg:
                 msg = await self.bot.edit_message(msg, embed=em)
+                try:
+                    await self.bot.clear_reactions(msg)
+                except:
+                    pass
             else:
                 msg = await self.bot.say(embed=em)
+            for e in emo:
+                await self.bot.add_reaction(msg, e)
             rep = await self.bot.wait_for_reaction(emo, message=msg, timeout=45,
                                                    check=self.check, user=ctx.message.author)
             if rep is None:
