@@ -151,7 +151,7 @@ class Relay:
                 l.append(e.id)
         return l
 
-    def load_msg_group(self, mid: str):
+    def load_msg_group(self, mid):
         """Retrouve le groupe d'un message à partir de son ID"""
         for group in self.meta["msg_save"]:
             for msg in group:
@@ -181,7 +181,7 @@ class Relay:
         for chan in dest:
             try:
                 mess = await self.bot.send_message(chan, embed=em)
-                msggroup.append(mess.id)
+                msggroup.append(mess)
             except:
                 pass
         self.add_msg_group(msggroup)
@@ -512,7 +512,7 @@ class Relay:
                 if not self.api.hidden(chan.server, [message.server.id, message.author.id]):
                     try:
                         mess = await self.bot.send_message(chan, embed=em)
-                        msggroup.append(mess.id)
+                        msggroup.append(mess)
                     except:
                         self.load = self.api.load_channels()
                         await self.send_global_msg(chan.server.name, self.trad["disconnect"][canal], canal)
