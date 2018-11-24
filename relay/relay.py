@@ -265,6 +265,13 @@ class Relay:
             await self.bot.say("**Message introuvable** — Il est peut-être trop vieux ?")
 
     @_relay.command(pass_context=True)
+    async def invite(self, ctx):
+        """Donne l'URL d'invitation du bot Relay"""
+        em = discord.Embed(title="Lien d'invitation du Relay", description="**Attention :** ce bot est encore en Bêta (symbolisé par β), ne l'invitez pas sur trop de serveurs afin de ne pas le surcharger.\nhttps://discordapp.com/oauth2/authorize?client_id=513373047697178659&scope=bot")
+        em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
+        await self.bot.say(embed=em)
+
+    @_relay.command(pass_context=True)
     async def info(self, ctx):
         """Informations à propos de votre connexion au Relay"""
         server = ctx.message.server
