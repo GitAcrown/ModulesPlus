@@ -247,6 +247,12 @@ class Relay:
                 else:
                     try:
                         await self.bot.delete_message(msg)
+                        em = discord.Embed(title=self.trad["censure_title"][lang],
+                                           description=self.trad["censure"][lang],
+                                           color=0xfd4c5e)
+                        em.set_footer(text="Relay β", icon_url="https://i.imgur.com/ybbABbm.png")
+                        await self.bot.send_message(msg.channel, embed=em)
+
                     except:
                         msgurl = "https://discordapp.com/channels/" + msg.server.id + "/" + msg.channel.id + "/" + msg.id
                         await self.bot.send_message(msg.channel, self.trad["censure_delete"][lang].format(msg.author.name, msg.id, msgurl))
