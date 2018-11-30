@@ -144,7 +144,7 @@ class Community:
             self.sys["NOEL_MODE"] = {}
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
-        elif ctx.message.server.id not in self.sys["NOEL_MODE"]:
+        if ctx.message.server.id not in self.sys["NOEL_MODE"]:
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
         if roles:
