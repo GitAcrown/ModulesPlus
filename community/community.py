@@ -123,22 +123,18 @@ class Community:
     def noel_activated(self, server: discord.Server):
         """Check si le mode noel est activé sur le serveur"""
         if server.id == "204585334925819904":
-            if "NOEL_MODE" not in self.sys:
-                if server.id in self.sys["NOEL_MODE"]:
-                    return self.sys["NOEL_MODE"][server.id]
-                else:
-                    self.sys["NOEL_MODE"][server.id] = []
-                    self.save()
-                    return []
+            if "NOEL_MODE" in self.sys:
+                return self.sys["NOEL_MODE"]
             else:
                 self.sys["NOEL_MODE"] = {}
                 self.save()
         return []
 
     @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.admin_or_permissions(ban_members=True)
     async def noelreset(self, ctx):
         """Reset le mode noel"""
-        self.sys["NOEL_MODE"] = {}
+        self.sys["NOEL_MODE"] = []
         self.save()
         await self.bot.say("*Reset effectué*")
 
@@ -148,19 +144,14 @@ class Community:
 
         Ne pas en mettre désactive ce mode"""
         if "NOEL_MODE" not in self.sys:
-            self.sys["NOEL_MODE"] = {}
-            self.sys["NOEL_MODE"][ctx.message.server.id] = []
+            self.sys["NOEL_MODE"] = []
             self.save()
-            print("Dico NOELMODE créé et assignation du serveur")
-        if ctx.message.server.id not in self.sys["NOEL_MODE"]:
-            self.sys["NOEL_MODE"][ctx.message.server.id] = []
-            self.save()
-            print("Assignation du serveur")
+            print("Dico NOELMODE créé")
         if roles:
             base = self.noel_activated(ctx.message.server)
             for r in roles:
                 if r not in base:
-                    self.sys["NOEL_MODE"][ctx.message.server.id].append(r.name)
+                    self.sys["NOEL_MODE"].append(r.name)
             self.save()
             txt = ""
             base = self.noel_activated(ctx.message.server)
@@ -169,7 +160,7 @@ class Community:
                 txt += "• {}\n".format(role.mention)
             await self.bot.say("**Mode Noël** • Activé pour les rôles : {}".format(txt))
         else:
-            self.sys["NOEL_MODE"][ctx.message.server.id] = []
+            self.sys["NOEL_MODE"] = []
             self.save()
             await self.bot.say("**Mode Noël** • Désactivé")
 
