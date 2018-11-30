@@ -120,6 +120,76 @@ class Community:
             em = discord.Embed(title="Propositions soumises pour renommer Entre Kheys", description=txt)
             await self.bot.say(embed=em)
 
+    def noel_activated(self, server: discord.Server):
+        """Check si le mode noel est activé sur le serveur"""
+        if server.id != "204585334925819904":
+            return False
+        if "NOEL_MODE" not in self.sys:
+            if server.id in self.sys["NOEL_MODE"]:
+                return self.sys["NOEL_MODE"][server.id]
+            else:
+                self.sys["NOEL_MODE"][server.id] = []
+                self.save()
+                return []
+        else:
+            self.sys["NOEL_MODE"] = {}
+            self.save()
+        return False
+
+    @commands.command(aliases=["noelm"], pass_context=True, no_pm=True)
+    async def noelmode(self, ctx, *roles):
+        """Active le 'Mode Noel' qui distribue automatiquement des rôles dédiés
+
+        Ne pas en mettre désactive ce mode"""
+        if "NOEL_MODE" not in self.sys:
+            self.sys["NOEL_MODE"] = {}
+            self.sys["NOEL_MODE"][ctx.message.server.id] = []
+            self.save()
+        elif ctx.message.server.id not in self.sys["NOEL_MODE"]:
+            self.sys["NOEL_MODE"][ctx.message.server.id] = []
+            self.save()
+        if roles:
+            roles = ctx.message.role_mentions
+            self.sys["NOEL_MODE"][ctx.message.server.id] = [r.name for r in roles]
+            self.save()
+            await self.bot.say("**Mode Noël** • Activé pour les rôles `{}`".format(", ".join([r.name for r in roles])))
+        else:
+            self.sys["NOEL_MODE"][ctx.message.server.id] = []
+            self.save()
+            await self.bot.say("**Mode Noël** • Désactivé")
+
+    @commands.command(aliases=["rn"], pass_context=True, no_pm=True)
+    async def rolenoel(self, ctx, user: discord.Member = None):
+        """Permet d'obtenir un rôle de Noel aléatoire si le membre n'en possède aucun"""
+        roles = self.noel_activated(ctx.message.server)
+        if user and ctx.message.author.server_permissions.manage_roles:
+            for r in user.roles:
+                if r.name in roles:
+                    await self.bot.say("**Impossible** • Ce membre possède déjà un rôle de Noël")
+                    return
+            alea = random.choice(roles)
+            try:
+                role = discord.utils.get(ctx.message.server.roles, name=alea)
+                await self.bot.add_roles(user, role)
+                await self.bot.say("**Succès** • {} est désormais *{}*".format(user.name, role.name))
+            except:
+                await self.bot.say("**Impossible** • Je n'ai pas les permissions nécessaires ou le rôle choisi (*{}*) "
+                                   "n'existe plus ou a été modifié.".format(alea))
+        elif user == ctx.message.author or user is None:
+            user = ctx.message.author
+            for r in user.roles:
+                if r.name in roles:
+                    await self.bot.say("**Impossible** • Vous possédez déjà un rôle de Noël")
+                    return
+            alea = random.choice(roles)
+            try:
+                role = discord.utils.get(ctx.message.server.roles, name=alea)
+                await self.bot.add_roles(user, role)
+                await self.bot.say("**Succès** • {} est désormais *{}*".format(user.name, role.name))
+            except:
+                await self.bot.say("**Impossible** • Je n'ai pas les permissions nécessaires ou le rôle choisi (*{}*) "
+                                   "n'existe plus ou a été modifié.".format(alea))
+
     def find_poll(self, message: discord.Message):
         """Retrouve le poll lié à un message"""
         session = self.get_session(message.server)
@@ -422,6 +492,40 @@ class Community:
                                         numero, r))
                                 return
 
+    async def autoattrib(self, user):
+        server = user.server
+        roles = self.noel_activated(server)
+        if roles:
+            alea = random.choice(roles)
+            try:
+                role = discord.utils.get(server.roles, name=alea)
+                await self.bot.add_roles(user, role)
+            except:
+                pass
+
+    async def noelmsg(self, user):
+        server = user.server
+        roles = self.noel_activated(server)
+        if roles:
+            # Merci à Koala, Skut, Bangumi et Subo pour avoir proposé ces messages
+            msg = ["**{0}** s'est électrocuté avec une guirlande.",
+                   "**{0}** a fait une overdose de chocolat.",
+                   "**{0}** a quitté la fête.",
+                   "**{0}** s'en est allé, il faisait froid.",
+                   "**{0}** n’a pas aimé recevoir des oranges pour Noël.",
+                   "**{0}** s’en est allé mourir de froid.",
+                   "Un coup de froid, une mauvaise grippe, **{0}** nous a quitté.",
+                   "**{0}** n'avait pas l'esprit des fêtes.",
+                   "**{0}** s'est barré en ayant bouffé toute la dinde de Noël, le salaud !",
+                   "**{0}** n'a pas aimé ses cadeaux...",
+                   "**{0}** ne fête pas Noël car il n'est pas chrétiens catholique.",
+                   "**{0}** en a eu marre de tonton Bernard et ses propos racistes.",
+                   "**{0}** avait demandé des jouets genrés pour Noël..."]
+            colors = [0xff0000, 0x169f48, 0xfdfdfd, 0xe3d1bb, 0xc6e2ff]
+            em = discord.Embed(description="📤 {}".format(random.choice(msg).format(user.name)),
+                               color=random.choice(colors))
+            await self.bot.send_message(self.bot.get_channel("204585334925819904"), embed=em)
+
 def check_folders():
     if not os.path.exists("data/community"):
         print("Création du dossier Community...")
@@ -444,3 +548,5 @@ def setup(bot):
     bot.add_cog(n)
     bot.add_listener(n.grab_reaction_add, "on_reaction_add")
     bot.add_listener(n.grab_reaction_remove, "on_reaction_remove")
+    bot.add_listener(n.autoattrib, "on_member_join")
+    bot.add_listener(n.noelmsg, "on_member_quit")
