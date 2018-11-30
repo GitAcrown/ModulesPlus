@@ -135,6 +135,13 @@ class Community:
                 self.save()
         return []
 
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def noelreset(self, ctx):
+        """Reset le mode noel"""
+        self.sys["NOEL_MODE"] = {}
+        self.save()
+        await self.bot.say("*Reset effectué*")
+
     @commands.command(aliases=["noelm"], pass_context=True, no_pm=True)
     async def noelmode(self, ctx, *roles):
         """Active le 'Mode Noel' qui distribue automatiquement des rôles dédiés
@@ -144,9 +151,11 @@ class Community:
             self.sys["NOEL_MODE"] = {}
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
+            print("Dico NOELMODE créé et assignation du serveur")
         if ctx.message.server.id not in self.sys["NOEL_MODE"]:
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
+            print("Assignation du serveur")
         if roles:
             base = self.noel_activated(ctx.message.server)
             for r in roles:
