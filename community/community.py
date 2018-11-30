@@ -152,9 +152,10 @@ class Community:
             base = self.noel_activated(ctx.message.server)
             for r in roles:
                 if r not in base:
-                    self.sys["NOEL_MODE"][ctx.message.server.id] = [r.name for r in roles]
+                    self.sys["NOEL_MODE"][ctx.message.server.id].append(r.name)
             self.save()
             txt = ""
+            base = self.noel_activated(ctx.message.server)
             for r in base:
                 role = discord.utils.get(ctx.message.server.roles, name=r)
                 txt += "• {}\n".format(role.mention)
