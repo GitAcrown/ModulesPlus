@@ -149,10 +149,16 @@ class Community:
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
         if roles:
-            roles = ctx.message.role_mentions
-            self.sys["NOEL_MODE"][ctx.message.server.id] = [r.name for r in roles]
+            base = self.noel_activated(ctx.message.server)
+            for r in roles:
+                if r not in base:
+                    self.sys["NOEL_MODE"][ctx.message.server.id] = [r.name for r in roles]
             self.save()
-            await self.bot.say("**Mode Noël** • Activé pour les rôles `{}`".format(", ".join([r.name for r in roles])))
+            txt = ""
+            for r in base:
+                role = discord.utils.get(ctx.message.server.roles, name=r)
+                txt += "• {}\n".format(role.mention)
+            await self.bot.say("**Mode Noël** • Activé pour les rôles : {}".format(txt))
         else:
             self.sys["NOEL_MODE"][ctx.message.server.id] = []
             self.save()
