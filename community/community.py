@@ -122,19 +122,18 @@ class Community:
 
     def noel_activated(self, server: discord.Server):
         """Check si le mode noel est activé sur le serveur"""
-        if server.id != "204585334925819904":
-            return False
-        if "NOEL_MODE" not in self.sys:
-            if server.id in self.sys["NOEL_MODE"]:
-                return self.sys["NOEL_MODE"][server.id]
+        if server.id == "204585334925819904":
+            if "NOEL_MODE" not in self.sys:
+                if server.id in self.sys["NOEL_MODE"]:
+                    return self.sys["NOEL_MODE"][server.id]
+                else:
+                    self.sys["NOEL_MODE"][server.id] = []
+                    self.save()
+                    return []
             else:
-                self.sys["NOEL_MODE"][server.id] = []
+                self.sys["NOEL_MODE"] = {}
                 self.save()
-                return []
-        else:
-            self.sys["NOEL_MODE"] = {}
-            self.save()
-        return False
+        return []
 
     @commands.command(aliases=["noelm"], pass_context=True, no_pm=True)
     async def noelmode(self, ctx, *roles):
