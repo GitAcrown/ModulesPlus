@@ -151,7 +151,7 @@ class Community:
             base = self.noel_activated(ctx.message.server)
             for r in roles:
                 if r not in base:
-                    self.sys["NOEL_MODE"].append(r.name)
+                    self.sys["NOEL_MODE"].append(r)
             self.save()
             txt = ""
             base = self.noel_activated(ctx.message.server)
