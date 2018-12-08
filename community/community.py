@@ -158,7 +158,7 @@ class Community:
             for r in base:
                 role = discord.utils.get(ctx.message.server.roles, name=r)
                 txt += "• {}\n".format(role.mention)
-            await self.bot.say("**Mode Noël** • Activé pour les rôles : {}".format(txt))
+            await self.bot.say("**Mode Noël** • Activé pour les rôles : \n{}".format(txt))
         else:
             self.sys["NOEL_MODE"] = []
             self.save()
@@ -528,9 +528,11 @@ class Community:
                    "**{0}** en a eu marre de tonton Bernard et ses propos racistes.",
                    "**{0}** avait demandé des jouets genrés pour Noël..."]
             colors = [0xff0000, 0x169f48, 0xfdfdfd, 0xe3d1bb, 0xc6e2ff]
-            em = discord.Embed(description="📤 {}".format(random.choice(msg).format(user.name)),
+            nmsg = random.choice(msg).format(user.name)
+            em = discord.Embed(description="📤 {}".format(nmsg),
                                color=random.choice(colors))
-            await self.bot.send_message(self.bot.get_channel("204585334925819904"), embed=em)
+            chan = self.bot.get_channel("204585334925819904")
+            await self.bot.send_message(chan, embed=em)
 
 def check_folders():
     if not os.path.exists("data/community"):
