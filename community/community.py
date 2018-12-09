@@ -512,6 +512,7 @@ class Community:
     async def noelmsg(self, user):
         server = user.server
         roles = self.noel_activated(server)
+        print("Quelqu'un a quitté L'Appart")
         if roles:
             # Merci à Koala, Skut, Bangumi et Subo pour avoir proposé ces messages
             msg = ["**{0}** s'est électrocuté avec une guirlande.",
