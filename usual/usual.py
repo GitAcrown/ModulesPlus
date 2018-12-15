@@ -60,7 +60,7 @@ class UsualAPI:
         msg = None
         while True:
             em = discord.Embed(title=title, description=pages[actuel])
-            em.set_footer(text="─ Page n°{}".format(actuel))
+            em.set_footer(text="─ Page n°{} sur {}".format(actuel, len(pages)))
             if not msg:
                 msg = await self.bot.send_message(ctx.message.channel, embed=em)
             else:
