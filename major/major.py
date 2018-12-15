@@ -329,19 +329,6 @@ class Major:
             data["DATA"]["msg_suppr"] += 1
             self.mjr.save()
 
-    async def mjr_react(self, reaction, author):
-        message = reaction.message
-        if message.server:
-            data = self.mjr.get_account(message.author)
-            if type(reaction.emoji) == str:
-                name = reaction.emoji
-            else:
-                name = reaction.emoji.name
-            if name in [e.name for e in message.server.emojis]:
-                data["DATA"]["emojis"][name] = data["DATA"]["emojis"][name] + 1 if name in data["DATA"
-                ]["emojis"][name] else 1
-            self.mjr.save()
-
     async def mjr_join(self, user: discord.Member):
         if user.server:
             data = self.mjr.get_account(user)
@@ -399,7 +386,6 @@ def setup(bot):
     n = Major(bot)
     bot.add_listener(n.mjr_on_msg, "on_message")
     bot.add_listener(n.mjr_on_msgdel, "on_message_delete")
-    bot.add_listener(n.mjr_react, "on_reaction_add")
     bot.add_listener(n.mjr_join, "on_member_join")
     bot.add_listener(n.mjr_quit, "on_member_remove")
     bot.add_listener(n.mjr_perso, "on_member_update")
