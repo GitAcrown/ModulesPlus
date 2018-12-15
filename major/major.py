@@ -119,7 +119,7 @@ class MajorAPI:
         color = data["PERSO"]["bar_color"] if data["PERSO"]["bar_color"] else user.color
         # crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
         # ariv_date, ariv_jours = user.joined_at.strftime("%d/%m/%Y"), (datetime.now() - user.joined_at).days
-        firstmsg = datetime.fromtimestamp(data["DATA"]["FIRST_MSG"])
+        firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
