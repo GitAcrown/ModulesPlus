@@ -49,6 +49,7 @@ class UsualAPI:
                         page = ""
                     else:
                         return TimeoutError("La limite est inférieure à la longueur des blocs")
+                if page: pages.append(page)
             else:
                 return IndexError("Le symbole de découpage ne se trouve pas dans le texte.")
         elif sep_algo.upper() == "UNIQUE":
@@ -60,7 +61,7 @@ class UsualAPI:
         msg = None
         while True:
             em = discord.Embed(title=title, description=pages[actuel])
-            em.set_footer(text="─ Page n°{} sur {}".format(actuel, len(pages)))
+            em.set_footer(text="─ Page n°{} sur {}".format(actuel + 1, len(pages)))
             if not msg:
                 msg = await self.bot.send_message(ctx.message.channel, embed=em)
             else:
