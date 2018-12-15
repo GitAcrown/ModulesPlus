@@ -25,7 +25,7 @@ class UsualAPI:
     def check(self, reaction, user):
         return not user.bot
 
-    async def pagify(self, title: str, texte: str, sep_algo: str = "PGNB", sep_symbol: str = ".", sep_limit: int = 2000):
+    async def pagify(self, ctx, title: str, texte: str, sep_algo: str = "PGNB", sep_symbol: str = ".", sep_limit: int = 2000):
         """Forme un Embed pagifié à partir d'un texte
         --- Algorithmes de découpage ---
         BRUT = Découpage au bout de sep_nb caractères (limite imposée par Discord)
@@ -62,7 +62,7 @@ class UsualAPI:
             em = discord.Embed(title=title, description=pages[actuel])
             em.set_footer(text="─ Page n°{}".format(actuel))
             if not msg:
-                msg = await self.bot.say(embed=em)
+                msg = await self.bot.send_message(ctx.message.channel, embed=em)
             else:
                 try:
                     await self.bot.clear_reactions(msg)
@@ -104,7 +104,7 @@ class Usual:
         Limite = Nombre max. de caractères par page
         Sep_symb = Symbole de découpage des blocs en algo UNIQUE et PGNB
         Sep_algo = Algorithme de découpage (PNGB, BRUT, UNIQUE)"""
-        await self.usual.pagify("Texte découpé", texte, sep_algo, sep_symb, limite)
+        await self.usual.pagify(ctx, "Texte découpé", texte, sep_algo, sep_symb, limite)
 
 def check_folders():
     if not os.path.exists("data/usual"):
