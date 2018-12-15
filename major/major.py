@@ -267,7 +267,7 @@ class Major:
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
-    async def reset(self, ctx, server_only: bool = False):
+    async def resetmajor(self, ctx, server_only: bool = False):
         """Reset les données (seulement de ce serveur si True)"""
         if server_only:
             self.mjr.reset(ctx.message.server)
