@@ -373,6 +373,10 @@ class Major:
                 self.mjr.logs_add(after, "Modification de l'avatar [@]({})".format(url))
             self.mjr.save()
 
+    def __unload(self):
+        self.mjr.save(True)
+        print("Sauvegarde de Major avant redémarrage effectuée")
+
 #>>>>>>>>>> SYSTEMES <<<<<<<<<<<
 
 def check_folders():
