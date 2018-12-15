@@ -43,7 +43,9 @@ class UsualAPI:
                 page = ""
                 for s in septxt:
                     if len(page + s) < sep_limit:
-                        page += s + sep_symbol
+                        page += s
+                        if not page.endswith(sep_symbol):
+                            page += sep_symbol
                     elif page:
                         pages.append(page)
                         page = ""
@@ -74,6 +76,8 @@ class UsualAPI:
             if actuel > 0:
                 await self.bot.add_reaction(msg, "⬅")
                 emos.append("⬅")
+            if len(pages) >= 3:
+                emos.append("🔢")
             if actuel < (len(pages) - 1):
                 await self.bot.add_reaction(msg, "➡")
                 emos.append("➡")
@@ -87,6 +91,19 @@ class UsualAPI:
                     actuel = actuel +  1 if actuel < (len(pages) - 1) else actuel
                 elif rep.reaction.emoji == "⬅":
                     actuel = actuel - 1 if actuel > 0 else actuel
+                elif rep.reaction.emoji == "🔢":
+                    em.set_footer(text="─ Entrez la page à laquelle vous voulez accéder :")
+                    await self.bot.edit_message(msg, embed=em)
+                    await asyncio.sleep(0.1)
+                    num = await self.bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel,
+                                                          timeout=15)
+                    if num is None:
+                        continue
+                    elif rep.content.isdigit():
+                        if 0 <= int(rep.content) <= (len(pages) - 1):
+                            actuel = int(rep.content)
+                    else:
+                        pass
                 else:
                     pass
             else:
