@@ -265,7 +265,7 @@ class NetworkApp:
         flammes = self.get_account(user, "STATS")["flammes"]
         val = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
         val += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
-        val += "**1ère trace** — {} · **{}**j\n".format(old_date, old_jours)
+        val += "**1re trace** — {} · **{}**j\n".format(old_date, old_jours)
         val += "\🔥{} — {}".format(len(flammes), flammes[-1]) if flammes else "\🔥0 — {}".format(today)
         vtxt = "\n‣ Connecté sur {}".format(user.voice.voice_channel.name) if user.voice.voice_channel else ""
         if not mini:
@@ -274,8 +274,8 @@ class NetworkApp:
             hist = "• **Actions :**\n" + "\n".join(["**{}** · {}".format(e[0] if e[1] == today else e[1], e[2])
                                                     for e in logs]) if logs else "• **Actions :** aucune\n"
             psd, srn = self.namelist(user)
-            if type(psd) is list: psd.reverse() ; psd = ", ".join(psd[-3:])
-            if type(srn) is list: srn.reverse() ; srn = ", ".join(srn[-3:])
+            if type(psd) is list: psd.reverse(); psd = ", ".join(psd[-3:])
+            if type(srn) is list: srn.reverse(); srn = ", ".join(srn[-3:])
             psetxt = "• **Pseudos** — {}\n• **Surnoms** — {}\n".format(psd if psd else "Aucun", srn if srn else "Aucun")
             em = discord.Embed(title=titlename, description=desc, color=colorset)
             em.set_thumbnail(url=user.avatar_url)
