@@ -64,14 +64,14 @@ class MajorAPI:
                                           "first_msg": time.time()},
                                  "LOGS": [],
                                  "PERSO": {"bottom_img": None,
-                                           "bar_color": user.color,
+                                           "bar_color": None,
                                            "bio": ""},
                                  "SYS": {"old_roles": []}}
                 self.save()
             return data[user.id][subdict] if subdict else data[user.id]
         return {}
 
-    def new_empty_account(self, user: discord.Member = None):
+    def new_empty_account(self):
         """Retourne un profil vide"""
         dict = {"DATA": {"msg_nb": 0,
                          "msg_suppr": 0,
@@ -84,7 +84,7 @@ class MajorAPI:
                          "first_msg": time.time()},
                 "LOGS": [],
                 "PERSO": {"bottom_img": None,
-                          "bar_color": 0x000001 if not user else user.color,
+                          "bar_color": None,
                           "bio": ""},
                 "SYS": {"old_roles": []}}
         return dict
@@ -116,7 +116,7 @@ class MajorAPI:
         ajd = time.strftime("%d/%m/%Y", time.localtime())
         data = self.get_account(user)
         desc = data["PERSO"]["bio"]
-        color = data["PERSO"]["bar_color"]
+        color = data["PERSO"]["bar_color"] if data["PERSO"]["bar_color"] else user.color
         # crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
         # ariv_date, ariv_jours = user.joined_at.strftime("%d/%m/%Y"), (datetime.now() - user.joined_at).days
         firstmsg = datetime.fromtimestamp(data["DATA"]["FIRST_MSG"])
@@ -294,10 +294,10 @@ class Major:
             n += 1
             user = msg.author
             if user.id not in data:
-                data[user.id] = self.mjr.new_empty_account(user)
-            data[user.id]["STATS"]["msg_nb"] += 1
-            if msg.timestamp.timestamp() < datetime.strptime(data[user.id]["STATS"]["first_msg"], "%d/%m/%Y"):
-                data[user.id]["STATS"]["first_msg"] = msg.timestamp.timestamp().strftime("%d/%m/%Y")
+                data[user.id] = self.mjr.new_empty_account()
+            data[user.id]["DATA"]["msg_nb"] += 1
+            if msg.timestamp.timestamp() < datetime.strptime(data[user.id]["DATA"]["first_msg"], "%d/%m/%Y"):
+                data[user.id]["DATA"]["first_msg"] = msg.timestamp.timestamp().strftime("%d/%m/%Y")
         self.mjr.save(True)
         await self.bot.say("📈 **Mise à jour des stats.** — Terminée")
 
@@ -307,18 +307,18 @@ class Major:
         if message.server:
             data = self.mjr.get_account(message.author)
             date, hier = datetime.now().strftime("%d/%m/%Y"), (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
-            data["STATS"]["msg_nb"] += 1
-            if hier in data["STATS"]["flammes"]:
-                if date not in data["STATS"]["flammes"]:
-                    data["STATS"]["flammes"].append(date)
-            elif date not in data["STATS"]["flammes"]:
-                data["STATS"]["flammes"] = [date]
+            data["DATA"]["msg_nb"] += 1
+            if hier in data["DATA"]["flammes"]:
+                if date not in data["DATA"]["flammes"]:
+                    data["DATA"]["flammes"].append(date)
+            elif date not in data["DATA"]["flammes"]:
+                data["DATA"]["flammes"] = [date]
             self.mjr.save()
 
     async def mjr_on_msgdel(self, message):
         if message.server:
             data = self.mjr.get_account(message.author)
-            data["STATS"]["msg_suppr"] += 1
+            data["DATA"]["msg_suppr"] += 1
             self.mjr.save()
 
     async def mjr_react(self, reaction, author):
@@ -330,21 +330,21 @@ class Major:
             else:
                 name = reaction.emoji.name
             if name in [e.name for e in message.server.emojis]:
-                data["STATS"]["emojis"][name] = data["STATS"]["emojis"][name] + 1 if name in data["STATS"
+                data["DATA"]["emojis"][name] = data["DATA"]["emojis"][name] + 1 if name in data["DATA"
                 ]["emojis"][name] else 1
             self.mjr.save()
 
     async def mjr_join(self, user: discord.Member):
         if user.server:
             data = self.mjr.get_account(user)
-            data["STATS"]["join"] += 1
+            data["DATA"]["join"] += 1
             self.mjr.logs_add(user, "Entrée sur le serveur")
             self.mjr.save()
 
     async def mjr_quit(self, user: discord.Member):
         if user.server:
             data = self.mjr.get_account(user)
-            data["STATS"]["quit"] += 1
+            data["DATA"]["quit"] += 1
             self.mjr.logs_add(user, "Sortie du serveur")
             self.mjr.save()
 
@@ -353,15 +353,15 @@ class Major:
             data = self.mjr.get_account(after)
             if after.name != before.name:
                 self.mjr.logs_add(after, "Changement de pseudo pour `{}`".format(after.name))
-                if after.name not in data["STATS"]["pseudos"]:
-                    data["STATS"]["pseudos"].append(after.name)
+                if after.name not in data["DATA"]["pseudos"]:
+                    data["DATA"]["pseudos"].append(after.name)
             if after.display_name != before.display_name:
                 if after.display_name == after.name:
                     self.mjr.logs_add(after, "Surnom retiré")
                 else:
                     self.mjr.logs_add(after, "Changement de surnom pour `{}`".format(after.display_name))
-                    if after.display_name not in data["STATS"]["surnoms"]:
-                        data["STATS"]["surnoms"].append(after.display_name)
+                    if after.display_name not in data["DATA"]["surnoms"]:
+                        data["DATA"]["surnoms"].append(after.display_name)
             if after.avatar_url != before.avatar_url:
                 url = before.avatar_url.split("?")[0]
                 self.mjr.logs_add(after, "Modification de l'avatar [@]({})".format(url))
