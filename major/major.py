@@ -226,7 +226,7 @@ class Major:
         data = self.mjr.get_account(ctx.message.author, "PERSO")
         if url:
             if url.endswith("gif") or url.endswith("png") or url.endswith("jpg") or url.endswith("jpeg"):
-                if data["bottom_img"]:
+                if not data["bottom_img"]:
                     await self.bot.say("✅ **Ajoutée** — L'image s'affichera au pied de votre carte.")
                 else:
                     await self.bot.say("📝 **Modifiée** — L'image s'affiche au pied de votre carte de membre.")
