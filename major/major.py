@@ -29,7 +29,7 @@ class MajorAPI:
             fileIO("data/major/data.json", "save", self.data)
             self.meta["lastsave"] = time.time()
 
-    def reset(self, server: discord.Server):
+    def reset(self, server: discord.Server = None):
         if not server:
             fileIO("data/major/data.json", "save", {})
         else:
