@@ -183,7 +183,7 @@ class Major:
             perms = ["`Administrateur`"]
         if perms:
             roles = roles + "\n**Permissions mod. :** {}".format(" ".join(perms))
-        em.add_field(name="Rôles", value=roles if roles else "Aucun")
+        em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
         logs = data.logs[-3:]
         if logs:
             hist = "— **Historique :**\n"
