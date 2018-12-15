@@ -73,19 +73,19 @@ class UsualAPI:
             if actuel > 0:
                 await self.bot.add_reaction(msg, "⬅")
                 emos.append("⬅")
-            if actuel < len(pages):
+            if actuel < (len(pages) - 1):
                 await self.bot.add_reaction(msg, "➡")
                 emos.append("➡")
             if emos:
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(0.1)
                 rep = await self.bot.wait_for_reaction(["➡", "⬅"], message=msg, timeout=200, check=self.check)
                 if rep is None:
                     await self.bot.delete_message(msg)
                     return
                 elif rep.reaction.emoji == "➡":
-                    actuel += 1 if actuel < len(pages) else 0
+                    actuel = actuel +  1 if actuel < (len(pages) - 1) else actuel
                 elif rep.reaction.emoji == "⬅":
-                    actuel -= 1 if actuel > 0 else 0
+                    actuel = actuel - 1 if actuel > 0 else actuel
                 else:
                     pass
             else:
