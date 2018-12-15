@@ -32,9 +32,11 @@ class MajorAPI:
     def reset(self, server: discord.Server = None):
         if not server:
             fileIO("data/major/data.json", "save", {})
+            self.data = {}
         else:
             if server.id in self.data:
                 self.data[server.id] = {}
+                fileIO("data/major/data.json", "save", self.data)
             else:
                 return False
         return True
