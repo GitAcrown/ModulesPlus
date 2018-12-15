@@ -205,7 +205,7 @@ class Major:
     @_carte.command(pass_context=True)
     async def bio(self, ctx, *texte):
         """Modifier la bio de sa carte de membre"""
-        data = self.mjr.get_account(ctx.message.user)
+        data = self.mjr.get_account(ctx.message.author)
         if texte:
             if not data["PERSO"]["bio"]:
                 await self.bot.say("✅ **Ajoutée** — Votre bio a été ajoutée en haut de votre carte de membre.")
@@ -220,7 +220,7 @@ class Major:
     @_carte.command(pass_context=True)
     async def image(self, ctx, url: str = None):
         """Modifier l'image de vitrine de sa carte"""
-        data = self.mjr.get_account(ctx.message.user, "PERSO")
+        data = self.mjr.get_account(ctx.message.author, "PERSO")
         if url:
             if url.endswith("gif") or url.endswith("png") or url.endswith("jpg") or url.endswith("jpeg"):
                 if data["bottom_img"]:
@@ -242,7 +242,7 @@ class Major:
         """Changer la couleur du bord gauche de sa carte
 
         Ne pas mettre de couleur affichera la couleur de votre pseudo sur le serveur"""
-        data = self.mjr.get_account(ctx.message.user, "PERSO")
+        data = self.mjr.get_account(ctx.message.author, "PERSO")
         col = couleur_hex
         if col:
             if "#" in col:
