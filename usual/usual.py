@@ -83,7 +83,7 @@ class UsualAPI:
                 emos.append("➡")
             if emos:
                 await asyncio.sleep(0.1)
-                rep = await self.bot.wait_for_reaction(["➡", "⬅"], message=msg, timeout=200, check=self.check)
+                rep = await self.bot.wait_for_reaction(emos, message=msg, timeout=200, check=self.check)
                 if rep is None:
                     await self.bot.delete_message(msg)
                     return
