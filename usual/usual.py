@@ -77,6 +77,7 @@ class UsualAPI:
                 await self.bot.add_reaction(msg, "⬅")
                 emos.append("⬅")
             if len(pages) >= 3:
+                await self.bot.add_reaction(msg, "🔢")
                 emos.append("🔢")
             if actuel < (len(pages) - 1):
                 await self.bot.add_reaction(msg, "➡")
@@ -99,9 +100,9 @@ class UsualAPI:
                                                           timeout=15)
                     if num is None:
                         continue
-                    elif rep.content.isdigit():
-                        if 0 <= int(rep.content) <= (len(pages) - 1):
-                            actuel = int(rep.content)
+                    elif num.content.isdigit():
+                        if 0 <= int(num.content) <= (len(pages) - 1):
+                            actuel = int(num.content)
                     else:
                         pass
                 else:
