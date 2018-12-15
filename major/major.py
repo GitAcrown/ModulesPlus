@@ -24,7 +24,7 @@ class MajorAPI:
     def save(self, force: bool=False):
         """Sauvegarde les données de l'API"""
         if force:
-            fileIO("data/major/data.json", "save", self.data)*
+            fileIO("data/major/data.json", "save", self.data)
         elif (time.time() - self.meta["lastsave"]) >= 180:  # 3 minutes
             fileIO("data/major/data.json", "save", self.data)
             self.meta["lastsave"] = time.time()
