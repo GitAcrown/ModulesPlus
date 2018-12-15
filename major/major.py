@@ -201,7 +201,8 @@ class Major:
         em.add_field(name="Logs", value=hist)
         rx = " | {}".format(user.game.name) if user.game else ""
         em.set_footer(text="ID · {}{}".format(user.id, rx), icon_url=data.status)
-        em.set_image(url=data.image)
+        if data.image:
+            em.set_image(url=data.image)
         await self.bot.say(embed=em)
 
     @_carte.command(pass_context=True)
