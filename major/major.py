@@ -182,19 +182,21 @@ class Major:
         if user.server_permissions.administrator:
             perms = ["`Administrateur`"]
         if perms:
-            roles = roles + "\n— **Permissions mod.:** {}".format(" ".join(perms))
+            roles = roles + "\n**Permissions mod. :** {}".format(" ".join(perms))
         em.add_field(name="Rôles", value=roles if roles else "Aucun")
         logs = data.logs[-3:]
-        hist = "— **Historique :**\n"
-        for act in logs:
-            if act[1] == today:
-                if act[0] == now:
-                    hist += "• À l'instant · *{}*".format(act[2])
+        if logs:
+            hist = "— **Historique :**\n"
+            for act in logs:
+                if act[1] == today:
+                    if act[0] == now:
+                        hist += "• À l'instant · *{}*".format(act[2])
+                    else:
+                        hist += "• {} · *{}*".format(act[0], act[2])
                 else:
-                    hist += "• {} · *{}*".format(act[0], act[2])
-            else:
-                hist += "• {} · *{}*".format(act[1], act[2])
-        hist + "\n— **Pseudos :** {}\n— **Surnoms :** {}".format(data.data.pseudos[-3:], data.data.surnoms[-3:])
+                    hist += "• {} · *{}*".format(act[1], act[2])
+            hist + "\n— **Pseudos :** {}\n— **Surnoms :** {}".format(data.data.pseudos[-3:], data.data.surnoms[-3:])
+        hist = "Aucun historique"
         em.add_field(name="Logs", value=hist)
         rx = " | {}".format(user.game.name) if user.game else ""
         em.set_footer(text="ID · {}{}".format(user.id, rx), icon_url=data.status)
