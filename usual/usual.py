@@ -101,8 +101,8 @@ class UsualAPI:
                     if num is None:
                         continue
                     elif num.content.isdigit():
-                        if 0 <= int(num.content) <= (len(pages) - 1):
-                            actuel = int(num.content)
+                        if 0 < int(num.content) <= len(pages):
+                            actuel = int(num.content) - 1
                     else:
                         pass
                 else:
