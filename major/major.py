@@ -116,6 +116,7 @@ class MajorAPI:
         ajd = time.strftime("%d/%m/%Y", time.localtime())
         data = self.get_account(user)
         desc = data["PERSO"]["bio"]
+        image = data["PERSO"]["bottom_img"]
         color = data["PERSO"]["bar_color"] if data["PERSO"]["bar_color"] else user.color
         # crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
         # ariv_date, ariv_jours = user.joined_at.strftime("%d/%m/%Y"), (datetime.now() - user.joined_at).days
@@ -130,8 +131,8 @@ class MajorAPI:
         sd = StatsData(data["DATA"]["msg_nb"], data["DATA"]["msg_suppr"], data["DATA"]["emojis"], data["DATA"]["join"],
                        data["DATA"]["quit"], pseudos, surnoms, flammes, der_msg, fmsg_date, fmsg_jours)
         status = self.get_status_img(user)
-        FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'color', 'status'])
-        return FormattedData(user, sd, logs, desc, color, status)
+        FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status'])
+        return FormattedData(user, sd, logs, desc, image, color, status)
 
 
 class Major:
@@ -200,6 +201,7 @@ class Major:
         em.add_field(name="Logs", value=hist)
         rx = " | {}".format(user.game.name) if user.game else ""
         em.set_footer(text="ID · {}{}".format(user.id, rx), icon_url=data.status)
+        em.set_image(url=data.image)
         await self.bot.say(embed=em)
 
     @_carte.command(pass_context=True)
