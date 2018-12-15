@@ -298,8 +298,8 @@ class Major:
             if user.id not in data:
                 data[user.id] = self.mjr.new_empty_account()
             data[user.id]["DATA"]["msg_nb"] += 1
-            if msg.timestamp.timestamp() < datetime.strptime(data[user.id]["DATA"]["first_msg"], "%d/%m/%Y"):
-                data[user.id]["DATA"]["first_msg"] = msg.timestamp.timestamp().strftime("%d/%m/%Y")
+            if msg.timestamp.timestamp() < data[user.id]["DATA"]["first_msg"]:
+                data[user.id]["DATA"]["first_msg"] = msg.timestamp.timestamp()
         self.mjr.save(True)
         await self.bot.say("📈 **Mise à jour des stats.** — Terminée")
 
