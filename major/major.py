@@ -169,7 +169,7 @@ class Major:
         if user.voice.voice_channel:
             profil += "\n\🎙 · Connecté sur {}".format(user.voice.voice_channel.name)
         em.add_field(name="Profil", value=profil)
-        roles = ", ".join(["*{}*".format(r.name) for r in user.roles if r.name != "@everyone"])
+        roles = " ".join(["*`@{}`*".format(r.name) for r in user.roles if r.name != "@everyone"])
         perms = []
         if user.server_permissions.manage_messages:
             perms.append("`Gestion des messages`")
@@ -284,6 +284,7 @@ class Major:
         """Met à jour du mieux que possible les statistiques des membres de manière rétroactive du channel en cours"""
         data = self.mjr.get_server(ctx.message.server, "USERS")
         n = 0
+        await self.bot.say("📈 **Mise à jour des stats.** — Processus démarré")
         async for msg in self.bot.logs_from(ctx.message.channel, limit=max):
             if n == (0.25 * max):
                 await self.bot.say("📈 **Mise à jour des stats.** — Env. 25%")
