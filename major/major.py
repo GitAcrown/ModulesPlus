@@ -35,7 +35,7 @@ class MajorAPI:
             self.data = {}
         else:
             if server.id in self.data:
-                self.data[server.id] = {}
+                del self.data[server.id]
                 fileIO("data/major/data.json", "save", self.data)
             else:
                 return False
