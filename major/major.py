@@ -291,21 +291,26 @@ class Major:
         n = 0
         await self.bot.say("📈 **Mise à jour des stats.** — Processus démarré")
         async for msg in self.bot.logs_from(ctx.message.channel, limit=max):
+            if n == (0.10 * max):
+                await self.bot.say("📈 **Mise à jour des stats.** — Env. 10%")
             if n == (0.25 * max):
                 await self.bot.say("📈 **Mise à jour des stats.** — Env. 25%")
-            if n == (0.50 * max):
-                await self.bot.say("📈 **Mise à jour des stats.** — Env. 50%")
-            if n == (0.75 * max):
-                await self.bot.say("📈 **Mise à jour des stats.** — Env. 75%")
-            if n == (0.90 * max):
-                await self.bot.say("📈 **Mise à jour des stats.** — Env. 90%")
+            if n == (0.40 * max):
+                await self.bot.say("📈 **Mise à jour des stats.** — Env. 40%")
+            if n == (0.65 * max):
+                await self.bot.say("📈 **Mise à jour des stats.** — Env. 65%")
+            if n == (0.85 * max):
+                await self.bot.say("📈 **Mise à jour des stats.** — Env. 85%")
             n += 1
-            user = msg.author
-            if user.id not in data:
-                data[user.id] = self.mjr.new_empty_account()
-            data[user.id]["DATA"]["msg_nb"] += 1
-            if msg.timestamp.timestamp() < data[user.id]["DATA"]["first_msg"]:
-                data[user.id]["DATA"]["first_msg"] = msg.timestamp.timestamp()
+            try:
+                user = msg.author
+                if user.id not in data:
+                    data[user.id] = self.mjr.new_empty_account()
+                data[user.id]["DATA"]["msg_nb"] += 1
+                if msg.timestamp.timestamp() < data[user.id]["DATA"]["first_msg"]:
+                    data[user.id]["DATA"]["first_msg"] = msg.timestamp.timestamp()
+            except:
+                print("Auteur du message ID:{} introuvable".format(msg.id))
         self.mjr.save(True)
         await self.bot.say("📈 **Mise à jour des stats.** — Terminée")
 
