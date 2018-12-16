@@ -285,12 +285,13 @@ class Major:
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
-    async def sync(self, ctx, max: int):
+    async def sync(self, ctx, max: int, channel: discord.Channel):
         """Met à jour du mieux que possible les statistiques des membres de manière rétroactive du channel en cours"""
         data = self.mjr.get_server(ctx.message.server, "USERS")
+        channel = channel if channel else ctx.message.channel
         n = 0
         await self.bot.say("📈 **Mise à jour des stats.** — Processus démarré")
-        async for msg in self.bot.logs_from(ctx.message.channel, limit=max):
+        async for msg in self.bot.logs_from(channel, limit=max):
             if n == (0.10 * max):
                 await self.bot.say("📈 **Mise à jour des stats.** — Env. 10%")
             if n == (0.25 * max):
