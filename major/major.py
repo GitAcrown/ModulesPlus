@@ -285,7 +285,7 @@ class Major:
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
-    async def sync(self, ctx, max: int, channel: discord.Channel):
+    async def sync(self, ctx, max: int, channel: discord.Channel = None):
         """Met à jour du mieux que possible les statistiques des membres de manière rétroactive du channel en cours"""
         data = self.mjr.get_server(ctx.message.server, "USERS")
         channel = channel if channel else ctx.message.channel
