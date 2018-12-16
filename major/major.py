@@ -162,7 +162,7 @@ class Major:
         data = self.mjr.get_formatted_data(user)
         crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
         ariv_date, ariv_jours = user.joined_at.strftime("%d/%m/%Y"), (datetime.now() - user.joined_at).days
-        title = user.name if user.display_name == user.name else "{} «{}»".format(user.name, user.display_name)
+        title = user.name if user.display_name == user.name else "{} a.k.a. « {} »".format(user.name, user.display_name)
         em = discord.Embed(title=title, description=data.bio, color=data.color)
         em.set_thumbnail(url=user.avatar_url)
         profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
@@ -170,7 +170,7 @@ class Major:
         profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
         profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
         if user.voice.voice_channel:
-            profil += "\n\🎙 · Connecté sur {}".format(user.voice.voice_channel.name)
+            profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
         em.add_field(name="Profil", value=profil)
         roles = " ".join(["*`@{}`*".format(r.name) for r in user.roles if r.name != "@everyone"])
         perms = []
