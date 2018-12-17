@@ -4,6 +4,7 @@ import re
 from copy import deepcopy
 
 import asyncio
+from urllib.parse import unquote
 import time
 import aiohttp
 import discord
@@ -105,7 +106,7 @@ class Swift:
                                    "ACTIF": False}
             fileIO("data/swift/sys.json", "save", self.sys)
         if update_services:
-            for service in ["noelshack", "mobiletwitter", "subreddit", "ia_wikipedia"]:
+            for service in ["noelshack", "mobiletwitter", "subreddit", "ia_wikipedia", "mediagif"]:
                 if service not in self.sys[server.id]["SERVICES"]["annexes"]:
                     self.sys[server.id]["SERVICES"]["annexes"][service] = True
             self.sys_save()
@@ -529,6 +530,17 @@ class Swift:
                                 if e.startswith("https://mobile.twitter.com/"):
                                     new = e.replace("mobile.twitter.com", "twitter.com", 1)
                                     await self.bot.send_message(channel, "🔗 " + new)
+
+                    if opts["annexes"].get("mediagif", True):
+                        if "https%3a%2f%2fmedia." in content:
+                            routput = re.compile(r'rurl=(.*)&ehk', re.IGNORECASE | re.DOTALL).findall(content)
+                            if routput:
+                                txt = ""
+                                for r in routput:
+                                    if r:
+                                        txt += "🔗 {}\n".format(unquote(r))
+                                if txt:
+                                    await self.bot.send_message(channel, txt)
 
                     if opts["annexes"].get("subreddit", True):
                         if "r/" in content:
