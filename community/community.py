@@ -531,7 +531,7 @@ class Community:
             colors = [0xff0000, 0x169f48, 0xfdfdfd, 0xe3d1bb, 0xc6e2ff]
             nmsg = random.choice(msg).format(user.name)
             em = discord.Embed(description="📤 {}".format(nmsg),
-                               color=random.choice(colors))
+                               color=0xff0000)
             chan = self.bot.get_channel("204585334925819904")
             await self.bot.send_message(chan, embed=em)
 
