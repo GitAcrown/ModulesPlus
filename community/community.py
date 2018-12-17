@@ -531,7 +531,7 @@ class Community:
             colors = [0xff0000, 0x169f48, 0xfdfdfd, 0xe3d1bb, 0xc6e2ff]
             nmsg = random.choice(msg).format(user.name)
             em = discord.Embed(description="📤 {}".format(nmsg),
-                               color=0xff0000)
+                               color=random.choice(colors))
             chan = self.bot.get_channel("204585334925819904")
             await self.bot.send_message(chan, embed=em)
 
@@ -558,4 +558,4 @@ def setup(bot):
     bot.add_listener(n.grab_reaction_add, "on_reaction_add")
     bot.add_listener(n.grab_reaction_remove, "on_reaction_remove")
     bot.add_listener(n.autoattrib, "on_member_join")
-    bot.add_listener(n.noelmsg, "on_member_quit")
+    bot.add_listener(n.noelmsg, "on_member_remove")
