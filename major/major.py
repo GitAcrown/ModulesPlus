@@ -193,15 +193,15 @@ class Major:
             for act in logs:
                 if act[1] == today:
                     if act[0] == now:
-                        hist += "• À l'instant · *{}*".format(act[2])
+                        hist += "• À l'instant · *{}*\n".format(act[2])
                     else:
-                        hist += "• {} · *{}*".format(act[0], act[2])
+                        hist += "• {} · *{}*\n".format(act[0], act[2])
                 else:
-                    hist += "• {} · *{}*".format(act[1], act[2])
+                    hist += "• {} · *{}*\n".format(act[1], act[2])
             if data.data.pseudos:
-                hist += "\n— **Pseudos :** {}".format(data.data.pseudos[-3:])
+                hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[-3:]))
             if data.data.surnoms:
-                hist += "\n— ** Surnoms: ** {}".format(data.data.surnoms[-3:])
+                hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[-3:]))
         else:
             hist = "Aucun historique"
         em.add_field(name="Logs", value=hist)
