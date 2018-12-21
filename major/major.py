@@ -185,7 +185,7 @@ class Major:
         if user.server_permissions.administrator:
             perms = ["`Administrateur`"]
         if perms:
-            roles = roles + "\n**Perms :** {}".format(" ".join(perms))
+            roles = roles + "\n— **Perms :** {}".format(" ".join(perms))
         em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
         logs = data.logs[-3:]
         if logs:
