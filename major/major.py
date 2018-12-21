@@ -172,7 +172,7 @@ class Major:
         if user.voice.voice_channel:
             profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
         em.add_field(name="Profil", value=profil)
-        roles = " ".join(["*`@{}`*".format(r.name) for r in user.roles if r.name != "@everyone"])
+        roles = " ".join(["`{}`".format(r.name) for r in user.roles if r.name != "@everyone"])
         perms = []
         if user.server_permissions.manage_messages:
             perms.append("`Gestion des messages`")
@@ -185,7 +185,7 @@ class Major:
         if user.server_permissions.administrator:
             perms = ["`Administrateur`"]
         if perms:
-            roles = roles + "\n**Permissions mod. :** {}".format(" ".join(perms))
+            roles = roles + "\n**Perms :** {}".format(" ".join(perms))
         em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
         logs = data.logs[-3:]
         if logs:
@@ -198,8 +198,12 @@ class Major:
                         hist += "• {} · *{}*".format(act[0], act[2])
                 else:
                     hist += "• {} · *{}*".format(act[1], act[2])
-            hist + "\n— **Pseudos :** {}\n— **Surnoms :** {}".format(data.data.pseudos[-3:], data.data.surnoms[-3:])
-        hist = "Aucun historique"
+            if data.data.pseudos:
+                hist += "\n— **Pseudos :** {}".format(data.data.pseudos[-3:])
+            if data.data.surnoms:
+                hist += "\n— ** Surnoms: ** {}".format(data.data.surnoms[-3:])
+        else:
+            hist = "Aucun historique"
         em.add_field(name="Logs", value=hist)
         rx = " | {}".format(user.game.name) if user.game else ""
         em.set_footer(text="ID · {}{}".format(user.id, rx), icon_url=data.status)
