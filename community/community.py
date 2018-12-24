@@ -536,9 +536,11 @@ class Community:
             await self.bot.send_message(chan, embed=em)
 
     async def censure(self, message):
-        author = message.author
         if "role" not in self.session:
-            self.session["role"] = discord.utils.get(message.server.roles, name="Prison")
+            try:
+                self.session["role"] = discord.utils.get(message.server.roles, name="Prison")
+            except:
+                print("CENSURE - Impossible d'avoir le rôle Prison")
         if message.server.id == "204585334925819904":
             if "discord.gg" in message.content.lower():
                 roles = [r.name for r in message.author.roles]
