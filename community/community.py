@@ -535,6 +535,16 @@ class Community:
             chan = self.bot.get_channel("204585334925819904")
             await self.bot.send_message(chan, embed=em)
 
+    async def censure(self, message):
+        author = message.author
+        if "role" not in self.session:
+            self.session["role"] = discord.utils.get(message.server.roles, name="Prison")
+        if message.server.id == "204585334925819904":
+            if "discord.gg" in message.content.lower():
+                roles = [r.name for r in message.author.roles]
+                if "Habitué" not in roles or "Malsain" not in roles:
+                    await self.bot.add_roles(message.author, self.session["role"])
+
 def check_folders():
     if not os.path.exists("data/community"):
         print("Création du dossier Community...")
@@ -555,6 +565,7 @@ def setup(bot):
     check_files()
     n = Community(bot)
     bot.add_cog(n)
+    bot.add_listener(n.censure, "on_message")
     bot.add_listener(n.grab_reaction_add, "on_reaction_add")
     bot.add_listener(n.grab_reaction_remove, "on_reaction_remove")
     bot.add_listener(n.autoattrib, "on_member_join")
