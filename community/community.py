@@ -541,7 +541,7 @@ class Community:
                 self.session["role"] = discord.utils.get(message.server.roles, name="Prison")
             except:
                 print("CENSURE - Impossible d'avoir le rôle Prison")
-        if message.server.id == "328632789836496897":
+        if message.server.id == "204585334925819904":
             if "https://discord.gg" in message.content.lower():
                 roles = [r.name for r in message.author.roles]
                 if "Habitué" not in roles or "Malsain" not in roles:
