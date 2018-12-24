@@ -65,7 +65,7 @@ class Justice:
     async def reset(self, ctx):
         """Reset totalement la prison et libère tous les membres"""
         server = ctx.message.server
-        if server.id in self.reg:
+        if server.id in self.reg:se
             for u in self.reg[server.id]:
                 self.reg[server.id][u]["TS_SORTIE"] = self.reg[server.id][u]["TS_ENTREE"] = 0
             self.save()
