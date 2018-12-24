@@ -532,7 +532,7 @@ class Community:
             nmsg = random.choice(msg).format(user.name)
             em = discord.Embed(description="📤 {}".format(nmsg),
                                color=random.choice(colors))
-            chan = self.bot.get_channel("204585334925819904")
+            chan = self.bot.get_channel("526819724768575526")
             await self.bot.send_message(chan, embed=em)
 
 def check_folders():
