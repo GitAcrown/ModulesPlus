@@ -285,7 +285,7 @@ class Karma:
 
                 if user in server.members:
                     if role in user.roles:
-                        del cache[user.id]
+                        cache[user.id]["sortie"] = 0
                         try:
                             await self.bot.remove_roles(user, role)
                         except:
@@ -305,16 +305,20 @@ class Karma:
                         notif = await self.bot.say(embed=em)
                         await asyncio.sleep(8)
                         await self.bot.delete_message(notif)
+                        del cache[user.id]
+                        self.save_cache()
                     else:
                         return # Il a été sorti manuellement de prison
                 else:
+                    cache[user.id]["sortie"] = 0
                     em = discord.Embed(description="🚩 **Sortie de prison impossible** ─ **{}** n'est plus sur le serveur.".format(user.name))
-                    del cache[user.id]
                     notif = await self.bot.say(embed=em)
                     await asyncio.sleep(8)
                     await self.bot.delete_message(notif)
+                    del cache[user.id]
+                    self.save_cache()
             else:
-                del cache[user.id]
+                cache[user.id]["sortie"] = 0
                 try:
                     await self.bot.remove_roles(user, role)
                 except:
@@ -332,6 +336,8 @@ class Karma:
                 notif = await self.bot.say(embed=em)
                 await asyncio.sleep(8)
                 await self.bot.delete_message(notif)
+                del cache[user.id]
+                self.save_cache()
 
     @commands.command(aliases=["pmsg", "appel"], pass_context=True)
     async def prisonmsg(self, ctx, *message: str):
