@@ -492,88 +492,96 @@ class Karma:
                 continue
 
     async def msg_post(self, message):
-        if self.karma.logs_on(message.server, "msg_post"):
-            em = discord.Embed(description=message.content, color=0x87b5ff, timestamp=message.timestamp)
-            em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
-            em.set_footer(text="ID ─ {}".format(message.author.id))
-            await self.karma.add_server_logs(message.server, "msg_post", em)
+        if message.server:
+            if self.karma.logs_on(message.server, "msg_post"):
+                em = discord.Embed(description=message.content, color=0x87b5ff, timestamp=message.timestamp)
+                em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
+                em.set_footer(text="ID ─ {}".format(message.author.id))
+                await self.karma.add_server_logs(message.server, "msg_post", em)
 
     async def msg_delete(self, message):
-        if self.karma.logs_on(message.server, "msg_delete"):
-            em = discord.Embed(description=message.content, color=0xff8787, timestamp=message.timestamp)
-            em.set_author(name=str(message.author) + " ─ Message supprimé", icon_url=message.author.avatar_url)
-            em.set_footer(text="ID ─ {}".format(message.author.id))
-            await self.karma.add_server_logs(message.server, "msg_delete", em)
+        if message.server:
+            if self.karma.logs_on(message.server, "msg_delete"):
+                em = discord.Embed(description=message.content, color=0xff8787, timestamp=message.timestamp)
+                em.set_author(name=str(message.author) + " ─ Message supprimé", icon_url=message.author.avatar_url)
+                em.set_footer(text="ID ─ {}".format(message.author.id))
+                await self.karma.add_server_logs(message.server, "msg_delete", em)
 
     async def msg_edit(self, before, after):
-        if self.karma.logs_on(after.server, "msg_edit"):
-            em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
-            em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
-            em.set_footer(text="ID ─ {}".format(after.author.id))
-            em.add_field(name="◦ Avant", value=before.content)
-            em.add_field(name="• Après", value=after.content)
-            await self.karma.add_server_logs(after.server, "msg_edit", em)
+        if after.server:
+            if self.karma.logs_on(after.server, "msg_edit"):
+                em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
+                em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
+                em.set_footer(text="ID ─ {}".format(after.author.id))
+                em.add_field(name="◦ Avant", value=before.content)
+                em.add_field(name="• Après", value=after.content)
+                await self.karma.add_server_logs(after.server, "msg_edit", em)
 
     async def user_join(self, user):
-        if self.karma.logs_on(user.server, "user_join"):
-            em = discord.Embed(description="{} est entré·e sur le serveur".format(user.mention), color=0x71e28f)
-            em.set_author(name=str(user) + " ─ Entrée", icon_url=user.avatar_url)
-            em.set_footer(text="ID ─ {}".format(user.id))
-            await self.karma.add_server_logs(user.server, "user_join", em)
+        if user.server:
+            if self.karma.logs_on(user.server, "user_join"):
+                em = discord.Embed(description="{} est entré·e sur le serveur".format(user.mention), color=0x71e28f)
+                em.set_author(name=str(user) + " ─ Entrée", icon_url=user.avatar_url)
+                em.set_footer(text="ID ─ {}".format(user.id))
+                await self.karma.add_server_logs(user.server, "user_join", em)
 
     async def user_quit(self, user):
-        if self.karma.logs_on(user.server, "user_quit"):
-            em = discord.Embed(description="{} est sorti·e du serveur".format(user.mention), color=0xe29c71)
-            em.set_author(name=str(user) + " ─ Sortie", icon_url=user.avatar_url)
-            em.set_footer(text="ID ─ {}".format(user.id))
-            await self.karma.add_server_logs(user.server, "user_quit", em)
+        if user.server:
+            if self.karma.logs_on(user.server, "user_quit"):
+                em = discord.Embed(description="{} est sorti·e du serveur".format(user.mention), color=0xe29c71)
+                em.set_author(name=str(user) + " ─ Sortie", icon_url=user.avatar_url)
+                em.set_footer(text="ID ─ {}".format(user.id))
+                await self.karma.add_server_logs(user.server, "user_quit", em)
 
     async def user_change(self, before, after):
-        if after.voice.voice_channel and not before.voice.voice_channel:
-            if self.karma.logs_on(after.server, "voice_join"):
-                em = discord.Embed(description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
-                                   color=0x8adb9a)
-                em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
-                em.set_footer(text="ID ─ {}".format(after.id))
-                await self.karma.add_server_logs(after.server, "voice_join", em)
-        if before.voice.voice_channel and not after.voice.voice_channel:
-            if self.karma.logs_on(after.server, "voice_quit"):
-                em = discord.Embed(description="{} a quitté {}".format(after.mention, after.voice.voice_channel.mention),
-                                   color=0x5e9b6a)
-                em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
-                em.set_footer(text="ID ─ {}".format(after.id))
-                await self.karma.add_server_logs(after.server, "voice_quit", em)
-        if after.name != before.name:
-            if self.karma.logs_on(after.server, "user_change_name"):
-                em = discord.Embed(
-                    description="{} a changé de nom pour {}".format(before.name, after.name),
-                    color=0xc259e5)
-                em.set_author(name=str(after) + " ─ Changement de pseudo", icon_url=after.avatar_url)
-                em.set_footer(text="ID ─ {}".format(after.id))
-                await self.karma.add_server_logs(after.server, "user_change_name", em)
-        if after.display_name != before.display_name:
-            if self.karma.logs_on(after.server, "user_change_nickname"):
-                if after.nick and before.nick:
-                    em = discord.Embed(
-                        description="{} a changé de surnom pour {}".format(before.nick, after.nick),
-                        color=0xe559cd)
-                    em.set_author(name=str(after) + " ─ Changement de surnom", icon_url=after.avatar_url)
+        if after.server:
+            if after.voice.voice_channel and not before.voice.voice_channel:
+                if self.karma.logs_on(after.server, "voice_join"):
+                    em = discord.Embed(description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                                       color=0x8adb9a)
+                    em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
                     em.set_footer(text="ID ─ {}".format(after.id))
-                    await self.karma.add_server_logs(after.server, "user_change_nickname", em)
+                    await self.karma.add_server_logs(after.server, "voice_join", em)
+            if before.voice.voice_channel and not after.voice.voice_channel:
+                if self.karma.logs_on(after.server, "voice_quit"):
+                    em = discord.Embed(description="{} a quitté {}".format(after.mention, after.voice.voice_channel.mention),
+                                       color=0x5e9b6a)
+                    em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(after.id))
+                    await self.karma.add_server_logs(after.server, "voice_quit", em)
+            if after.name != before.name:
+                if self.karma.logs_on(after.server, "user_change_name"):
+                    em = discord.Embed(
+                        description="{} a changé de nom pour {}".format(before.name, after.name),
+                        color=0xc259e5)
+                    em.set_author(name=str(after) + " ─ Changement de pseudo", icon_url=after.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(after.id))
+                    await self.karma.add_server_logs(after.server, "user_change_name", em)
+            if after.display_name != before.display_name:
+                if self.karma.logs_on(after.server, "user_change_nickname"):
+                    if after.nick and before.nick:
+                        em = discord.Embed(
+                            description="{} a changé de surnom pour {}".format(before.nick, after.nick),
+                            color=0xe559cd)
+                        em.set_author(name=str(after) + " ─ Changement de surnom", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "user_change_nickname", em)
 
     async def all_bans(self, user):
-        if self.karma.logs_on(user.server, "all_bans"):
-            em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb56767)
-            em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
-            em.set_footer(text="ID ─ {}".format(user.id))
-            await self.karma.add_server_logs(user.server, "all_bans", em)
+        if user.server:
+            if self.karma.logs_on(user.server, "all_bans"):
+                em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb56767)
+                em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
+                em.set_footer(text="ID ─ {}".format(user.id))
+                await self.karma.add_server_logs(user.server, "all_bans", em)
 
     async def all_debans(self, user):
-        if self.karma.logs_on(user.server, "all_debans"):
-            em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa34242)
-            em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
-            em.set_footer(text="ID ─ {}".format(user.id))
-            await self.karma.add_server_logs(user.server, "all_debans", em)
+        if user.server:
+            if self.karma.logs_on(user.server, "all_debans"):
+                em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa34242)
+                em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
+                em.set_footer(text="ID ─ {}".format(user.id))
+                await self.karma.add_server_logs(user.server, "all_debans", em)
 
 def check_folders():
     if not os.path.exists("data/karma"):
