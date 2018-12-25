@@ -538,14 +538,14 @@ class Karma:
         if after.server:
             if after.voice.voice_channel and not before.voice.voice_channel:
                 if self.karma.logs_on(after.server, "voice_join"):
-                    em = discord.Embed(description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                    em = discord.Embed(description="{} a rejoint {}".format(before.mention, after.voice.voice_channel.mention),
                                        color=0x8adb9a)
                     em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
                     em.set_footer(text="ID ─ {}".format(after.id))
                     await self.karma.add_server_logs(after.server, "voice_join", em)
             if before.voice.voice_channel and not after.voice.voice_channel:
                 if self.karma.logs_on(after.server, "voice_quit"):
-                    em = discord.Embed(description="{} a quitté {}".format(after.mention, after.voice.voice_channel.mention),
+                    em = discord.Embed(description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
                                        color=0x5e9b6a)
                     em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
                     em.set_footer(text="ID ─ {}".format(after.id))
