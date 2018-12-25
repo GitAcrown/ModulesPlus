@@ -509,13 +509,14 @@ class Karma:
 
     async def msg_edit(self, before, after):
         if after.server:
-            if self.karma.logs_on(after.server, "msg_edit"):
-                em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
-                em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
-                em.set_footer(text="ID ─ {}".format(after.author.id))
-                em.add_field(name="◦ Avant", value=before.content)
-                em.add_field(name="• Après", value=after.content)
-                await self.karma.add_server_logs(after.server, "msg_edit", em)
+            if before.content != after.content:
+                if self.karma.logs_on(after.server, "msg_edit"):
+                    em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
+                    em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(after.author.id))
+                    em.add_field(name="◦ Avant", value=before.content)
+                    em.add_field(name="• Après", value=after.content)
+                    await self.karma.add_server_logs(after.server, "msg_edit", em)
 
     async def user_join(self, user):
         if user.server:
