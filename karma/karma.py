@@ -583,6 +583,11 @@ class Karma:
                 em.set_footer(text="ID ─ {}".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
+    def __unload(self):
+        self.karma.save(True)
+        self.save_cache()
+        print("Sauvegarde des fichiers Karma avant redémarrage effectuée")
+
 def check_folders():
     if not os.path.exists("data/karma"):
         print("Création du dossier KARMA...")
