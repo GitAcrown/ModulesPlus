@@ -552,6 +552,16 @@ class Karma:
                     em.set_footer(text="ID ─ {}".format(after.id))
                     await self.karma.add_server_logs(after.server, "voice_quit", em)
 
+            if before.voice.voice_channel and after.voice.voice_channel:
+                if before.voice.voice_channel != after.voice.voice_channel:
+                    em = discord.Embed(
+                        description="{} est passé du salon {} à {}".format(before.mention, before.voice.voice_channel.mention,
+                                                                     after.voice.voice_channel.mention),
+                        color=0x5e9b6a)
+                    em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(after.id))
+                    await self.karma.add_server_logs(after.server, "voice_join", em)
+
             if after.name != before.name:
                 if self.karma.logs_on(after.server, "user_change_name"):
                     em = discord.Embed(
