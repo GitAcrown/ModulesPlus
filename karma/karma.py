@@ -431,7 +431,7 @@ class Karma:
             txt = ""
             for t in types:
                 if t in serv:
-                    txt += "• `{}` ─ {}\n".format(t, self.bot.get_channel(serv[t]))
+                    txt += "• `{}` ─ {}\n".format(t, self.bot.get_channel(serv[t]).mention)
                 else:
                     txt += "• `{}` ─ Non assigné\n".format(t)
             em = discord.Embed(title="Interface de gestion des Logs", description=txt)
