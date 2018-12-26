@@ -1,5 +1,6 @@
 # Ce module est volontairement excessivement commenté afin d'aider les débutants à décoder le code plus facilement
 import os
+import re
 import time
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -366,6 +367,71 @@ class Major:
                 self.mjr.logs_add(after, "Modification de l'avatar [@]({})".format(url))
             self.mjr.save()
 
+    async def mjr_react(self, reaction, author):
+        if hasattr(author, "server"):
+            if reaction.emoji == "👤":
+                if reaction.message.embeds:
+                    embed = reaction.message.embeds[0]
+                    if embed["footer"]:
+                        output = re.compile(r'ID:(\d*)', re.DOTALL | re.IGNORECASE).findall(embed["footer"])
+                        if output:
+                            user = author.server.get_member(output[0])
+                user = reaction.message.author
+                today = time.strftime("%d/%m/%Y", time.localtime())
+                now = time.strftime("%H:%M", time.localtime())
+                data = self.mjr.get_formatted_data(user)
+                crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
+                ariv_date, ariv_jours = user.joined_at.strftime("%d/%m/%Y"), (datetime.now() - user.joined_at).days
+                title = user.name if user.display_name == user.name else "{} a.k.a. « {} »".format(user.name,
+                                                                                                   user.display_name)
+                em = discord.Embed(title=title, description=data.bio, color=data.color)
+                em.set_thumbnail(url=user.avatar_url)
+                profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
+                profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
+                profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
+                profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
+                if user.voice.voice_channel:
+                    profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
+                em.add_field(name="Profil", value=profil)
+                roles = " ".join(["`{}`".format(r.name) for r in user.roles if r.name != "@everyone"])
+                perms = []
+                if user.server_permissions.manage_messages:
+                    perms.append("`Gestion des messages`")
+                if user.server_permissions.kick_members:
+                    perms.append("`Kick`")
+                if user.server_permissions.ban_members:
+                    perms.append("`Ban`")
+                if user.server_permissions.manage_roles:
+                    perms.append("`Gestion des rôles`")
+                if user.server_permissions.administrator:
+                    perms = ["`Administrateur`"]
+                if perms:
+                    roles = roles + "\n— **Perms :** {}".format(" ".join(perms))
+                em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
+                logs = data.logs[-3:]
+                if logs:
+                    hist = "— **Historique :**\n"
+                    for act in logs:
+                        if act[1] == today:
+                            if act[0] == now:
+                                hist += "• À l'instant · *{}*\n".format(act[2])
+                            else:
+                                hist += "• {} · *{}*\n".format(act[0], act[2])
+                        else:
+                            hist += "• {} · *{}*\n".format(act[1], act[2])
+                    if data.data.pseudos:
+                        hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[-3:]))
+                    if data.data.surnoms:
+                        hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[-3:]))
+                else:
+                    hist = "Aucun historique"
+                em.add_field(name="Logs", value=hist)
+                rx = " | {}".format(user.game.name) if user.game else ""
+                em.set_footer(text="ID · {}{}".format(user.id, rx), icon_url=data.status)
+                if data.image:
+                    em.set_image(url=data.image)
+                await self.bot.send_message(author, embed=em)
+
     def __unload(self):
         self.mjr.save(True)
         print("Sauvegarde de Major avant redémarrage effectuée")
@@ -393,4 +459,5 @@ def setup(bot):
     bot.add_listener(n.mjr_join, "on_member_join")
     bot.add_listener(n.mjr_quit, "on_member_remove")
     bot.add_listener(n.mjr_perso, "on_member_update")
+    bot.add_listener(n.mjr_react, "on_reaction_add")
     bot.add_cog(n)
