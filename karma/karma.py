@@ -514,7 +514,7 @@ class Karma:
             if not after.author.bot:
                 if before.content != after.content:
                     if self.karma.logs_on(after.server, "msg_edit"):
-                        em = discord.Embed(color=0x498fff, timestamp=after.timestame, inline=False)
+                        em = discord.Embed(color=0x498fff, timestamp=after.timestamp, inline=False)
                         em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
                         em.set_footer(text="ID ─ {}".format(after.author.id))
                         em.add_field(name="◦ Avant", value=before.content)
@@ -573,7 +573,7 @@ class Karma:
                 em.set_footer(text="ID ─ {}".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
-    async def voice_change(self, before, after):
+    async def channel_change(self, before, after):
         print("Détection changement channel {}".format(after.name))
         if after.type == discord.ChannelType.voice:
             if before.voice_members != after.voice_members:
@@ -654,7 +654,7 @@ def setup(bot):
     check_files()
     n = Karma(bot)
     bot.add_cog(n)
-    bot.add_listener(n.voice_change, "on_channel_update")
+    bot.add_listener(n.channel_change, "on_channel_update")
     bot.add_listener(n.msg_post, "on_message")
     bot.add_listener(n.msg_delete, "on_message_delete")
     bot.add_listener(n.msg_edit, "on_message_edit")
