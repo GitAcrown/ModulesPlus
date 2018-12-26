@@ -370,13 +370,13 @@ class Major:
     async def mjr_react(self, reaction, author):
         if hasattr(author, "server"):
             if reaction.emoji == "👤":
+                user = reaction.message.author
                 if reaction.message.embeds:
                     embed = reaction.message.embeds[0]
                     if embed["footer"]:
                         output = re.compile(r'ID:(\d*)', re.DOTALL | re.IGNORECASE).findall(embed["footer"])
                         if output:
                             user = author.server.get_member(output[0])
-                user = reaction.message.author
                 today = time.strftime("%d/%m/%Y", time.localtime())
                 now = time.strftime("%H:%M", time.localtime())
                 data = self.mjr.get_formatted_data(user)
