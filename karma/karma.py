@@ -539,28 +539,6 @@ class Karma:
 
     async def user_change(self, before, after):
         if type(after) is discord.Member:
-            print("Détection changement {} sur {}".format(after.name, after.server.name))
-            if after.voice_channel:
-                if not before.voice_channel:
-                    print("Vocal - not before & after (connect)")
-                    if self.karma.logs_on(after.server, "voice_join"):
-                        em = discord.Embed(
-                            description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
-                            color=0x8adb9a)
-                        em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
-                        em.set_footer(text="ID ─ {}".format(after.id))
-                        await self.karma.add_server_logs(after.server, "voice_join", em)
-            elif before.voice_channel:
-                if not after.voice_channel:
-                    print("Vocal - before & not after (déconnect)")
-                    if self.karma.logs_on(after.server, "voice_quit"):
-                        em = discord.Embed(
-                            description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
-                            color=0x5e9b6a)
-                        em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
-                        em.set_footer(text="ID ─ {}".format(after.id))
-                        await self.karma.add_server_logs(after.server, "voice_quit", em)
-
             if after.name != before.name:
                 if self.karma.logs_on(after.server, "user_change_name"):
                     em = discord.Embed(
@@ -594,6 +572,41 @@ class Karma:
                 em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
                 em.set_footer(text="ID ─ {}".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_debans", em)
+
+    async def voice_update(self, before, after):
+        if type(after) is discord.Member:
+            if after.voice_channel:
+                if not before.voice_channel:
+                    print("Vocal - not before & after (connect)")
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                            color=0x8adb9a)
+                        em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+                else:
+                    print("Vocal - before & after (changement)")
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} est passé du salon {} à {}".format(before.mention,
+                                                                               before.voice.voice_channel.mention,
+                                                                               after.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+            elif before.voice_channel:
+                if not after.voice_channel:
+                    print("Vocal -before & not after (déconnect)")
+                    if self.karma.logs_on(after.server, "voice_quit"):
+                        em = discord.Embed(
+                            description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_quit", em)
+
 
     """async def channel_change(self, before, after):
         print("Détection changement channel {}".format(after.name))
@@ -676,7 +689,7 @@ def setup(bot):
     check_files()
     n = Karma(bot)
     bot.add_cog(n)
-    # bot.add_listener(n.channel_change, "on_channel_update")
+    bot.add_listener(n.voice_update, "on_voice_state_update")
     bot.add_listener(n.msg_post, "on_message")
     bot.add_listener(n.msg_delete, "on_message_delete")
     bot.add_listener(n.msg_edit, "on_message_edit")
