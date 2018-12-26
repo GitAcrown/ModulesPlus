@@ -526,8 +526,8 @@ class Karma:
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_join"):
                 ts = datetime.now()
-                em = discord.Embed(description="{} est entré·e sur le serveur".format(user.mention), color=0x71e28f, timestamp=ts)
-                em.set_author(name=str(user) + " ─ Entrée", icon_url=user.avatar_url)
+                em = discord.Embed(description="{} a rejoint le serveur".format(user.mention), color=0x71e28f, timestamp=ts)
+                em.set_author(name=str(user) + " ─ Arrivée", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
                 await self.karma.add_server_logs(user.server, "user_join", em)
 
@@ -535,8 +535,8 @@ class Karma:
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_quit"):
                 ts = datetime.now()
-                em = discord.Embed(description="{} est sorti·e du serveur".format(user.mention), color=0xe29c71, timestamp=ts)
-                em.set_author(name=str(user) + " ─ Sortie", icon_url=user.avatar_url)
+                em = discord.Embed(description="{} a quitté le serveur".format(user.mention), color=0xe29c71, timestamp=ts)
+                em.set_author(name=str(user) + " ─ Départ", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
                 await self.karma.add_server_logs(user.server, "user_quit", em)
 
