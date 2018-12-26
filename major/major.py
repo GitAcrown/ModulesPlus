@@ -49,7 +49,7 @@ class MajorAPI:
 
     def get_account(self, user: discord.Member, subdict: str = None):
         """Retourne les données d'un membre sur un serveur"""
-        if type(user) is discord.Member:
+        if user.server:
             data = self.get_server(user.server, "USERS")
             if user.id not in data:
                 data[user.id] = {"DATA": {"msg_nb": 0,
