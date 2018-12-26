@@ -492,7 +492,7 @@ class Karma:
                 continue
 
     async def msg_post(self, message):
-        if message.server:
+        if hasattr(message, "server"):
             if not message.author.bot:
                 if self.karma.logs_on(message.server, "msg_post"):
                     em = discord.Embed(description=message.content, color=0x87b5ff, timestamp=message.timestamp)
@@ -501,7 +501,7 @@ class Karma:
                     await self.karma.add_server_logs(message.server, "msg_post", em)
 
     async def msg_delete(self, message):
-        if message.server:
+        if hasattr(message, "server"):
             if not message.author.bot:
                 if self.karma.logs_on(message.server, "msg_delete"):
                     em = discord.Embed(description=message.content, color=0xff8787, timestamp=message.timestamp)
@@ -510,8 +510,8 @@ class Karma:
                     await self.karma.add_server_logs(message.server, "msg_delete", em)
 
     async def msg_edit(self, before, after):
-        if type(after) is discord.Member:
-            if not after.bot:
+        if hasattr(after, "server"):
+            if not after.author.bot:
                 if before.content != after.content:
                     if self.karma.logs_on(after.server, "msg_edit"):
                         em = discord.Embed(color=0x498fff, timestamp=after.timestamp)

@@ -49,29 +49,16 @@ class MajorAPI:
 
     def get_account(self, user: discord.Member, subdict: str = None):
         """Retourne les données d'un membre sur un serveur"""
-        if user.server:
+        if type(user) is discord.Member:
             data = self.get_server(user.server, "USERS")
             if user.id not in data:
-                data[user.id] = {"DATA": {"msg_nb": 0,
-                                          "msg_suppr": 0,
-                                          "emojis": {},
-                                          "join": 0,
-                                          "quit": 0,
-                                          "pseudos": [],
-                                          "surnoms": [],
-                                          "flammes": [],
-                                          "first_msg": time.time()},
-                                 "LOGS": [],
-                                 "PERSO": {"bottom_img": None,
-                                           "bar_color": None,
-                                           "bio": ""},
-                                 "SYS": {"old_roles": []}}
+                data[user.id] = self.new_empty_account()
                 self.save()
             return data[user.id][subdict] if subdict else data[user.id]
         return {}
 
     def new_empty_account(self):
-        """Retourne un profil vide"""
+        """Retourne un profil videé"""
         dict = {"DATA": {"msg_nb": 0,
                          "msg_suppr": 0,
                          "emojis": {},
@@ -88,6 +75,12 @@ class MajorAPI:
                 "SYS": {"old_roles": []}}
         return dict
 
+    def manual_new_account(self, server: discord.Server, user: discord.User):
+        data = self.get_server(server, "USERS")
+        if user.id not in data:
+            data[user.id] = self.new_empty_account()
+            self.save()
+        return data[user.id]
 
     def logs_add(self, user: discord.Member, event: str):
         """Ajoute des logs à un membre"""
@@ -319,8 +312,10 @@ class Major:
     #>>>>>>>>>> EVENT TRIGGERS <<<<<<<<<<<
 
     async def mjr_on_msg(self, message):
-        if message.server:
+        if hasattr(message, "server"):
             data = self.mjr.get_account(message.author)
+            if not data:
+                data = self.mjr.manual_new_account(message.server, message.author)
             date, hier = datetime.now().strftime("%d/%m/%Y"), (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
             data["DATA"]["msg_nb"] += 1
             if hier in data["DATA"]["flammes"]:
@@ -331,8 +326,10 @@ class Major:
             self.mjr.save()
 
     async def mjr_on_msgdel(self, message):
-        if message.server:
+        if hasattr(message, "server"):
             data = self.mjr.get_account(message.author)
+            if not data:
+                data = self.mjr.manual_new_account(message.server, message.author)
             data["DATA"]["msg_suppr"] += 1
             self.mjr.save()
 
