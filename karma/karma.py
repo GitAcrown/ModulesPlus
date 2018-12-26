@@ -539,35 +539,37 @@ class Karma:
 
     async def user_change(self, before, after):
         if type(after) is discord.Member:
-            if not before.voice.voice_channel and after.voice.voice_channel:
-                print("Vocal - not before & after (connect)")
-                if self.karma.logs_on(after.server, "voice_join"):
-                    em = discord.Embed(description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
-                                       color=0x8adb9a)
-                    em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
-                    em.set_footer(text="ID ─ {}".format(after.id))
-                    await self.karma.add_server_logs(after.server, "voice_join", em)
-
-            elif before.voice.voice_channel and after.voice.voice_channel:
-                if before.voice.voice_channel != after.voice.voice_channel:
+            if after.voice.voice_channel:
+                if not before.voice.voice_channel:
+                    print("Vocal - not before & after (connect)")
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                            color=0x8adb9a)
+                        em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+                else:
                     print("Vocal - before & after (changement)")
                     if self.karma.logs_on(after.server, "voice_join"):
                         em = discord.Embed(
-                            description="{} est passé du salon {} à {}".format(before.mention, before.voice.voice_channel.mention,
-                                                                         after.voice.voice_channel.mention),
+                            description="{} est passé du salon {} à {}".format(before.mention,
+                                                                               before.voice.voice_channel.mention,
+                                                                               after.voice.voice_channel.mention),
                             color=0x5e9b6a)
                         em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
                         em.set_footer(text="ID ─ {}".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_join", em)
-
-            elif before.voice.voice_channel and not after.voice.voice_channel:
-                print("Vocal -before & not after (déconnect)")
-                if self.karma.logs_on(after.server, "voice_quit"):
-                    em = discord.Embed(description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
-                                       color=0x5e9b6a)
-                    em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
-                    em.set_footer(text="ID ─ {}".format(after.id))
-                    await self.karma.add_server_logs(after.server, "voice_quit", em)
+            elif before.voice.voice_channel:
+                if not after.voice.voice_channel:
+                    print("Vocal -before & not after (déconnect)")
+                    if self.karma.logs_on(after.server, "voice_quit"):
+                        em = discord.Embed(
+                            description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_quit", em)
 
             if after.name != before.name:
                 if self.karma.logs_on(after.server, "user_change_name"):
