@@ -551,15 +551,32 @@ class Karma:
                     em.set_author(name=str(after) + " ─ Changement de pseudo", icon_url=after.avatar_url)
                     em.set_footer(text="ID:{}".format(after.id))
                     await self.karma.add_server_logs(after.server, "user_change_name", em)
-            if after.display_name != before.display_name:
+            if after.nick and before.nick:
+                if after.nick != before.nick:
+                    if self.karma.logs_on(after.server, "user_change_nickname"):
+                        if after.nick and before.nick:
+                            em = discord.Embed(
+                                description="{} a changé de surnom pour {}".format(before.nick, after.nick),
+                                color=0xe559cd, timestamp=ts)
+                            em.set_author(name=str(after) + " ─ Changement de surnom", icon_url=after.avatar_url)
+                            em.set_footer(text="ID:{}".format(after.id))
+                            await self.karma.add_server_logs(after.server, "user_change_nickname", em)
+            elif after.nick and not before.nick:
                 if self.karma.logs_on(after.server, "user_change_nickname"):
-                    if after.nick and before.nick:
-                        em = discord.Embed(
-                            description="{} a changé de surnom pour {}".format(before.nick, after.nick),
-                            color=0xe559cd, timestamp=ts)
-                        em.set_author(name=str(after) + " ─ Changement de surnom", icon_url=after.avatar_url)
-                        em.set_footer(text="ID:{}".format(after.id))
-                        await self.karma.add_server_logs(after.server, "user_change_nickname", em)
+                    em = discord.Embed(
+                        description="{} a pris pour surnom {}".format(before.name, after.nick),
+                        color=0xe559cd, timestamp=ts)
+                    em.set_author(name=str(after) + " ─ Ajout du surnom", icon_url=after.avatar_url)
+                    em.set_footer(text="ID:{}".format(after.id))
+                    await self.karma.add_server_logs(after.server, "user_change_nickname", em)
+            elif not after.nick and before.nick:
+                if self.karma.logs_on(after.server, "user_change_nickname"):
+                    em = discord.Embed(
+                        description="{} a retiré son surnom {}".format(after.name, before.nick),
+                        color=0xe559cd, timestamp=ts)
+                    em.set_author(name=str(after) + " ─ Retrait du surnom", icon_url=after.avatar_url)
+                    em.set_footer(text="ID:{}".format(after.id))
+                    await self.karma.add_server_logs(after.server, "user_change_nickname", em)
 
     async def all_bans(self, user):
         if type(user) is discord.Member:
