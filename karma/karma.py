@@ -539,7 +539,7 @@ class Karma:
 
     async def user_change(self, before, after):
         if type(after) is discord.Member:
-            print("Détection changement {}".format(after.name))
+            print("Détection changement {} sur {}".format(after.name, after.server.name))
             if after.voice_channel:
                 if not before.voice_channel:
                     print("Vocal - not before & after (connect)")
