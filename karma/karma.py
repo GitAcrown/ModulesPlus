@@ -493,33 +493,36 @@ class Karma:
 
     async def msg_post(self, message):
         if message.server:
-            if self.karma.logs_on(message.server, "msg_post"):
-                em = discord.Embed(description=message.content, color=0x87b5ff, timestamp=message.timestamp)
-                em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
-                em.set_footer(text="ID ─ {}".format(message.author.id))
-                await self.karma.add_server_logs(message.server, "msg_post", em)
+            if not message.author.bot:
+                if self.karma.logs_on(message.server, "msg_post"):
+                    em = discord.Embed(description=message.content, color=0x87b5ff, timestamp=message.timestamp)
+                    em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(message.author.id))
+                    await self.karma.add_server_logs(message.server, "msg_post", em)
 
     async def msg_delete(self, message):
         if message.server:
-            if self.karma.logs_on(message.server, "msg_delete"):
-                em = discord.Embed(description=message.content, color=0xff8787, timestamp=message.timestamp)
-                em.set_author(name=str(message.author) + " ─ Message supprimé", icon_url=message.author.avatar_url)
-                em.set_footer(text="ID ─ {}".format(message.author.id))
-                await self.karma.add_server_logs(message.server, "msg_delete", em)
+            if not message.author.bot:
+                if self.karma.logs_on(message.server, "msg_delete"):
+                    em = discord.Embed(description=message.content, color=0xff8787, timestamp=message.timestamp)
+                    em.set_author(name=str(message.author) + " ─ Message supprimé", icon_url=message.author.avatar_url)
+                    em.set_footer(text="ID ─ {}".format(message.author.id))
+                    await self.karma.add_server_logs(message.server, "msg_delete", em)
 
     async def msg_edit(self, before, after):
-        if after.server:
-            if before.content != after.content:
-                if self.karma.logs_on(after.server, "msg_edit"):
-                    em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
-                    em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
-                    em.set_footer(text="ID ─ {}".format(after.author.id))
-                    em.add_field(name="◦ Avant", value=before.content)
-                    em.add_field(name="• Après", value=after.content)
-                    await self.karma.add_server_logs(after.server, "msg_edit", em)
+        if type(after) is discord.Member:
+            if not after.bot:
+                if before.content != after.content:
+                    if self.karma.logs_on(after.server, "msg_edit"):
+                        em = discord.Embed(color=0x498fff, timestamp=after.timestamp)
+                        em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.author.id))
+                        em.add_field(name="◦ Avant", value=before.content)
+                        em.add_field(name="• Après", value=after.content)
+                        await self.karma.add_server_logs(after.server, "msg_edit", em)
 
     async def user_join(self, user):
-        if user.server:
+        if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_join"):
                 em = discord.Embed(description="{} est entré·e sur le serveur".format(user.mention), color=0x71e28f)
                 em.set_author(name=str(user) + " ─ Entrée", icon_url=user.avatar_url)
@@ -527,7 +530,7 @@ class Karma:
                 await self.karma.add_server_logs(user.server, "user_join", em)
 
     async def user_quit(self, user):
-        if user.server:
+        if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_quit"):
                 em = discord.Embed(description="{} est sorti·e du serveur".format(user.mention), color=0xe29c71)
                 em.set_author(name=str(user) + " ─ Sortie", icon_url=user.avatar_url)
@@ -535,7 +538,7 @@ class Karma:
                 await self.karma.add_server_logs(user.server, "user_quit", em)
 
     async def user_change(self, before, after):
-        if after.server:
+        if type(after) is discord.Member:
             if not before.voice.voice_channel and after.voice.voice_channel:
                 if self.karma.logs_on(after.server, "voice_join"):
                     em = discord.Embed(description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
@@ -544,23 +547,24 @@ class Karma:
                     em.set_footer(text="ID ─ {}".format(after.id))
                     await self.karma.add_server_logs(after.server, "voice_join", em)
 
-            if before.voice.voice_channel and not after.voice.voice_channel:
+            elif before.voice.voice_channel and after.voice.voice_channel:
+                if before.voice.voice_channel != after.voice.voice_channel:
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} est passé du salon {} à {}".format(before.mention, before.voice.voice_channel.mention,
+                                                                         after.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+
+            elif before.voice.voice_channel and not after.voice.voice_channel:
                 if self.karma.logs_on(after.server, "voice_quit"):
                     em = discord.Embed(description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
                                        color=0x5e9b6a)
                     em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
                     em.set_footer(text="ID ─ {}".format(after.id))
                     await self.karma.add_server_logs(after.server, "voice_quit", em)
-
-            if before.voice.voice_channel and after.voice.voice_channel:
-                if before.voice.voice_channel != after.voice.voice_channel:
-                    em = discord.Embed(
-                        description="{} est passé du salon {} à {}".format(before.mention, before.voice.voice_channel.mention,
-                                                                     after.voice.voice_channel.mention),
-                        color=0x5e9b6a)
-                    em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
-                    em.set_footer(text="ID ─ {}".format(after.id))
-                    await self.karma.add_server_logs(after.server, "voice_join", em)
 
             if after.name != before.name:
                 if self.karma.logs_on(after.server, "user_change_name"):
@@ -581,7 +585,7 @@ class Karma:
                         await self.karma.add_server_logs(after.server, "user_change_nickname", em)
 
     async def all_bans(self, user):
-        if user.server:
+        if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "all_bans"):
                 em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb56767)
                 em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
@@ -589,7 +593,7 @@ class Karma:
                 await self.karma.add_server_logs(user.server, "all_bans", em)
 
     async def all_debans(self, user):
-        if user.server:
+        if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "all_debans"):
                 em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa34242)
                 em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)

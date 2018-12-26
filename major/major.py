@@ -1,13 +1,10 @@
 # Ce module est volontairement excessivement commenté afin d'aider les débutants à décoder le code plus facilement
 import os
-import re
 import time
 from collections import namedtuple
 from datetime import datetime, timedelta
 
 import discord
-from __main__ import send_cmd_help
-from cogs.utils.chat_formatting import escape_mass_mentions
 from discord.ext import commands
 
 from .utils import checks
@@ -52,7 +49,7 @@ class MajorAPI:
 
     def get_account(self, user: discord.Member, subdict: str = None):
         """Retourne les données d'un membre sur un serveur"""
-        if user.server:
+        if type(user) is discord.Member:
             data = self.get_server(user.server, "USERS")
             if user.id not in data:
                 data[user.id] = {"DATA": {"msg_nb": 0,
@@ -340,21 +337,21 @@ class Major:
             self.mjr.save()
 
     async def mjr_join(self, user: discord.Member):
-        if user.server:
+        if type(user) is discord.Member:
             data = self.mjr.get_account(user)
             data["DATA"]["join"] += 1
             self.mjr.logs_add(user, "Entrée sur le serveur")
             self.mjr.save()
 
     async def mjr_quit(self, user: discord.Member):
-        if user.server:
+        if type(user) is discord.Member:
             data = self.mjr.get_account(user)
             data["DATA"]["quit"] += 1
             self.mjr.logs_add(user, "Sortie du serveur")
             self.mjr.save()
 
     async def mjr_perso(self, before, after):
-        if after.server:
+        if type(after) is discord.Member:
             data = self.mjr.get_account(after)
             if after.name != before.name:
                 self.mjr.logs_add(after, "Changement de pseudo pour `{}`".format(after.name))
