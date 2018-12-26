@@ -374,7 +374,7 @@ class Major:
                 if reaction.message.embeds:
                     embed = reaction.message.embeds[0]
                     if embed["footer"]:
-                        output = re.compile(r'ID:(\d*)', re.DOTALL | re.IGNORECASE).findall(embed.footer.content)
+                        output = re.compile(r'ID:(\d*)', re.DOTALL | re.IGNORECASE).findall(embed["footer"]["text"])
                         if output:
                             user = author.server.get_member(output[0])
                 today = time.strftime("%d/%m/%Y", time.localtime())
