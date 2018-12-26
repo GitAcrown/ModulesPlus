@@ -574,61 +574,60 @@ class Karma:
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
     async def voice_change(self, before, after):
-        if not after.is_private:
-            if after.type.voice:
-                if before.voice_members != after.voice_members:
-                    diff = [x for x in before.voice_members if x not in after.voice_members] + \
-                           [x for x in after.voice_members if x not in before.voice_members]
-                    if len(before.voice_members) < len(after.voice_members): # Connexion d'un membre
-                        if self.karma.logs_on(after.server, "voice_join"):
-                            for user in diff:
-                                em = discord.Embed(
-                                    description="{} a rejoint {}".format(user.mention, after.mention),
-                                    color=0x8adb9a)
-                                em.set_author(name=str(user) + " ─ Connexion à un salon vocal", icon_url=user.avatar_url)
-                                em.set_footer(text="ID ─ {}".format(user.id))
-                                await self.karma.add_server_logs(after.server, "voice_join", em)
-                    elif len(before.voice_members) > len(after.voice_members): # Déconnexion d'un membre
-                        if self.karma.logs_on(after.server, "voice_quit"):
-                            for user in diff:
-                                em = discord.Embed(
-                                    description="{} a quitté {}".format(user.mention, after.mention),
-                                    color=0x8adb9a)
-                                em.set_author(name=str(user) + " ─ Déconnexion d'un salon vocal", icon_url=user.avatar_url)
-                                em.set_footer(text="ID ─ {}".format(user.id))
-                                await self.karma.add_server_logs(after.server, "voice_quit", em)
-
-                """if after.voice_channel:
-                    if not before.voice_channel:
-                        print("Vocal - not before & after (connect)")
-                        if self.karma.logs_on(after.server, "voice_join"):
+        if after.type == discord.ChannelType.voice:
+            if before.voice_members != after.voice_members:
+                diff = [x for x in before.voice_members if x not in after.voice_members] + \
+                       [x for x in after.voice_members if x not in before.voice_members]
+                if len(before.voice_members) < len(after.voice_members): # Connexion d'un membre
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        for user in diff:
                             em = discord.Embed(
-                                description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                                description="{} a rejoint {}".format(user.mention, after.mention),
                                 color=0x8adb9a)
-                            em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
-                            em.set_footer(text="ID ─ {}".format(after.id))
+                            em.set_author(name=str(user) + " ─ Connexion à un salon vocal", icon_url=user.avatar_url)
+                            em.set_footer(text="ID ─ {}".format(user.id))
                             await self.karma.add_server_logs(after.server, "voice_join", em)
-                    else:
-                        print("Vocal - before & after (changement)")
-                        if self.karma.logs_on(after.server, "voice_join"):
+                elif len(before.voice_members) > len(after.voice_members): # Déconnexion d'un membre
+                    if self.karma.logs_on(after.server, "voice_quit"):
+                        for user in diff:
                             em = discord.Embed(
-                                description="{} est passé du salon {} à {}".format(before.mention,
-                                                                                   before.voice.voice_channel.mention,
-                                                                                   after.voice.voice_channel.mention),
-                                color=0x5e9b6a)
-                            em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
-                            em.set_footer(text="ID ─ {}".format(after.id))
-                            await self.karma.add_server_logs(after.server, "voice_join", em)
-                elif before.voice_channel:
-                    if not after.voice_channel:
-                        print("Vocal -before & not after (déconnect)")
-                        if self.karma.logs_on(after.server, "voice_quit"):
-                            em = discord.Embed(
-                                description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
-                                color=0x5e9b6a)
-                            em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
-                            em.set_footer(text="ID ─ {}".format(after.id))
-                            await self.karma.add_server_logs(after.server, "voice_quit", em)"""
+                                description="{} a quitté {}".format(user.mention, after.mention),
+                                color=0x8adb9a)
+                            em.set_author(name=str(user) + " ─ Déconnexion d'un salon vocal", icon_url=user.avatar_url)
+                            em.set_footer(text="ID ─ {}".format(user.id))
+                            await self.karma.add_server_logs(after.server, "voice_quit", em)
+
+            """if after.voice_channel:
+                if not before.voice_channel:
+                    print("Vocal - not before & after (connect)")
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} a rejoint {}".format(after.mention, after.voice.voice_channel.mention),
+                            color=0x8adb9a)
+                        em.set_author(name=str(after) + " ─ Connexion à un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+                else:
+                    print("Vocal - before & after (changement)")
+                    if self.karma.logs_on(after.server, "voice_join"):
+                        em = discord.Embed(
+                            description="{} est passé du salon {} à {}".format(before.mention,
+                                                                               before.voice.voice_channel.mention,
+                                                                               after.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_join", em)
+            elif before.voice_channel:
+                if not after.voice_channel:
+                    print("Vocal -before & not after (déconnect)")
+                    if self.karma.logs_on(after.server, "voice_quit"):
+                        em = discord.Embed(
+                            description="{} a quitté {}".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_quit", em)"""
 
     def __unload(self):
         self.karma.save(True)
@@ -653,6 +652,7 @@ def setup(bot):
     check_files()
     n = Karma(bot)
     bot.add_cog(n)
+    bot.add_listener(n.voice_change, "on_channel_update")
     bot.add_listener(n.msg_post, "on_message")
     bot.add_listener(n.msg_delete, "on_message_delete")
     bot.add_listener(n.msg_edit, "on_message_edit")
@@ -661,4 +661,3 @@ def setup(bot):
     bot.add_listener(n.user_change, "on_member_update")
     bot.add_listener(n.all_bans, "on_member_ban")
     bot.add_listener(n.all_debans, "on_member_unban")
-    bot.add_listener(n.voice_change, "on_channel_update")
