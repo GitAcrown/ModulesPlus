@@ -574,8 +574,10 @@ class Karma:
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
     async def voice_change(self, before, after):
+        print("Détection changement channel {}".format(after.name))
         if after.type == discord.ChannelType.voice:
             if before.voice_members != after.voice_members:
+                print("Channel {} - Changement nb de membres".format(after.name))
                 diff = [x for x in before.voice_members if x not in after.voice_members] + \
                        [x for x in after.voice_members if x not in before.voice_members]
                 if len(before.voice_members) < len(after.voice_members): # Connexion d'un membre
