@@ -425,7 +425,7 @@ class Karma:
         serv = serv["logs_channels"]
         while True:
             types = ["msg_post", "msg_delete", "msg_edit",
-                     "voice_join", "voice_quit",
+                     "voice_join", "voice_quit", "voice_mute", "voice_deaf",
                      "all_bans", "all_debans",
                      "user_join", "user_quit", "user_change_name", "user_change_nickname"]
             txt = ""
@@ -603,6 +603,40 @@ class Karma:
                         em.set_author(name=str(after) + " ─ Déconnexion d'un salon vocal", icon_url=after.avatar_url)
                         em.set_footer(text="ID ─ {}".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_quit", em)
+            if after.voice_channel and before.voice_channel:
+                if before.voice.mute and not after.voice.mute:
+                    if self.karma.logs_on(after.server, "voice_mute"):
+                        em = discord.Embed(
+                            description="{} n'est plus mute (sur {})".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Démute", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_mute", em)
+                elif not before.voice.mute and after.voice.mute:
+                    if self.karma.logs_on(after.server, "voice_mute"):
+                        em = discord.Embed(
+                            description="{} a été mute (sur {})".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Mute", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_mute", em)
+
+                if before.voice.deaf and not after.voice.deaf:
+                    if self.karma.logs_on(after.server, "voice_deaf"):
+                        em = discord.Embed(
+                            description="{} n'est plus sourd (sur {})".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Désassourdi", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_deaf", em)
+                elif not before.voice.deaf and after.voice.deaf:
+                    if self.karma.logs_on(after.server, "voice_deaf"):
+                        em = discord.Embed(
+                            description="{} a été mis sourd (sur {})".format(before.mention, before.voice.voice_channel.mention),
+                            color=0x5e9b6a)
+                        em.set_author(name=str(after) + " ─ Sourd", icon_url=after.avatar_url)
+                        em.set_footer(text="ID ─ {}".format(after.id))
+                        await self.karma.add_server_logs(after.server, "voice_deaf", em)
 
 
     def __unload(self):
