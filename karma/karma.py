@@ -477,7 +477,7 @@ class Karma:
             em = discord.Embed(title="Interface de gestion des Logs")
             for c in tlist:
                 txt = ""
-                for t in c:
+                for t in tlist[c]:
                     if t in serv:
                         txt += "• `{}` ─ {}\n".format(t, self.bot.get_channel(serv[t]).mention)
                     else:
