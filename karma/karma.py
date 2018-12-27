@@ -290,7 +290,7 @@ class Karma:
                 em = discord.Embed(description="{} a été mis en prison pour **{}{}** par {}".format(
                     user.name, val, form, ctx.message.author.mention), color=role.color, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Prison (Entrée)", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
+                em.set_footer(text="ID:{} 🚩".format(user.id))
                 await self.karma.add_server_logs(server, "user_prison", em)
 
                 em = discord.Embed(description=msg, color=role.color)
@@ -368,7 +368,7 @@ class Karma:
                 em = discord.Embed(description="{} a été libéré par {}".format(
                     user.name, ctx.message.author.mention), color=role.color, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
+                em.set_footer(text="ID:{} 🚩".format(user.id))
                 await self.karma.add_server_logs(server, "user_prison", em)
 
                 em = discord.Embed(description="🔓 {} à été libéré par {}".format(
@@ -652,7 +652,7 @@ class Karma:
                 ts = datetime.now()
                 em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb01b1b, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
+                em.set_footer(text="ID:{} 🚩".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_bans", em)
 
     async def all_debans(self, user):
@@ -661,7 +661,7 @@ class Karma:
                 ts = datetime.now()
                 em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa6b620, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
+                em.set_footer(text="ID:{} 🚩".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
     async def voice_update(self, before, after):
@@ -710,7 +710,7 @@ class Karma:
                             description="{} a été mute (sur {})".format(before.mention, before.voice.voice_channel.mention),
                             color=0xf65d5d, timestamp=ts)
                         em.set_author(name=str(after) + " ─ Mute", icon_url=after.avatar_url)
-                        em.set_footer(text="ID:{} ─ 🚩".format(after.id))
+                        em.set_footer(text="ID:{} 🚩".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_mute", em)
 
                 if before.voice.deaf and not after.voice.deaf:
@@ -727,7 +727,7 @@ class Karma:
                             description="{} a été mis sourd (sur {})".format(before.mention, before.voice.voice_channel.mention),
                             color=0xf65dc9, timestamp=ts)
                         em.set_author(name=str(after) + " ─ Sourd", icon_url=after.avatar_url)
-                        em.set_footer(text="ID:{} ─ 🚩".format(after.id))
+                        em.set_footer(text="ID:{} 🚩".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_deaf", em)
 
     async def karma_react(self, reaction, author):
@@ -753,7 +753,7 @@ class Karma:
                                 txt = rep.content
                                 em = discord.Embed(description=embed["description"], color=embed["color"], timestamp=embed["timestamp"])
                                 em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
-                                em.set_footer(text=embed["footer"]["text"].replace(" ─ 🚩", ""))
+                                em.set_footer(text=embed["footer"]["text"].replace(" 🚩", ""))
                                 em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
                                 await self.bot.delete_message(msg)
                                 await self.bot.edit_message(message, embed=em)
