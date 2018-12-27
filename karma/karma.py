@@ -483,7 +483,7 @@ class Karma:
                     else:
                         txt += "• `{}` ─ Désactivé\n".format(t)
                 em.add_field(name=c.title(), value=txt, inline=False)
-            em.set_footer(text="Entrez le nom du type de logs pour le modifier...")
+            em.set_footer(text="─ Entrez le nom du type de logs pour le modifier")
             msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(author=ctx.message.author, channel=msg.channel, timeout=45)
             if rep is None:
@@ -535,6 +535,27 @@ class Karma:
             elif rep.content.lower() in ["stop", "quit", "quitter"]:
                 await self.bot.delete_message(msg)
                 return
+            elif rep.content.lower() == "reset":
+                await self.bot.delete_message(msg)
+                txt = "Voulez-vous désactiver tous les logs ?"
+                em = discord.Embed(title="Interface de gestion des Logs", description=txt)
+                msg = await self.bot.say(embed=em)
+                await self.bot.add_reaction(msg, "✅")
+                await self.bot.add_reaction(msg, "❎")
+                act = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=30,
+                                                       check=self.check)
+                if act is None:
+                    await self.bot.delete_message(msg)
+                    continue
+                elif act.reaction.emoji == "✅":
+                    await self.bot.delete_message(msg)
+                    serv = {}
+                    self.karma.save()
+                    await self.bot.say("❎ **Logs reset** ─ Tous les logs ont été désactivés.")
+                    continue
+                else:
+                    await self.bot.delete_message(msg)
+                    continue
             else:
                 await self.bot.say("❌ **Erreur** ─ Ce type de logs n'existe pas.")
                 continue
