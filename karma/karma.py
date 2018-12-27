@@ -482,7 +482,7 @@ class Karma:
                         txt += "• `{}` ─ {}\n".format(t, self.bot.get_channel(serv[t]).mention)
                     else:
                         txt += "• `{}` ─ Désactivé\n".format(t)
-                em.add_field(name=c.title(), value=txt)
+                em.add_field(name=c.title(), value=txt, inline=False)
             em.set_footer(text="Entrez le nom du type de logs pour le modifier...")
             msg = await self.bot.say(embed=em)
             rep = await self.bot.wait_for_message(author=ctx.message.author, channel=msg.channel, timeout=45)
