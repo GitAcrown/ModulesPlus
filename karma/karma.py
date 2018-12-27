@@ -740,7 +740,7 @@ class Karma:
                     if embed["footer"]:
                         if "🚩" in embed["footer"]["text"]:
                             em = discord.Embed(description="📝 **Ajout d'une raison** ─ Quelle est la raison de cette action ?",
-                                               color=embed["colour"])
+                                               color=embed["color"])
                             em.add_field(name= embed["author"]["name"], value=embed["description"])
                             em.set_footer(text="─ Entrez la raison ou tapez \"stop\" pour abandonner")
                             msg = await self.bot.send_message(message.channel, embed=em)
@@ -751,7 +751,7 @@ class Karma:
                                 return
                             else:
                                 txt = rep.content
-                                em = discord.Embed(description=embed["description"], color=embed["colour"])
+                                em = discord.Embed(description=embed["description"], color=embed["color"])
                                 em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
                                 em.set_footer(text=embed["footer"]["text"].replace(" ─ 🚩", ""))
                                 em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
