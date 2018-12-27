@@ -314,17 +314,18 @@ class Major:
 
     async def mjr_on_msg(self, message):
         if hasattr(message, "server"):
-            data = self.mjr.get_account(message.author)
-            if not data:
-                data = self.mjr.manual_new_account(message.server, message.author)
-            date, hier = datetime.now().strftime("%d/%m/%Y"), (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
-            data["DATA"]["msg_nb"] += 1
-            if hier in data["DATA"]["flammes"]:
-                if date not in data["DATA"]["flammes"]:
-                    data["DATA"]["flammes"].append(date)
-            elif date not in data["DATA"]["flammes"]:
-                data["DATA"]["flammes"] = [date]
-            self.mjr.save()
+            if message.server:
+                data = self.mjr.get_account(message.author)
+                if not data:
+                    data = self.mjr.manual_new_account(message.server, message.author)
+                date, hier = datetime.now().strftime("%d/%m/%Y"), (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
+                data["DATA"]["msg_nb"] += 1
+                if hier in data["DATA"]["flammes"]:
+                    if date not in data["DATA"]["flammes"]:
+                        data["DATA"]["flammes"].append(date)
+                elif date not in data["DATA"]["flammes"]:
+                    data["DATA"]["flammes"] = [date]
+                self.mjr.save()
 
     async def mjr_on_msgdel(self, message):
         if hasattr(message, "server"):
