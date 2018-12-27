@@ -751,12 +751,12 @@ class Karma:
                                 return
                             else:
                                 txt = rep.content
-                                em = discord.Embed(description=embed["description"], color=embed["color"], timestamp=embed["timestamp"])
+                                """em = discord.Embed(description=embed["description"], color=embed["color"], timestamp=embed["timestamp"])
                                 em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
-                                em.set_footer(text=embed["footer"]["text"].replace(" 🚩", ""))
-                                em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
+                                em.set_footer(text=embed["footer"]["text"].replace(" 🚩", ""))"""
+                                embed.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
                                 await self.bot.delete_message(msg)
-                                await self.bot.edit_message(message, embed=em)
+                                await self.bot.edit_message(message, embed=embed)
                                 notif = await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
                                 await asyncio.sleep(6)
                                 await self.bot.delete_message(notif)
