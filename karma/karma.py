@@ -28,6 +28,13 @@ class KarmaAPI:
         self.bot = bot
         self.data = dataIO.load_json(path)
         self.context = {"last_save": 0}
+        self.update()
+
+    def update(self):
+        for server in self.data:
+            if not "auto_roles" in self.data[server]["META"]:
+                self.data[server]["META"]["auto_roles"] = []
+        return True
 
     def save(self, force: bool = False):
         if force:
@@ -39,6 +46,7 @@ class KarmaAPI:
     def get_server(self, server: discord.Server, sub: str = None):
         if server.id not in self.data:
             opts = {"persist_roles": [],
+                    "auto_roles": [],
                     "cache_repost": {},
                     "logs_channels": {},
                     "prison_role": "Prison",
@@ -99,6 +107,40 @@ class Karma:
             return val * 60
         else:
             return val
+
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def autoroles(self, ctx, *roles):
+        """Attribue automatiquement les rôles donnés
+
+        Pour les rôles avec un nom composé, n'oubliez pas les guillemets"""
+        if roles:
+            if roles[0].lower() in ["reset", "stop", "off"]:
+                self.karma.get_server(ctx.message.server, "META")["auto_roles"] = []
+                self.karma.save(True)
+                await self.bot.say("⚙ **Attribution automatique de rôles** ─ Désactivée")
+                return
+            liste = []
+            txt = ""
+            for r in roles:
+                if r in [r.name for r in ctx.message.server.roles]:
+                    liste.append(r)
+                    role = discord.utils.get(ctx.message.server.roles, name=r)
+                    txt += "• {}\n".format(role.mention)
+            self.karma.get_server(ctx.message.server, "META")["auto_roles"] = liste
+            self.karma.save(True)
+            await self.bot.say("⚙ **Attribution automatique de rôles** ─ Activée pour ces rôles :\n{}".format(txt))
+        elif self.karma.get_server(ctx.message.server, "META")["auto_roles"]:
+            txt = ""
+            for r in self.karma.get_server(ctx.message.server, "META")["auto_roles"]:
+                role = discord.utils.get(ctx.message.server.roles, name=r)
+                txt += "• {}\n".format(role.mention)
+            em = discord.Embed(title="Attribution auto. des rôles", description=txt)
+            em.set_footer(text="Tapez '.autoroles stop' pour désactiver cette fonctionnalité")
+            await self.bot.say(embed=em)
+        else:
+            await self.bot.say("🚩 **Erreur** ─ Tapez la liste des __noms exacts__ des rôles entre guillemets pour activer cette fonction")
+
 
     @commands.command(aliases=["p"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
@@ -598,6 +640,15 @@ class Karma:
                 em.set_author(name=str(user) + " ─ Arrivée", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
                 await self.karma.add_server_logs(user.server, "user_join", em)
+
+            roles = self.karma.get_server(user.server, "META")["auto_roles"]
+            if roles:
+                alea = random.choice(roles)
+                try:
+                    role = discord.utils.get(user.server.roles, name=alea)
+                    await self.bot.add_roles(user, role)
+                except:
+                    pass
 
     async def user_quit(self, user):
         if type(user) is discord.Member:
