@@ -290,7 +290,7 @@ class Karma:
                 em = discord.Embed(description="{} a été mis en prison pour **{}{}** par {}".format(
                     user.name, val, form, ctx.message.author.mention), color=role.color, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Prison (Entrée)", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
+                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
                 await self.karma.add_server_logs(server, "user_prison", em)
 
                 em = discord.Embed(description=msg, color=role.color)
@@ -652,7 +652,7 @@ class Karma:
                 ts = datetime.now()
                 em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb01b1b, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
+                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_bans", em)
 
     async def all_debans(self, user):
@@ -661,7 +661,7 @@ class Karma:
                 ts = datetime.now()
                 em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa6b620, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
+                em.set_footer(text="ID:{} ─ 🚩".format(user.id))
                 await self.karma.add_server_logs(user.server, "all_debans", em)
 
     async def voice_update(self, before, after):
@@ -710,7 +710,7 @@ class Karma:
                             description="{} a été mute (sur {})".format(before.mention, before.voice.voice_channel.mention),
                             color=0xf65d5d, timestamp=ts)
                         em.set_author(name=str(after) + " ─ Mute", icon_url=after.avatar_url)
-                        em.set_footer(text="ID:{}".format(after.id))
+                        em.set_footer(text="ID:{} ─ 🚩".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_mute", em)
 
                 if before.voice.deaf and not after.voice.deaf:
@@ -727,9 +727,36 @@ class Karma:
                             description="{} a été mis sourd (sur {})".format(before.mention, before.voice.voice_channel.mention),
                             color=0xf65dc9, timestamp=ts)
                         em.set_author(name=str(after) + " ─ Sourd", icon_url=after.avatar_url)
-                        em.set_footer(text="ID:{}".format(after.id))
+                        em.set_footer(text="ID:{} ─ 🚩".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_deaf", em)
 
+    async def karma_react(self, reaction, author):
+        if hasattr(author, "server"):
+            if reaction.emoji == "🚩":
+                user = reaction.message.author
+                message = reaction.message
+                if reaction.message.embeds:
+                    embed = message.embeds[0]
+                    if embed["footer"]:
+                        if "🚩" in embed["footer"]["text"]:
+                            em = discord.Embed(description="📝 **Ajout d'une raison** ─ Quelle est la raison de cette action ?",
+                                               color=embed["colour"])
+                            em.add_field(name= embed["author"]["name"], value=embed["description"])
+                            em.set_footer(text="─ Entrez la raison ou tapez \"stop\" pour abandonner")
+                            msg = await self.bot.send_message(message.channel, embed=em)
+                            rep = await self.bot.wait_for_message(author=message.author, channel=msg.channel,
+                                                                   timeout=30)
+                            if rep is None or rep.content.lower() in ["stop", "quit", "quitter"]:
+                                await self.bot.delete_message(msg)
+                                return
+                            else:
+                                txt = rep.content
+                                em = discord.Embed(description=embed["description"], color=embed["colour"])
+                                em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
+                                em.set_footer(text=embed["footer"]["text"].replace(" ─ 🚩", ""))
+                                em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
+                                await self.bot.edit_message(message, embed=em)
+                                await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
 
     def __unload(self):
         self.karma.save(True)
@@ -763,3 +790,4 @@ def setup(bot):
     bot.add_listener(n.user_change, "on_member_update")
     bot.add_listener(n.all_bans, "on_member_ban")
     bot.add_listener(n.all_debans, "on_member_unban")
+    bot.add_listener(n.karma_react, "on_reaction_add")
