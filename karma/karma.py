@@ -744,7 +744,7 @@ class Karma:
                             em.add_field(name= embed["author"]["name"], value=embed["description"])
                             em.set_footer(text="─ Entrez la raison ou tapez \"stop\" pour abandonner")
                             msg = await self.bot.send_message(message.channel, embed=em)
-                            rep = await self.bot.wait_for_message(author=msg.author, channel=msg.channel,
+                            rep = await self.bot.wait_for_message(author=author, channel=msg.channel,
                                                                    timeout=30)
                             if rep is None or rep.content.lower() in ["stop", "quit", "quitter"]:
                                 await self.bot.delete_message(msg)
