@@ -465,7 +465,7 @@ class Karma:
         serv = serv["logs_channels"]
         while True:
             types = ["msg_post", "msg_delete", "msg_edit",
-                     "voice_join", "voice_quit", "voice_mute", "voice_deaf",
+                     "voice_join", "voice_quit", "voice_change", "voice_mute", "voice_deaf",
                      "user_prison", "user_ban", "user_deban", "user_join", "user_quit", "user_change_name", "user_change_nickname",
                      "notif_low", "notif_high"]
             tlist = {}
@@ -656,15 +656,15 @@ class Karma:
                         em.set_footer(text="ID:{}".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_join", em)
                 elif after.voice_channel != before.voice_channel:
-                    if self.karma.logs_on(after.server, "voice_join"):
+                    if self.karma.logs_on(after.server, "voice_change"):
                         em = discord.Embed(
                             description="{} est passé du salon {} à {}".format(before.mention,
                                                                                before.voice.voice_channel.mention,
                                                                                after.voice.voice_channel.mention),
-                            color=0x5463d8, timestamp=ts)
+                            color=0x979fd8, timestamp=ts)
                         em.set_author(name=str(after) + " ─ Changement de salon vocal", icon_url=after.avatar_url)
                         em.set_footer(text="ID:{}".format(after.id))
-                        await self.karma.add_server_logs(after.server, "voice_join", em)
+                        await self.karma.add_server_logs(after.server, "voice_change", em)
             elif before.voice_channel:
                 if not after.voice_channel:
                     if self.karma.logs_on(after.server, "voice_quit"):
