@@ -757,7 +757,9 @@ class Karma:
                                 em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
                                 await self.bot.delete_message(msg)
                                 await self.bot.edit_message(message, embed=em)
-                                await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
+                                notif = await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
+                                await asyncio.sleep(6)
+                                await self.bot.delete_message(notif)
 
     def __unload(self):
         self.karma.save(True)
