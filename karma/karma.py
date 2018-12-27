@@ -560,6 +560,12 @@ class Karma:
                 await self.bot.say("❌ **Erreur** ─ Ce type de logs n'existe pas.")
                 continue
 
+    @commands.command(pass_context=True, hidden=True)
+    async def timetest(self):
+        em = discord.Embed(description="Il est {}".format(datetime.now().strftime("%d/%m/%Y %H:%M")),
+                           timestamp=datetime.now())
+        await self.bot.say(embed=em)
+
     async def msg_post(self, message):
         if hasattr(message, "server"):
             if not message.author.bot:
