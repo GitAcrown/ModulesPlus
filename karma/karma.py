@@ -108,7 +108,7 @@ class Karma:
         <user> = Membre à emprisonner
         <temps> = Valeur suivie de l'unité (m/h/j) ou heure de sortie
         Il est possible de moduler la peine en ajoutant + et - devant la durée"""
-        ts = datetime.now()
+        ts = datetime.utcnow()
         message = ctx.message
         server = message.server
         if user.id == self.bot.user.id:
@@ -560,12 +560,6 @@ class Karma:
                 await self.bot.say("❌ **Erreur** ─ Ce type de logs n'existe pas.")
                 continue
 
-    @commands.command(pass_context=True, hidden=True)
-    async def timetest(self, ctx):
-        em = discord.Embed(description="Il est {}".format(datetime.now()))
-        em.timestamp = datetime.utcnow()
-        await self.bot.say(embed=em)
-
     async def msg_post(self, message):
         if hasattr(message, "server"):
             if not message.author.bot:
@@ -599,7 +593,7 @@ class Karma:
     async def user_join(self, user):
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_join"):
-                ts = datetime.now()
+                ts = datetime.utcnow()
                 em = discord.Embed(description="{} a rejoint le serveur".format(user.mention), color=0x34e37d, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Arrivée", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
@@ -608,7 +602,7 @@ class Karma:
     async def user_quit(self, user):
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "user_quit"):
-                ts = datetime.now()
+                ts = datetime.utcnow()
                 em = discord.Embed(description="{} a quitté le serveur".format(user.mention), color=0xe33483, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Départ", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
@@ -616,7 +610,7 @@ class Karma:
 
     async def user_change(self, before, after):
         if type(after) is discord.Member:
-            ts = datetime.now()
+            ts = datetime.utcnow()
             if after.name != before.name:
                 if self.karma.logs_on(after.server, "user_change_name"):
                     em = discord.Embed(
@@ -655,7 +649,7 @@ class Karma:
     async def all_bans(self, user):
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "all_bans"):
-                ts = datetime.now()
+                ts = datetime.utcnow()
                 em = discord.Embed(description="{} a été banni".format(user.mention), color=0xb01b1b, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Bannissement", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
@@ -664,7 +658,7 @@ class Karma:
     async def all_debans(self, user):
         if type(user) is discord.Member:
             if self.karma.logs_on(user.server, "all_debans"):
-                ts = datetime.now()
+                ts = datetime.utcnow()
                 em = discord.Embed(description="{} a été débanni".format(user.mention), color=0xa6b620, timestamp=ts)
                 em.set_author(name=str(user) + " ─ Débannissement", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
@@ -672,7 +666,7 @@ class Karma:
 
     async def voice_update(self, before, after):
         if type(after) is discord.Member:
-            ts = datetime.now()
+            ts = datetime.utcnow()
             if after.voice_channel:
                 if not before.voice_channel:
                     if self.karma.logs_on(after.server, "voice_join"):
