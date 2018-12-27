@@ -744,7 +744,7 @@ class Karma:
                             em.add_field(name= embed["author"]["name"], value=embed["description"])
                             em.set_footer(text="─ Entrez la raison ou tapez \"stop\" pour abandonner")
                             msg = await self.bot.send_message(message.channel, embed=em)
-                            rep = await self.bot.wait_for_message(author=message.author, channel=msg.channel,
+                            rep = await self.bot.wait_for_message(author=msg.author, channel=msg.channel,
                                                                    timeout=30)
                             if rep is None or rep.content.lower() in ["stop", "quit", "quitter"]:
                                 await self.bot.delete_message(msg)
@@ -755,6 +755,7 @@ class Karma:
                                 em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
                                 em.set_footer(text=embed["footer"]["text"].replace(" ─ 🚩", ""))
                                 em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
+                                await self.bot.delete_message(msg)
                                 await self.bot.edit_message(message, embed=em)
                                 await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
 
