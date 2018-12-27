@@ -9,7 +9,6 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 
 import discord
-from __main__ import send_cmd_help
 from discord.ext import commands
 
 from .utils import checks
@@ -512,7 +511,6 @@ class Community:
     async def noelmsg(self, user):
         server = user.server
         roles = self.noel_activated(server)
-        print("Quelqu'un a quitté L'Appart")
         if roles:
             # Merci à Koala, Skut, Bangumi et Subo pour avoir proposé ces messages
             msg = ["**{0}** s'est électrocuté avec une guirlande.",
@@ -535,17 +533,6 @@ class Community:
             chan = self.bot.get_channel("526819724768575526")
             await self.bot.send_message(chan, embed=em)
 
-    async def censure(self, message):
-        if "role" not in self.session:
-            try:
-                self.session["role"] = discord.utils.get(message.server.roles, name="Prison")
-            except:
-                print("CENSURE - Impossible d'avoir le rôle Prison")
-        if message.server.id == "204585334925819904":
-            if "https://discord.gg" in message.content.lower():
-                roles = [r.name for r in message.author.roles]
-                if "Habitué" not in roles or "Malsain" not in roles:
-                    await self.bot.add_roles(message.author, self.session["role"])
 
 def check_folders():
     if not os.path.exists("data/community"):
@@ -567,7 +554,6 @@ def setup(bot):
     check_files()
     n = Community(bot)
     bot.add_cog(n)
-    bot.add_listener(n.censure, "on_message")
     bot.add_listener(n.grab_reaction_add, "on_reaction_add")
     bot.add_listener(n.grab_reaction_remove, "on_reaction_remove")
     bot.add_listener(n.autoattrib, "on_member_join")
