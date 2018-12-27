@@ -549,8 +549,8 @@ class Karma:
                     continue
                 elif act.reaction.emoji == "✅":
                     await self.bot.delete_message(msg)
-                    serv = {}
-                    self.karma.save()
+                    self.karma.get_server(server, "META")["logs_channels"] = {}
+                    self.karma.save(True)
                     await self.bot.say("❎ **Logs reset** ─ Tous les logs ont été désactivés.")
                     continue
                 else:
