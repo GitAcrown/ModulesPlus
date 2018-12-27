@@ -751,7 +751,7 @@ class Karma:
                                 return
                             else:
                                 txt = rep.content
-                                em = discord.Embed(description=embed["description"], color=embed["color"])
+                                em = discord.Embed(description=embed["description"], color=embed["color"], timestamp=embed["timestamp"])
                                 em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
                                 em.set_footer(text=embed["footer"]["text"].replace(" ─ 🚩", ""))
                                 em.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
