@@ -607,7 +607,11 @@ class Karma:
     async def msg_post(self, message):
         if hasattr(message, "server"):
             if not message.author.bot:
-                if self.karma.logs_on(message.server, "msg_post"):
+                try:
+                    karma = self.karma.logs_on(message.server, "msg_post")
+                except:
+                    pass
+                if karma:
                     em = discord.Embed(description=message.content, color=0x6fe334, timestamp=message.timestamp)
                     em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
                     em.set_footer(text="ID:{}".format(message.author.id))
