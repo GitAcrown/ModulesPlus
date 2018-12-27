@@ -111,7 +111,7 @@ class Karma:
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def autoroles(self, ctx, *roles):
-        """Attribue automatiquement les rôles donnés
+        """Attribue automatiquement, au hasard, l'un des rôles donnés
 
         Pour les rôles avec un nom composé, n'oubliez pas les guillemets"""
         if roles:
