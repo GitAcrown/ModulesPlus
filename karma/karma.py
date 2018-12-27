@@ -562,9 +562,8 @@ class Karma:
 
     @commands.command(pass_context=True, hidden=True)
     async def timetest(self, ctx):
-        em = discord.Embed(description="Il est {}\nTimestamp = {}".format(datetime.now().strftime("%d/%m/%Y %H:%M"),
-                                                                          ctx.message.timestamp.strftime("%d/%m/%Y %H:%M")))
-        em.timestamp = ctx.message.timestamp
+        em = discord.Embed(description="Il est {}".format(datetime.now()))
+        em.timestamp = datetime.utcnow()
         await self.bot.say(embed=em)
 
     async def msg_post(self, message):
