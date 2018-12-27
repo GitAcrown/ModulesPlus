@@ -60,7 +60,7 @@ class KarmaAPI:
         """Ajouter un log d'une certaine catégorie au serveur donné (si actif)"""
         serv = self.get_server(server, "META")
         if category in serv["logs_channels"]:
-            channel = self.bot.get_channel(serv[category])
+            channel = self.bot.get_channel(serv["logs_channels"][category])
             await self.bot.send_message(channel, embed=embed)
             return True
         return False
