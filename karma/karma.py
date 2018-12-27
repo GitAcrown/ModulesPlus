@@ -129,13 +129,15 @@ class Karma:
                     txt += "• {}\n".format(role.mention)
             self.karma.get_server(ctx.message.server, "META")["auto_roles"] = liste
             self.karma.save(True)
-            await self.bot.say("⚙ **Attribution automatique de rôles** ─ Activée pour ces rôles :\n{}".format(txt))
+            em = discord.Embed(title="Attribution auto. des rôles ─ Activé", description=txt)
+            em.set_footer(text="Ne changez pas le nom des rôles fournis sous peine d'entraver son fonctionnement")
+            await self.bot.say(embed=em)
         elif self.karma.get_server(ctx.message.server, "META")["auto_roles"]:
             txt = ""
             for r in self.karma.get_server(ctx.message.server, "META")["auto_roles"]:
                 role = discord.utils.get(ctx.message.server.roles, name=r)
                 txt += "• {}\n".format(role.mention)
-            em = discord.Embed(title="Attribution auto. des rôles", description=txt)
+            em = discord.Embed(title="Attribution auto. des rôles ─ Liste", description=txt)
             em.set_footer(text="Tapez '.autoroles stop' pour désactiver cette fonctionnalité")
             await self.bot.say(embed=em)
         else:
