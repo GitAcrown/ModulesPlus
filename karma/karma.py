@@ -121,7 +121,7 @@ class Karma:
             results.append(diff)
             ping = pong
             n += 1
-        txt = "\n".join(["• {},{}".format(a, b) for a, b in [i for i in results]])
+        txt = "\n".join(["• {},{}s".format(a, b) for a, b in [i for i in results]])
         await self.bot.say("**Résultats :**\n" + txt)
 
     @commands.command(pass_context=True)
