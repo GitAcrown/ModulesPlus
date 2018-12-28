@@ -114,7 +114,7 @@ class Karma:
         n = 1
         ping = ctx.message.timestamp
         results = []
-        while n < 3:
+        while n <= 3:
             msg = await self.bot.say("Pong #{}".format(n))
             pong = msg.timestamp
             diff = (pong - ping).seconds, (pong - ping).microseconds
