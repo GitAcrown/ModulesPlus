@@ -621,8 +621,8 @@ class Karma:
         if hasattr(message, "server"):
             if not message.author.bot:
                 if self.karma.logs_on(message.server, "msg_delete"):
-                    em = discord.Embed(description=message.content, color=0xe33434, timestamp=message.timestamp)
-                    em.set_author(name=str(message.author) + " ─ Message supprimé", icon_url=message.author.avatar_url)
+                    em = discord.Embed(description="*Message supprimé sur* {}\n\n".format(message.channel.mention) + message.content, color=0xe33434, timestamp=message.timestamp)
+                    em.set_author(name=str(message.author) + " ─ Suppression d'un message", icon_url=message.author.avatar_url)
                     em.set_footer(text="ID:{}".format(message.author.id))
                     await self.karma.add_server_logs(message.server, "msg_delete", em)
 
@@ -631,8 +631,10 @@ class Karma:
             if not after.author.bot:
                 if before.content != after.content:
                     if self.karma.logs_on(after.server, "msg_edit"):
-                        em = discord.Embed(color=0x34a1e3, timestamp=after.timestamp)
-                        em.set_author(name=str(after.author) + " ─ Message edité", icon_url=after.author.avatar_url)
+                        msgurl = "https://discordapp.com/channels/{}/{}/{}".format(after.server.id, after.channel.id,
+                                                                                   after.id)
+                        em = discord.Embed(color=0x34a1e3, timestamp=after.timestamp, description="*[Message]({}) édité sur* {}".format(msgurl, after.channel.mention))
+                        em.set_author(name=str(after.author) + " ─ Edition d'un message", icon_url=after.author.avatar_url)
                         em.set_footer(text="ID:{}".format(after.author.id))
                         em.add_field(name="◦ Avant", value=before.content, inline=False)
                         em.add_field(name="• Après", value=after.content, inline=False)
