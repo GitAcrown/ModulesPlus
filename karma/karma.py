@@ -109,6 +109,22 @@ class Karma:
             return val
 
     @commands.command(pass_context=True)
+    async def lagtest(self, ctx):
+        """Rapide calcul du temps de latence de communication entre un membre et le bot"""
+        n = 1
+        ping = ctx.message.timestamp
+        results = []
+        while n < 3:
+            msg = await self.bot.say("Pong #{}".format(n))
+            pong = msg.timestamp
+            diff = (pong - ping).seconds, (pong - ping).microseconds
+            results.append(diff)
+            ping = pong
+            n += 1
+        txt = "\n".join(["• {},{}".format(a, b) for a, b in [i for i in results]])
+        await self.bot.say("**Résultats :**\n" + txt)
+
+    @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def autoroles(self, ctx, *roles):
         """Attribue automatiquement, au hasard, l'un des rôles donnés
