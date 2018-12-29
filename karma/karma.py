@@ -479,15 +479,6 @@ class Karma:
         else:
             await self.bot.say("❌ **Impossible** ─ Cette fonctionnalité est désactivée sur ce serveur.")
 
-    @commands.command(pass_context=True)
-    async def em(self, ctx):
-        """Test Embed"""
-        vid = {
-            'url': "http://techslides.com/demos/sample-videos/small.mp4"
-        }
-        em = discord.Embed(title="Test", video = vid, description="Lol")
-        await self.bot.say(embed=em)
-
     @commands.group(name="prisonset", aliases=["pset"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def _prisonset(self, ctx):
