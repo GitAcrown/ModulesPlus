@@ -485,7 +485,7 @@ class Karma:
         vid = {
             'url': "http://techslides.com/demos/sample-videos/small.mp4"
         }
-        em = discord.Embed(title="Test", video = video, description="Lol")
+        em = discord.Embed(title="Test", video = vid, description="Lol")
         await self.bot.say(embed=em)
 
     @commands.group(name="prisonset", aliases=["pset"], pass_context=True)
