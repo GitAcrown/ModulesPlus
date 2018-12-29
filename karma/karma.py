@@ -668,11 +668,15 @@ class Karma:
             liste = []
             for i in law:
                 liste.append([i, law[i]])
-            liste = self.supersort(liste)
-            for i in liste:
-                txt += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
-            em = discord.Embed(title="Liste des articles", description=txt, color=0x41f4d6)
-            await self.bot.say(embed=em)
+            if liste:
+                liste = self.supersort(liste)
+                for i in liste:
+                    txt += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
+                em = discord.Embed(title="Liste des articles", description=txt, color=0x41f4d6)
+                await self.bot.say(embed=em)
+            else:
+                em = discord.Embed(title="Liste des articles", description="Aucun article", color=0x41f4d6)
+                await self.bot.say(embed=em)
 
     @_rules.command(pass_context=True)
     async def add(self, ctx, ref, *texte):
