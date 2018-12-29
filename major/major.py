@@ -76,7 +76,7 @@ class MajorAPI:
                 "SYS": {"old_roles": []}}
         return dict
 
-    def manual_new_account(self, server: discord.Server, user: discord.User):
+    def offline_get_account(self, server: discord.Server, user: discord.User):
         data = self.get_server(server, "USERS")
         if user.id not in data:
             data[user.id] = self.new_empty_account()
@@ -202,6 +202,53 @@ class Major:
             em.set_image(url=data.image)
         await self.bot.say(embed=em)
 
+    @_carte.command(alises=["archs"], pass_context=True)
+    async def archives(self, ctx, user_id: str):
+        """Voir la carte de membre d'un membre qui n'est plus présent avec son ID"""
+        serv = self.mjr.get_server(ctx.message.server, "USERS")
+        if user_id in serv:
+            today = time.strftime("%d/%m/%Y", time.localtime())
+            now = time.strftime("%H:%M", time.localtime())
+            infos = serv[user_id]
+            user = await self.bot.get_user_info(user_id)
+
+            color = infos["PERSO"]["bar_color"] if infos["PERSO"]["bar_color"] else 0x000001
+            firstmsg = datetime.fromtimestamp(infos["DATA"]["first_msg"])
+            fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
+            flammes = len(infos["DATA"]["flammes"])
+            ajd = time.strftime("%d/%m/%Y", time.localtime())
+            der_msg = infos["DATA"]["flammes"][-1] if flammes else ajd
+            pseudos, surnoms = infos["DATA"]["pseudos"][::-1], infos["DATA"]["surnoms"][::-1]
+
+            em = discord.Embed(title="{}".format(user.name), description=infos["PERSO"]["bio"], color=color)
+            crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
+            em.set_thumbnail(url=user.avatar_url)
+            profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
+            profil += "**1re trace** — {} · **{}**j\n".format(fmsg_date, fmsg_jours)
+            profil += "\🔥{} — {}".format(flammes, der_msg)
+            em.add_field(name="Profil", value=profil)
+            dlogs = infos["LOGS"][::-1]
+            logs = dlogs[-3:]
+            if logs:
+                hist = "— **Historique :**\n"
+                for act in logs:
+                    if act[1] == today:
+                        if act[0] == now:
+                            hist += "• À l'instant · *{}*\n".format(act[2])
+                        else:
+                            hist += "• {} · *{}*\n".format(act[0], act[2])
+                    else:
+                        hist += "• {} · *{}*\n".format(act[1], act[2])
+                if pseudos:
+                    hist += "\n— **Pseudos :** {}".format(", ".join(pseudos[-3:]))
+                if surnoms:
+                    hist += "\n— ** Surnoms: ** {}".format(", ".join(surnoms[-3:]))
+            else:
+                hist = "Aucun historique"
+            em.add_field(name="Logs", value=hist)
+            em.set_footer(text="ID · {} — Archives du  (infos. incomplètes)".format(user.id))
+            await self.bot.say(embed=em)
+
     @_carte.command(pass_context=True)
     async def bio(self, ctx, *texte):
         """Modifier la bio de sa carte de membre"""
@@ -317,7 +364,7 @@ class Major:
             if message.server:
                 data = self.mjr.get_account(message.author)
                 if not data:
-                    data = self.mjr.manual_new_account(message.server, message.author)
+                    data = self.mjr.offline_get_account(message.server, message.author)
                 date, hier = datetime.now().strftime("%d/%m/%Y"), (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
                 data["DATA"]["msg_nb"] += 1
                 if hier in data["DATA"]["flammes"]:
@@ -331,7 +378,7 @@ class Major:
         if hasattr(message, "server"):
             data = self.mjr.get_account(message.author)
             if not data:
-                data = self.mjr.manual_new_account(message.server, message.author)
+                data = self.mjr.offline_get_account(message.server, message.author)
             data["DATA"]["msg_suppr"] += 1
             self.mjr.save()
 
