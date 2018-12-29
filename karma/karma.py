@@ -191,8 +191,9 @@ class Karma:
         # casier = self.karma.get_user(user)
         meta = self.karma.get_server(server, "META")
         cache = self.get_cache(server, "PRISON")
+        temps = temps.lower()
 
-        form = temps.lower()[-1:]
+        form = temps[-1:]
         if form not in ["s", "m", "h", "j"]:
             txt = "• `s` pour les **secondes** (seulement supérieur à 60s)\n" \
                   "• `m` pour les **minutes**\n" \
