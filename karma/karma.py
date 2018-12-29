@@ -622,13 +622,16 @@ class Karma:
 
     @commands.group(name="rules", aliases=["regles"], pass_context=True, invoke_without_command=True, no_pm=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def _rules(self, ctx, *ref: str):
+    async def _rules(self, ctx, *ref):
         """Gérer le registre des règles du serveur"""
         if ctx.invoked_subcommand is None:
-            await ctx.invoke(self.search, ref=ref)
+            if ref:
+                await ctx.invoke(self.search, ref=ref)
+            else:
+                await ctx.invoke(self.search, ref=[])
 
     @_rules.command(aliases=["list", "s"], pass_context=True)
-    async def search(self, ctx, *ref: str):
+    async def search(self, ctx, *ref):
         """Recherche un article ou en affiche un si la référence est renseignée"""
         law = self.karma.get_server(ctx.message.server, "META")["rules"]
         if ref:
