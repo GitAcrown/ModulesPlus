@@ -241,6 +241,8 @@ class Karma:
 
                         em = discord.Embed(description="⌛ **Peine alourdie** ─ **+{}{}** par *{}*".format(
                             valeur, form, ctx.message.author.name), color=role.color)
+                        if raison:
+                            em.add_field(name="Raison", value=raison)
                         if estimdate == today:
                             estimtxt = "Sortie prévue à {}".format(estim)
                         else:
@@ -281,6 +283,8 @@ class Karma:
 
                         em = discord.Embed(description="⌛ **Peine réduite** ─ **+{}{}** par *{}*".format(
                             valeur, form, ctx.message.author.name), color=role.color)
+                        if raison:
+                            em.add_field(name="Raison", value=raison)
                         if estimdate == today:
                             estimtxt = "Sortie prévue à {}".format(estim)
                         else:
@@ -351,6 +355,8 @@ class Karma:
                     txt += "\n• Vous avez le droit d'envoyer un dernier message sur {} avec `.pmsg`".format(notif.mention)
                 em = discord.Embed(description="🔒 **Peine de prison** ─ **{}{}** par *{}*{}".format(
                     val, form, ctx.message.author.name, txt), color=role.color)
+                if raison:
+                    em.add_field(name="Raison", value=raison)
                 em.set_footer(text=estimtxt)
                 try:
                     await self.bot.send_message(user, embed=em)
