@@ -529,35 +529,34 @@ class Karma:
         """Cache un message de la même manière qu'avec une balise Spoil"""
         if not channel:
             channel = ctx.message.channel
-        try:
-            message = self.bot.get_message(channel, msg_id)
-        except:
+        message = self.bot.get_message(channel, msg_id)
+        if message:
+            await self.bot.delete_message(message)
+            img = False
+            reg = re.compile(r'(https?:\/\/(?:.*)\/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(
+                message.content)
+            if reg:
+                img = reg[0]
+            ts = datetime.utcnow()
+            em = discord.Embed(color=message.author.color)
+            em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+            em.set_footer(text="👁 ─ Recevoir le message (MP)")
+            msg = await self.bot.send_message(channel, embed=em)
+            meta = self.get_meta(ctx.message.server)["spoils"]
+            meta[msg.id] = {"contenu": message.content,
+                            "auteur": message.author.name,
+                            "avatar": message.author.avatar_url,
+                            "color": message.author.color,
+                            "img": img}
+            await self.bot.add_reaction(msg, "👁")
+            em = discord.Embed(
+                description="{} a caché un message de {} sur {}".format(ctx.message.author.mention, message.author.mention, message.channel.mention),
+                color=0x5463d8, timestamp=ts)
+            em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
+            em.set_footer(text="ID:{}".format(message.author.id))
+            await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
+        else:
             await self.bot.say("❌ **Message inaccessible** ─ Utilisez plutôt la réaction 🏴 sur le message concerné.")
-            return
-        await self.bot.delete_message(message)
-        img = False
-        reg = re.compile(r'(https?:\/\/(?:.*)\/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(
-            message.content)
-        if reg:
-            img = reg[0]
-        ts = datetime.utcnow()
-        em = discord.Embed(color=message.author.color)
-        em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-        em.set_footer(text="👁 ─ Recevoir le message (MP)")
-        msg = await self.bot.send_message(channel, embed=em)
-        meta = self.get_meta(ctx.message.server)["spoils"]
-        meta[msg.id] = {"contenu": message.content,
-                        "auteur": message.author.name,
-                        "avatar": message.author.avatar_url,
-                        "color": message.author.color,
-                        "img": img}
-        await self.bot.add_reaction(msg, "👁")
-        em = discord.Embed(
-            description="{} a caché un message de {} sur {}".format(ctx.message.author.mention, message.author.mention, message.channel.mention),
-            color=0x5463d8, timestamp=ts)
-        em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
-        em.set_footer(text="ID:{}".format(message.author.id))
-        await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
