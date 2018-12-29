@@ -720,7 +720,7 @@ class Karma:
         while True:
             types = ["msg_post", "msg_delete", "msg_edit", "msg_hide",
                      "voice_join", "voice_quit", "voice_change", "voice_mute", "voice_deaf",
-                     "user_prison", "user_ban", "user_deban", "user_join", "user_quit", "user_change_name", "user_change_nickname",
+                     "user_prison", "user_ban", "user_warn", "user_deban", "user_join", "user_quit", "user_change_name", "user_change_nickname",
                      "notif_low", "notif_high"]
             tlist = {}
             for t in types:
