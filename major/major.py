@@ -202,53 +202,6 @@ class Major:
             em.set_image(url=data.image)
         await self.bot.say(embed=em)
 
-    @_carte.command(alises=["archs"], pass_context=True)
-    async def archives(self, ctx, user_id: str):
-        """Voir la carte de membre d'un membre qui n'est plus présent avec son ID"""
-        serv = self.mjr.get_server(ctx.message.server, "USERS")
-        if user_id in serv:
-            today = time.strftime("%d/%m/%Y", time.localtime())
-            now = time.strftime("%H:%M", time.localtime())
-            infos = serv[user_id]
-            user = await self.bot.get_user_info(user_id)
-
-            color = infos["PERSO"]["bar_color"] if infos["PERSO"]["bar_color"] else 0x000001
-            firstmsg = datetime.fromtimestamp(infos["DATA"]["first_msg"])
-            fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
-            flammes = len(infos["DATA"]["flammes"])
-            ajd = time.strftime("%d/%m/%Y", time.localtime())
-            der_msg = infos["DATA"]["flammes"][-1] if flammes else ajd
-            pseudos, surnoms = infos["DATA"]["pseudos"][::-1], infos["DATA"]["surnoms"][::-1]
-
-            em = discord.Embed(title="{}".format(user.name), description=infos["PERSO"]["bio"], color=color)
-            crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
-            em.set_thumbnail(url=user.avatar_url)
-            profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
-            profil += "**1re trace** — {} · **{}**j\n".format(fmsg_date, fmsg_jours)
-            profil += "\🔥{} — {}".format(flammes, der_msg)
-            em.add_field(name="Profil", value=profil)
-            dlogs = infos["LOGS"][::-1]
-            logs = dlogs[-3:]
-            if logs:
-                hist = "— **Historique :**\n"
-                for act in logs:
-                    if act[1] == today:
-                        if act[0] == now:
-                            hist += "• À l'instant · *{}*\n".format(act[2])
-                        else:
-                            hist += "• {} · *{}*\n".format(act[0], act[2])
-                    else:
-                        hist += "• {} · *{}*\n".format(act[1], act[2])
-                if pseudos:
-                    hist += "\n— **Pseudos :** {}".format(", ".join(pseudos[-3:]))
-                if surnoms:
-                    hist += "\n— ** Surnoms: ** {}".format(", ".join(surnoms[-3:]))
-            else:
-                hist = "Aucun historique"
-            em.add_field(name="Logs", value=hist)
-            em.set_footer(text="ID · {} — Archives du  (infos. incomplètes)".format(user.id))
-            await self.bot.say(embed=em)
-
     @_carte.command(pass_context=True)
     async def bio(self, ctx, *texte):
         """Modifier la bio de sa carte de membre"""
@@ -313,6 +266,53 @@ class Major:
             data["bar_color"] = None
             self.mjr.save()
             await self.bot.say("❎ **Réinitialisée** — La couleur affichée sera celle de votre pseudo.")
+
+    @commands.command(alises=["archs"], pass_context=True)
+    async def archives(self, ctx, user_id: str):
+        """Voir la carte de membre d'un membre qui n'est plus présent avec son ID"""
+        serv = self.mjr.get_server(ctx.message.server, "USERS")
+        if user_id in serv:
+            today = time.strftime("%d/%m/%Y", time.localtime())
+            now = time.strftime("%H:%M", time.localtime())
+            infos = serv[user_id]
+            user = await self.bot.get_user_info(user_id)
+
+            color = infos["PERSO"]["bar_color"] if infos["PERSO"]["bar_color"] else 0x000001
+            firstmsg = datetime.fromtimestamp(infos["DATA"]["first_msg"])
+            fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
+            flammes = len(infos["DATA"]["flammes"])
+            ajd = time.strftime("%d/%m/%Y", time.localtime())
+            der_msg = infos["DATA"]["flammes"][-1] if flammes else ajd
+            pseudos, surnoms = infos["DATA"]["pseudos"][::-1], infos["DATA"]["surnoms"][::-1]
+
+            em = discord.Embed(title="{}".format(user.name), description=infos["PERSO"]["bio"], color=color)
+            crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
+            em.set_thumbnail(url=user.avatar_url)
+            profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
+            profil += "**1re trace** — {} · **{}**j\n".format(fmsg_date, fmsg_jours)
+            profil += "\🔥{} — {}".format(flammes, der_msg)
+            em.add_field(name="Profil", value=profil)
+            dlogs = infos["LOGS"][::-1]
+            logs = dlogs[-3:]
+            if logs:
+                hist = "— **Historique :**\n"
+                for act in logs:
+                    if act[1] == today:
+                        if act[0] == now:
+                            hist += "• À l'instant · *{}*\n".format(act[2])
+                        else:
+                            hist += "• {} · *{}*\n".format(act[0], act[2])
+                    else:
+                        hist += "• {} · *{}*\n".format(act[1], act[2])
+                if pseudos:
+                    hist += "\n— **Pseudos :** {}".format(", ".join(pseudos[-3:]))
+                if surnoms:
+                    hist += "\n— ** Surnoms: ** {}".format(", ".join(surnoms[-3:]))
+            else:
+                hist = "Aucun historique"
+            em.add_field(name="Logs", value=hist)
+            em.set_footer(text="ID · {} — Archives du  (infos. incomplètes)".format(user.id))
+            await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
