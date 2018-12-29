@@ -123,7 +123,7 @@ class Karma:
         else:
             return val
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, hidden=True)
     async def lagtest(self, ctx):
         """Rapide calcul du temps de latence de communication entre un membre et le bot"""
         n = 1
@@ -620,17 +620,14 @@ class Karma:
             em.set_footer(text="ID:{}".format(user.id))
             await self.karma.add_server_logs(ctx.message.server, "user_warn", em)
 
-    @commands.group(name="rules", aliases=["regles"], pass_context=True, invoke_without_command=True, no_pm=True)
+    @commands.group(name="rules", aliases=["regles", "r"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def _rules(self, ctx, *ref):
-        """Gérer le registre des règles du serveur"""
+    async def _rules(self, ctx):
+        """Gestion du registre des règles du serveur"""
         if ctx.invoked_subcommand is None:
-            if ref:
-                await ctx.invoke(self.search, ref=ref)
-            else:
-                await ctx.invoke(self.search, ref=[])
+            await send_cmd_help(ctx)
 
-    @_rules.command(aliases=["list", "s"], pass_context=True)
+    @_rules.command(aliases=["list"], pass_context=True)
     async def search(self, ctx, *ref):
         """Recherche un article ou en affiche un si la référence est renseignée"""
         law = self.karma.get_server(ctx.message.server, "META")["rules"]
