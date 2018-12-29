@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import re
 import time
 from copy import deepcopy
 from datetime import datetime
@@ -84,10 +85,16 @@ class Karma:
         self.bot = bot
         self.karma = KarmaAPI(bot, "data/karma/data.json")
         self.cache = dataIO.load_json("data/karma/cache.json") # Pour garder des trucs secondaires en mémoire
+        self.meta = {}
 
     def save_cache(self):
         fileIO("data/karma/cache.json", "save", self.cache)
         return True
+
+    def get_meta(self, server: discord.Server):
+        if server.id not in self.meta:
+            self.meta[server.id] = {"spoils": {}}
+        return self.meta[server.id]
 
     def get_cache(self, server: discord.Server, sub: str = None):
         if server.id not in self.cache:
@@ -380,7 +387,7 @@ class Karma:
                                 user.name, user.id))
 
                         em = discord.Embed(description="{} est sorti de prison".format(
-                            user.name), color=role.color, timestamp=ts)
+                            user.mention), color=role.color, timestamp=ts)
                         em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
                         em.set_footer(text="ID:{}".format(user.id))
                         await self.karma.add_server_logs(server, "user_prison", em)
@@ -406,7 +413,7 @@ class Karma:
                     self.save_cache()
 
                     em = discord.Embed(description="{} est parti avant la fin de sa peine.".format(
-                        user.name), color=role.color, timestamp=ts)
+                        user.mention), color=role.color, timestamp=ts)
                     em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
                     em.set_footer(text="ID:{}".format(user.id))
                     await self.karma.add_server_logs(server, "user_prison", em)
@@ -517,6 +524,42 @@ class Karma:
         self.karma.save(True)
 
     @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_messages=True)
+    async def hide(self, ctx, msg_id: str, channel: discord.Channel = None):
+        """Cache un message de la même manière qu'avec une balise Spoil"""
+        if not channel:
+            channel = ctx.message.channel
+        try:
+            message = self.bot.get_message(channel, msg_id)
+        except:
+            await self.bot.say("❌ **Message inaccessible** ─ Utilisez plutôt la réaction 🏴 sur le message concerné.")
+            return
+        await self.bot.delete_message(message)
+        img = False
+        reg = re.compile(r'(https?:\/\/(?:.*)\/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(
+            message.content)
+        if reg:
+            img = reg[0]
+        ts = datetime.utcnow()
+        em = discord.Embed(color=message.author.color)
+        em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+        em.set_footer(text="👁 ─ Recevoir le message (MP)")
+        msg = await self.bot.send_message(channel, embed=em)
+        meta = self.get_meta(ctx.message.server)["spoils"]
+        meta[msg.id] = {"contenu": message.content,
+                        "auteur": message.author.name,
+                        "avatar": message.author.avatar_url,
+                        "color": message.author.color,
+                        "img": img}
+        await self.bot.add_reaction(msg, "👁")
+        em = discord.Embed(
+            description="{} a caché un message de {} sur {}".format(ctx.message.author.mention, message.author.mention, message.channel.mention),
+            color=0x5463d8, timestamp=ts)
+        em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
+        em.set_footer(text="ID:{}".format(message.author.id))
+        await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
+
+    @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def logs(self, ctx):
         """Commande de gestion des logs avancés"""
@@ -524,7 +567,7 @@ class Karma:
         serv = self.karma.get_server(server, "META")
         serv = serv["logs_channels"]
         while True:
-            types = ["msg_post", "msg_delete", "msg_edit",
+            types = ["msg_post", "msg_delete", "msg_edit", "msg_hide",
                      "voice_join", "voice_quit", "voice_change", "voice_mute", "voice_deaf",
                      "user_prison", "user_ban", "user_deban", "user_join", "user_quit", "user_change_name", "user_change_nickname",
                      "notif_low", "notif_high"]
@@ -806,36 +849,29 @@ class Karma:
                         em.set_footer(text="ID:{}".format(after.id))
                         await self.karma.add_server_logs(after.server, "voice_deaf", em)
 
-    """async def karma_react(self, reaction, author):
-        if hasattr(author, "server"):
-            if reaction.emoji == "🚩":
-                user = reaction.message.author
-                message = reaction.message
-                if reaction.message.embeds:
-                    embed = message.embeds[0]
-                    if embed["footer"]:
-                        if "🚩" in embed["footer"]["text"]:
-                            em = discord.Embed(description="📝 **Ajout d'une raison** ─ Quelle est la raison de cette action ?",
-                                               color=embed["color"])
-                            em.add_field(name= embed["author"]["name"], value=embed["description"])
-                            em.set_footer(text="─ Entrez la raison ou tapez \"stop\" pour abandonner")
-                            msg = await self.bot.send_message(message.channel, embed=em)
-                            rep = await self.bot.wait_for_message(author=author, channel=msg.channel,
-                                                                   timeout=45)
-                            if rep is None or rep.content.lower() in ["stop", "quit", "quitter"]:
-                                await self.bot.delete_message(msg)
-                                return
-                            else:
-                                txt = rep.content
-                                em = discord.Embed(description=embed["description"], color=embed["color"], timestamp=embed["timestamp"])
-                                em.set_author(name=embed["author"]["name"], icon_url=embed["author"]["icon_url"])
-                                em.set_footer(text=embed["footer"]["text"].replace(" 🚩", ""))
-                                embed.add_field(name="Raison ({})".format(str(author)), value=txt, inline=False)
-                                await self.bot.delete_message(msg)
-                                await self.bot.edit_message(message, embed=embed)
-                                notif = await self.bot.send_message(message.channel, "📝 **Raison ajoutée** avec succès.")
-                                await asyncio.sleep(6)
-                                await self.bot.delete_message(notif)"""
+    async def karma_react(self, reaction, author):
+        if author.server:
+            if author.server_permissions.manage_messages:
+                if reaction.emoji == "🏴":
+                    new_message = deepcopy(reaction.message)
+                    new_message.author = author
+                    new_message.content = ".hide {} {}".format(reaction.message.id, reaction.message.channel)
+                    await self.bot.process_commands(new_message)
+
+            if not author.bot:
+                if reaction.emoji == "👁":
+                    meta = self.get_meta(author.server)
+                    if reaction.message.id in meta["spoils"]:
+                        await self.bot.remove_reaction(reaction.message, "👁", author)
+                        p = meta["spoils"][reaction.message.id]
+                        em = discord.Embed(color=p["color"], description=p["contenu"])
+                        em.set_author(name=p["auteur"], icon_url=p["avatar"])
+                        if p["img"]:
+                            em.set_image(url=p["img"])
+                        try:
+                            await self.bot.send_message(author, embed=em)
+                        except:
+                            print("Impossible d'envoyer le Spoil à {} (Bloqué)".format(author.name))
 
     def __unload(self):
         self.karma.save(True)
@@ -860,6 +896,7 @@ def setup(bot):
     check_files()
     n = Karma(bot)
     bot.add_cog(n)
+    bot.add_listener(n.karma_react, "on_reaction_add")
     bot.add_listener(n.voice_update, "on_voice_state_update")
     bot.add_listener(n.msg_post, "on_message")
     bot.add_listener(n.msg_delete, "on_message_delete")
