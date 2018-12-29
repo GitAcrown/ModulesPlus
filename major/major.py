@@ -311,7 +311,7 @@ class Major:
             else:
                 hist = "Aucun historique"
             em.add_field(name="Logs", value=hist)
-            em.set_footer(text="ID · {} — Archives du  (infos. incomplètes)".format(user.id))
+            em.set_footer(text="ID · {} — Archives du membre (infos. incomplètes)".format(user.id))
             await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, hidden=True)
