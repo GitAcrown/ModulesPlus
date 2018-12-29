@@ -482,10 +482,10 @@ class Karma:
     @commands.command(pass_context=True)
     async def em(self, ctx):
         """Test Embed"""
-        provide = {
-            'name': "Jean-provider"
+        vid = {
+            'url': "http://techslides.com/demos/sample-videos/small.mp4"
         }
-        em = discord.Embed(title="Test", provider = provide, description="Lol")
+        em = discord.Embed(title="Test", video = video, description="Lol")
         await self.bot.say(embed=em)
 
     @commands.group(name="prisonset", aliases=["pset"], pass_context=True)
