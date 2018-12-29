@@ -552,12 +552,13 @@ class Karma:
                         "color": message.author.color,
                         "img": img}
         await self.bot.add_reaction(msg, "👁")
-        em = discord.Embed(
-            description="{} a caché un message de {} sur {}".format(ctx.message.author.mention, message.author.mention, message.channel.mention),
-            color=0x5463d8, timestamp=ts)
-        em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
-        em.set_footer(text="ID:{}".format(message.author.id))
-        await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
+        if self.karma.logs_on(ctx.message.server, "msg_hide"):
+            em = discord.Embed(
+                description="{} a caché un message de {} sur {}".format(ctx.message.author.mention, message.author.mention, message.channel.mention),
+                color=0x5463d8, timestamp=ts)
+            em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
+            em.set_footer(text="ID:{}".format(message.author.id))
+            await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
