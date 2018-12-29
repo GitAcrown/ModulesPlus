@@ -1,4 +1,5 @@
 import asyncio
+import operator
 import os
 import random
 import re
@@ -31,10 +32,10 @@ class KarmaAPI:
         self.context = {"last_save": 0}
         self.update()
 
-    def update(self):
+    def update(self): # V0.02
         for server in self.data:
-            if not "auto_roles" in self.data[server]["META"]:
-                self.data[server]["META"]["auto_roles"] = []
+            if not "rules" in self.data[server]["META"]:
+                self.data[server]["META"]["rules"] = {}
         return True
 
     def save(self, force: bool = False):
@@ -47,6 +48,7 @@ class KarmaAPI:
     def get_server(self, server: discord.Server, sub: str = None):
         if server.id not in self.data:
             opts = {"persist_roles": [],
+                    "rules": {},
                     "auto_roles": [],
                     "cache_repost": {},
                     "logs_channels": {},
@@ -104,6 +106,12 @@ class Karma:
 
     def check(self, reaction, user):
         return not user.bot
+
+    def supersort(self, l):
+        convert = lambda text: float(text) if text.isdigit() else text
+        alphanum = lambda key: [convert(c) for c in re.split('([-+]?[0-9]*\.?[0-9]+)', key)]
+        l.sort(key=alphanum)
+        return l
 
     def convert_sec(self, form: str, val: int):
         if form == "j":
@@ -174,7 +182,7 @@ class Karma:
 
         <user> = Membre à emprisonner
         <temps> = Valeur suivie de l'unité (m/h/j) ou heure de sortie
-        >>> Il est possible de moduler la peine en ajoutant + et - devant la durée
+        --> Il est possible de moduler la peine en ajoutant + et - devant la durée
         [raison] = Optionnel, rajoute une raison à la peine"""
         ts = datetime.utcnow()
         raison = " ".join(raison) if raison else False
@@ -574,6 +582,133 @@ class Karma:
             em.set_author(name=str(message.author) + " ─ Dissimulation de message", icon_url=message.author.avatar_url)
             em.set_footer(text="ID:{}".format(message.author.id))
             await self.karma.add_server_logs(ctx.message.server, "msg_hide", em)
+
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_messages=True)
+    async def warn(self, ctx, user: discord.Member, *raison):
+        """Permet d'avertir un membre d'une erreur qu'il a commise
+
+        Compatible avec le registre des règles (voir .rules)"""
+        if not raison:
+            raison = "Vous avez reçu un avertissement concernant votre comportement sur {}".format(ctx.message.channel.mention)
+        law = self.karma.get_server(ctx.message.server, "META")["rules"]
+        art = False
+        if raison[0] in law:
+            art = raison[0]
+            raison = " ".join(raison[1:])
+        else:
+            raison = " ".join(raison)
+        if not raison and art:
+            raison = "Non-respect d'une règle"
+        em = discord.Embed(title="Avertissement ─ par {}".format(str(ctx.message.author)), description=raison,
+                           color=0xf9ca20, timestamp=ctx.message.timestamp)
+        if art:
+            em.add_field(name="Fondé sur art. {}".format(art), value=law[art])
+        em.set_footer(text="Ceci n'est pas une sanction")
+        try:
+            await self.bot.send_message(user, embed=em)
+        except:
+            await self.bot.whisper("**Impossible** ─ *{}* m'a bloqué, il m'est impossible de lui envoyer un avertissement (mais il est tout de même enregistré)".format(user.name))
+
+        if self.karma.logs_on(ctx.message.server, "user_warn"):
+            em = discord.Embed(
+                description="{} a envoyé un avertissement à {} sur {}".format(ctx.message.author.mention, user.mention, ctx.message.channel.mention),
+                color=0xf9ca20, timestamp=ctx.message.timestamp)
+            em.add_field(name="Raison", value=raison)
+            em.set_author(name=str(user) + " ─ Avertissement",
+                          icon_url=user.avatar_url)
+            em.set_footer(text="ID:{}".format(user.id))
+            await self.karma.add_server_logs(ctx.message.server, "user_warn", em)
+
+    @commands.group(name="rules", aliases=["regles"], pass_context=True, invoke_without_command=True, no_pm=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def _rules(self, ctx, *ref: str):
+        """Gérer le registre des règles du serveur"""
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.search, ref=ref)
+
+    @_rules.command(aliases=["list", "s"], pass_context=True)
+    async def search(self, ctx, *ref: str):
+        """Recherche un article ou en affiche un si la référence est renseignée"""
+        law = self.karma.get_server(ctx.message.server, "META")["rules"]
+        if ref:
+            if len(ref) == 1:
+                if ref in law:
+                    em = discord.Embed(title="Art. {}".format(ref), description=law[ref], color=0x41aff4)
+                    em.set_footer(text="─ Sur le serveur {}".format(ctx.message.server.name))
+                    await self.bot.say(embed=em)
+                    return
+            txt = "**Mots clefs :** {}".format(" ".join(["`{}`".format(mot) for mot in ref]))
+            pert = {}
+            for r in law:
+                for m in ref:
+                    if m in law[r]:
+                        if r not in pert:
+                            pert[r] = 0
+                        pert[r] += 1
+            em = discord.Embed(title="Recherche dans le registre", description=txt, color=0x419df4)
+            if pert:
+                unsort = []
+                for i in pert:
+                    unsort.append([i, pert[i]])
+                sort = sorted(unsort, key=operator.itemgetter(1), reverse=True)
+                rech = ""
+                for i in sort:
+                    rech += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
+                em.add_field(name="Résultats", value=rech)
+                em.set_footer(text="Résultats classés par pertinence")
+            else:
+                em.add_field(name="Résultats", value="Aucun résultat")
+            await self.bot.say(embed=em)
+        else:
+            txt = ""
+            liste = []
+            for i in law:
+                liste.append([i, law[i]])
+            liste = self.supersort(liste)
+            for i in liste:
+                txt += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
+            em = discord.Embed(title="Liste des articles", description=txt, color=0x41f4d6)
+            await self.bot.say(embed=em)
+
+    @_rules.command(pass_context=True)
+    async def add(self, ctx, ref, *texte):
+        """Ajoute une règle dans le registre
+
+        Sautez des lignes en mettant '_'"""
+        law = self.karma.get_server(ctx.message.server, "META")
+        if ref not in law["rules"]:
+            txt = " ".join(texte).replace("_", "\n")
+            law["rules"][ref] = " ".join(txt)
+            self.karma.save()
+            await self.bot.say("📝 **Enregistré** ─ Le texte est disponible sous la référence `{}`".format(ref))
+        else:
+            await self.bot.say("❌ **Déjà existant** ─ Vous pouvez modifier le texte avec `.rules edit {}`".format(ref))
+
+    @_rules.command(pass_context=True)
+    async def edit(self, ctx, ref, *texte):
+        """Modifie une règle du registre
+
+        Sautez des lignes en mettant '_'"""
+        law = self.karma.get_server(ctx.message.server, "META")
+        if ref in law["rules"]:
+            txt = " ".join(texte).replace("_", "\n")
+            law["rules"][ref] = " ".join(txt)
+            self.karma.save()
+            await self.bot.say("📝 **Modifié** ─ Le nouveau texte est disponible sous la référence `{}`".format(ref))
+        else:
+            await self.bot.say("❌ **Introuvable** ─ Ajoutez le texte avec `.rules add {}`".format(ref))
+
+    @_rules.command(pass_context=True)
+    async def remove(self, ctx, ref):
+        """Retire une règle du registre"""
+        law = self.karma.get_server(ctx.message.server, "META")
+        if ref in law["rules"]:
+            del self.karma.get_server(ctx.message.server, "META")["rules"][ref]
+            self.karma.save()
+            await self.bot.say("❎ **Supprimée** ─ La règle n'existe plus")
+        else:
+            await self.bot.say("❌ **Introuvable** ─ Ajoutez des textes avec `.rules add`")
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
