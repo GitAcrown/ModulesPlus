@@ -169,13 +169,15 @@ class Karma:
 
     @commands.command(aliases=["p"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def prison(self, ctx, user: discord.Member, temps: str = "10m"):
+    async def prison(self, ctx, user: discord.Member, temps: str = "10m", *raison: str):
         """Emprisonne un membre pour un certain temps (def. 10m)
 
         <user> = Membre à emprisonner
         <temps> = Valeur suivie de l'unité (m/h/j) ou heure de sortie
-        Il est possible de moduler la peine en ajoutant + et - devant la durée"""
+        >>> Il est possible de moduler la peine en ajoutant + et - devant la durée
+        [raison] = Optionnel, rajoute une raison à la peine"""
         ts = datetime.utcnow()
+        raison = " ".join(raison) if raison else False
         message = ctx.message
         server = message.server
         if user.id == self.bot.user.id:
@@ -252,6 +254,8 @@ class Karma:
 
                         em = discord.Embed(description="La peine de {} a été allongée de **{}{}** par {}".format(
                             user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                        if raison:
+                            em.add_field(name="Raison", value=raison)
                         em.set_author(name=str(user) + " ─ Prison (Ajout)", icon_url=user.avatar_url)
                         em.set_footer(text="ID:{}".format(user.id))
                         await self.karma.add_server_logs(server, "user_prison", em)
@@ -290,6 +294,8 @@ class Karma:
 
                         em = discord.Embed(description="La peine de {} a été raccourcie de **{}{}** par {}".format(
                             user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                        if raison:
+                            em.add_field(name="Raison", value=raison)
                         em.set_author(name=str(user) + " ─ Prison (Réduction)", icon_url=user.avatar_url)
                         em.set_footer(text="ID:{}".format(user.id))
                         await self.karma.add_server_logs(server, "user_prison", em)
@@ -356,6 +362,8 @@ class Karma:
 
                 em = discord.Embed(description="{} a été mis en prison pour **{}{}** par {}".format(
                     user.name, val, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                if raison:
+                    em.add_field(name="Raison", value=raison)
                 em.set_author(name=str(user) + " ─ Prison (Entrée)", icon_url=user.avatar_url)
                 em.set_footer(text="ID:{}".format(user.id))
                 await self.karma.add_server_logs(server, "user_prison", em)
