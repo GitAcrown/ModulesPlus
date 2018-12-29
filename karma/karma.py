@@ -590,7 +590,7 @@ class Karma:
 
         Compatible avec le registre des règles (voir .rules)"""
         if not raison:
-            raison = "Vous avez reçu un avertissement concernant votre comportement sur {}".format(ctx.message.channel.mention)
+            raison = "Vous avez reçu un avertissement concernant votre comportement sur {}".format(ctx.message.channel.mention).split()
         law = self.karma.get_server(ctx.message.server, "META")["rules"]
         art = False
         if raison[0] in law:
