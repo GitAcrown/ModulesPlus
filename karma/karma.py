@@ -192,7 +192,7 @@ class Karma:
         meta = self.karma.get_server(server, "META")
         cache = self.get_cache(server, "PRISON")
 
-        form = temps[-1:]
+        form = temps[-1:].lower()
         if form not in ["s", "m", "h", "j"]:
             txt = "• `s` pour les **secondes** (seulement supérieur à 60s)\n" \
                   "• `m` pour les **minutes**\n" \
