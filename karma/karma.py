@@ -541,7 +541,7 @@ class Karma:
         if reg:
             img = reg[0]
         ts = datetime.utcnow()
-        em = discord.Embed(color=message.author.color)
+        em = discord.Embed(color=message.author.color, description="Message caché par un modérateur")
         em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
         em.set_footer(text="👁 ─ Recevoir le message (MP)")
         msg = await self.bot.send_message(channel, embed=em)
