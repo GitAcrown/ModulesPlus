@@ -485,7 +485,7 @@ class Karma:
         provide = {
             'name': "Jean-provider"
         }
-        em = discord.Embed(title="Test", provider = provide)
+        em = discord.Embed(title="Test", provider = provide, description="Lol")
         await self.bot.say(embed=em)
 
     @commands.group(name="prisonset", aliases=["pset"], pass_context=True)
