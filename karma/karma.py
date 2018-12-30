@@ -622,6 +622,7 @@ class Karma:
                           icon_url=user.avatar_url)
             em.set_footer(text="ID:{}".format(user.id))
             await self.karma.add_server_logs(ctx.message.server, "user_warn", em)
+        await self.bot.add_reaction(ctx.message, "✅")
 
     @commands.group(name="rules", aliases=["regles", "r"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
@@ -837,11 +838,12 @@ class Karma:
     async def msg_delete(self, message):
         if hasattr(message, "server"):
             if not message.author.bot:
-                if self.karma.logs_on(message.server, "msg_delete"):
-                    em = discord.Embed(description="*Message supprimé sur* {}\n\n".format(message.channel.mention) + message.content, color=0xe33434, timestamp=message.timestamp)
-                    em.set_author(name=str(message.author) + " ─ Suppression d'un message", icon_url=message.author.avatar_url)
-                    em.set_footer(text="ID:{}".format(message.author.id))
-                    await self.karma.add_server_logs(message.server, "msg_delete", em)
+                if not message.content.startswith("."):
+                    if self.karma.logs_on(message.server, "msg_delete"):
+                        em = discord.Embed(description="*Message supprimé sur* {}\n\n".format(message.channel.mention) + message.content, color=0xe33434, timestamp=message.timestamp)
+                        em.set_author(name=str(message.author) + " ─ Suppression d'un message", icon_url=message.author.avatar_url)
+                        em.set_footer(text="ID:{}".format(message.author.id))
+                        await self.karma.add_server_logs(message.server, "msg_delete", em)
 
     async def msg_edit(self, before, after):
         if hasattr(after, "server"):
