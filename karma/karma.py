@@ -681,7 +681,7 @@ class Karma:
         law = self.karma.get_server(ctx.message.server, "META")
         if ref not in law["rules"]:
             txt = " ".join(texte).replace("_", "\n")
-            law["rules"][ref] = " ".join(txt)
+            law["rules"][ref] = txt
             self.karma.save()
             await self.bot.say("📝 **Enregistré** ─ Le texte est disponible sous la référence `{}`".format(ref))
         else:
@@ -695,7 +695,7 @@ class Karma:
         law = self.karma.get_server(ctx.message.server, "META")
         if ref in law["rules"]:
             txt = " ".join(texte).replace("_", "\n")
-            law["rules"][ref] = " ".join(txt)
+            law["rules"][ref] = txt
             self.karma.save()
             await self.bot.say("📝 **Modifié** ─ Le nouveau texte est disponible sous la référence `{}`".format(ref))
         else:
