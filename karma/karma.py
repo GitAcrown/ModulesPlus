@@ -614,7 +614,10 @@ class Karma:
             em = discord.Embed(
                 description="{} a envoyé un avertissement à {} sur {}".format(ctx.message.author.mention, user.mention, ctx.message.channel.mention),
                 color=0xf9ca20, timestamp=ctx.message.timestamp)
-            em.add_field(name="Raison", value=raison)
+            if art:
+                em.add_field(name="Raison (Violation art. {})".format(art), value=raison + "\n```{}```".format(law[art]))
+            else:
+                em.add_field(name="Raison", value=raison)
             em.set_author(name=str(user) + " ─ Avertissement",
                           icon_url=user.avatar_url)
             em.set_footer(text="ID:{}".format(user.id))
