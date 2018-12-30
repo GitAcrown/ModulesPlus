@@ -185,7 +185,20 @@ class Karma:
         --> Il est possible de moduler la peine en ajoutant + et - devant la durée
         [raison] = Optionnel, rajoute une raison à la peine"""
         ts = datetime.utcnow()
-        raison = " ".join(raison) if raison else False
+        law = self.karma.get_server(ctx.message.server, "META")["rules"]
+        art = False
+        if raison:
+            if raison[0] in law:
+                art = raison[0]
+                raison = " ".join(raison[1:])
+                raison += "\n**Article {}** ─ *{}*".format(art, law[art])
+            else:
+                raison = " ".join(raison)
+        if not raison and art:
+            raison = "Non-respect d'une règle"
+        if not raison and not art:
+            raison = False
+
         message = ctx.message
         server = message.server
         if user.id == self.bot.user.id:
@@ -223,7 +236,8 @@ class Karma:
             role = discord.utils.get(message.server.roles, name=meta["prison_role"])
         except Exception as e:
             await self.bot.say("🚩 **Erreur** ─ Le rôle *{}* n'est pas accessible.\n"
-                               "Vérifiez que vous n'ayez pas changé son nom, si c'est le cas corrigez-le avec `.pset role`.")
+                               "Vérifiez que vous n'ayez pas changé son nom, si c'est le cas corrigez-le avec `.pset role`.\n"
+                               "`{}`".format(meta["prison_role"], e))
             return
 
         if temps.startswith("+") or temps.startswith("-"):
