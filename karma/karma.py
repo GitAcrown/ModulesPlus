@@ -662,13 +662,11 @@ class Karma:
             await self.bot.say(embed=em)
         else:
             txt = ""
-            liste = []
-            for i in law:
-                liste.append([i, law[i]])
+            liste = [i for i in law]
             if liste:
                 liste = self.supersort(liste)
                 for i in liste:
-                    txt += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
+                    txt += "• `{}`\n".format(i)
                 em = discord.Embed(title="Liste des articles", description=txt, color=0x41f4d6)
                 await self.bot.say(embed=em)
             else:
