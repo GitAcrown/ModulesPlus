@@ -633,7 +633,8 @@ class Karma:
         law = self.karma.get_server(ctx.message.server, "META")["rules"]
         if ref:
             if len(ref) == 1:
-                if ref in law:
+                if ref[0] in law:
+                    ref = ref[0]
                     em = discord.Embed(title="Art. {}".format(ref), description=law[ref], color=0x41aff4)
                     em.set_footer(text="─ Sur le serveur {}".format(ctx.message.server.name))
                     await self.bot.say(embed=em)
@@ -654,7 +655,7 @@ class Karma:
                 sort = sorted(unsort, key=operator.itemgetter(1), reverse=True)
                 rech = ""
                 for i in sort:
-                    rech += "• `{}` ─ *{}*\n".format(i[0], law[i[1]][:30] + "..." if len(law[i[1]]) > 30 else law[i[1]][:30])
+                    rech += "• `{}` ─ *{}*\n".format(i[0], law[i[0]][:30] + "..." if len(law[i[0]]) > 30 else law[i[0]][:30])
                 em.add_field(name="Résultats", value=rech)
                 em.set_footer(text="Résultats classés par pertinence")
             else:
