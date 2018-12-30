@@ -1017,6 +1017,12 @@ class Karma:
                     new_message.content = ".hide {} {}".format(reaction.message.id, reaction.message.channel)
                     await self.bot.process_commands(new_message)
 
+                if reaction.emoji == "⚠":
+                    new_message = deepcopy(reaction.message)
+                    new_message.author = author
+                    new_message.content = ".warn {}".format(reaction.message.author)
+                    await self.bot.process_commands(new_message)
+
             if not author.bot:
                 if reaction.emoji == "👁":
                     meta = self.get_meta(author.server)
@@ -1030,7 +1036,8 @@ class Karma:
                         try:
                             await self.bot.send_message(author, embed=em)
                         except:
-                            print("Impossible d'envoyer le Spoil à {} (Bloqué)".format(author.name))
+                            print("Impossible d'envoyer le message caché à {} (Bloqué)".format(author.name))
+
 
     def __unload(self):
         self.karma.save(True)
