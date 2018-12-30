@@ -191,7 +191,7 @@ class Karma:
             if raison[0] in law:
                 art = raison[0]
                 raison = " ".join(raison[1:])
-                raison += "\n**Article {}** ─ *{}*".format(art, law[art])
+                raison += "\n\n─ **Art. {}**\n```{}```".format(art, law[art])
             else:
                 raison = " ".join(raison)
         if not raison and art:
