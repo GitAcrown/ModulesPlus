@@ -153,13 +153,27 @@ class Karma:
 
     @commands.command(aliases=["s"], pass_context=True)
     @checks.admin_or_permissions(manage_messages=True)
-    async def slow(self, ctx, user: discord.Member, cooldown: str = "10s"):
+    async def slow(self, ctx, user: discord.Member, cooldown: str = "10s", *raison):
         """Passe un membre en mode Slow, imposant un délai entre deux messages
 
         <cooldown> = Valeur suivie de l'unité (s, m, h, j)"""
         server = ctx.message.server
         data = self.karma.get_server(server, "META")["slow"]
         form, val = cooldown[-1:], int(cooldown[:-1])
+        law = self.karma.get_server(ctx.message.server, "META")["rules"]
+        art = False
+        if raison:
+            if raison[0] in law:
+                art = raison[0]
+                raison = " ".join(raison[1:])
+                raison += "\n\n─ **Art. {}**\n```{}```".format(art, law[art])
+            else:
+                raison = " ".join(raison)
+        if not raison and art:
+            raison = "Non-respect d'une règle"
+        if not raison and not art:
+            raison = False
+
         if user.id not in data:
             data[user.id] = self.convert_sec(form, val)
             self.karma.save(True)
@@ -169,9 +183,20 @@ class Karma:
             try:
                 em = discord.Embed(description="🐢 **Slow** par {} ─ Vous ne pouvez désormais poster qu'un message"
                                                " toutes les {}{}".format(ctx.message.author, val, form))
+                em.add_field(name="Raison", value=raison)
                 await self.bot.send_message(user, embed=em)
             except:
                 print("SLOW - {} m'a bloqué, impossible de lui envoyer une notification.".format(str(user)))
+
+            if self.karma.logs_on(server, "msg_slow"):
+                em = discord.Embed(description="{} est limité par un délai de **{}{}** entre ses messages par {}".format(
+                    user.mention, val, form, ctx.message.author.mention), color=0xce4b1f, timestamp=ctx.message.timestamp)
+                if raison:
+                    em.add_field(name="Raison", value=raison)
+                em.set_author(name=str(user) + " ─ Entrée en mode slow", icon_url=user.avatar_url)
+                em.set_footer(text="ID:{}".format(user.id))
+                await self.karma.add_server_logs(server, "msg_slow", em)
+
             await asyncio.sleep(8)
             await self.bot.delete_message(msg)
         else:
@@ -187,6 +212,14 @@ class Karma:
                 await self.bot.send_message(user, embed=em)
             except:
                 print("SLOW - {} m'a bloqué, impossible de lui envoyer une notification.".format(str(user)))
+
+            if self.karma.logs_on(server, "msg_slow"):
+                em = discord.Embed(description="{} a été libéré du mode Slow par {}".format(
+                    user.mention, ctx.message.author.mention), color=0xce4b1f, timestamp=ctx.message.timestamp)
+                em.set_author(name=str(user) + " ─ Sortie du mode slow", icon_url=user.avatar_url)
+                em.set_footer(text="ID:{}".format(user.id))
+                await self.karma.add_server_logs(server, "msg_slow", em)
+
             await asyncio.sleep(8)
             await self.bot.delete_message(msg)
 
@@ -328,13 +361,14 @@ class Karma:
                             print("{} ({}) m'a bloqué, impossible de lui envoyer une estimation de peine".format(
                                 user.name, user.id))
 
-                        em = discord.Embed(description="La peine de {} a été allongée de **{}{}** par {}".format(
-                            user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
-                        if raison:
-                            em.add_field(name="Raison", value=raison)
-                        em.set_author(name=str(user) + " ─ Prison (Ajout)", icon_url=user.avatar_url)
-                        em.set_footer(text="ID:{}".format(user.id))
-                        await self.karma.add_server_logs(server, "user_prison", em)
+                        if self.karma.logs_on(server, "user_prison"):
+                            em = discord.Embed(description="La peine de {} a été allongée de **{}{}** par {}".format(
+                                user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                            if raison:
+                                em.add_field(name="Raison", value=raison)
+                            em.set_author(name=str(user) + " ─ Prison (Ajout)", icon_url=user.avatar_url)
+                            em.set_footer(text="ID:{}".format(user.id))
+                            await self.karma.add_server_logs(server, "user_prison", em)
 
                     if temps[0] == "-":
                         cache[user.id]["sortie"] -= modif
@@ -370,13 +404,14 @@ class Karma:
                             print("{} ({}) m'a bloqué, impossible de lui envoyer une estimation de peine".format(
                                 user.name, user.id))
 
-                        em = discord.Embed(description="La peine de {} a été raccourcie de **{}{}** par {}".format(
-                            user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
-                        if raison:
-                            em.add_field(name="Raison", value=raison)
-                        em.set_author(name=str(user) + " ─ Prison (Réduction)", icon_url=user.avatar_url)
-                        em.set_footer(text="ID:{}".format(user.id))
-                        await self.karma.add_server_logs(server, "user_prison", em)
+                        if self.karma.logs_on(server, "user_prison"):
+                            em = discord.Embed(description="La peine de {} a été raccourcie de **{}{}** par {}".format(
+                                user.name, valeur, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                            if raison:
+                                em.add_field(name="Raison", value=raison)
+                            em.set_author(name=str(user) + " ─ Prison (Réduction)", icon_url=user.avatar_url)
+                            em.set_footer(text="ID:{}".format(user.id))
+                            await self.karma.add_server_logs(server, "user_prison", em)
                     else:
                         await self.bot.say("⁉ **Symbole non reconnu** ─ `+` pour Allonger, `-` pour Réduire")
                 elif temps[0] == "+":
@@ -440,13 +475,14 @@ class Karma:
                                                            "voici votre notification de peine {} .".format(user.mention))
                         await self.bot.send_message(pchan, embed=em)
 
-                em = discord.Embed(description="{} a été mis en prison pour **{}{}** par {}".format(
-                    user.name, val, form, ctx.message.author.mention), color=role.color, timestamp=ts)
-                if raison:
-                    em.add_field(name="Raison", value=raison)
-                em.set_author(name=str(user) + " ─ Prison (Entrée)", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
-                await self.karma.add_server_logs(server, "user_prison", em)
+                if self.karma.logs_on(server, "user_prison"):
+                    em = discord.Embed(description="{} a été mis en prison pour **{}{}** par {}".format(
+                        user.name, val, form, ctx.message.author.mention), color=role.color, timestamp=ts)
+                    if raison:
+                        em.add_field(name="Raison", value=raison)
+                    em.set_author(name=str(user) + " ─ Prison (Entrée)", icon_url=user.avatar_url)
+                    em.set_footer(text="ID:{}".format(user.id))
+                    await self.karma.add_server_logs(server, "user_prison", em)
 
                 em = discord.Embed(description=msg, color=role.color)
                 em.set_footer(text=estimtxt)
@@ -474,11 +510,12 @@ class Karma:
                             print("{} ({}) m'a bloqué, impossible de lui envoyer la notification de libération".format(
                                 user.name, user.id))
 
-                        em = discord.Embed(description="{} est sorti de prison".format(
-                            user.mention), color=role.color, timestamp=ts)
-                        em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
-                        em.set_footer(text="ID:{}".format(user.id))
-                        await self.karma.add_server_logs(server, "user_prison", em)
+                        if self.karma.logs_on(server, "user_prison"):
+                            em = discord.Embed(description="{} est sorti de prison".format(
+                                user.mention), color=role.color, timestamp=ts)
+                            em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
+                            em.set_footer(text="ID:{}".format(user.id))
+                            await self.karma.add_server_logs(server, "user_prison", em)
 
                         plibmsg = ["est désormais libre", "regagne sa liberté", "est sorti·e de prison",
                                    "profite à nouveau de l'air frais"]
@@ -500,11 +537,12 @@ class Karma:
                     del cache[user.id]
                     self.save_cache(True)
 
-                    em = discord.Embed(description="{} est parti avant la fin de sa peine.".format(
-                        user.mention), color=role.color, timestamp=ts)
-                    em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
-                    em.set_footer(text="ID:{}".format(user.id))
-                    await self.karma.add_server_logs(server, "user_prison", em)
+                    if self.karma.logs_on(server, "user_prison"):
+                        em = discord.Embed(description="{} est parti avant la fin de sa peine.".format(
+                            user.mention), color=role.color, timestamp=ts)
+                        em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
+                        em.set_footer(text="ID:{}".format(user.id))
+                        await self.karma.add_server_logs(server, "user_prison", em)
             else:
                 cache[user.id]["sortie"] = 0
                 try:
@@ -520,11 +558,12 @@ class Karma:
                     print("{} ({}) m'a bloqué, impossible de lui envoyer la notification de libération".format(
                         user.name, user.id))
 
-                em = discord.Embed(description="{} a été libéré par {}".format(
-                    user.name, ctx.message.author.mention), color=role.color, timestamp=ts)
-                em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
-                await self.karma.add_server_logs(server, "user_prison", em)
+                if self.karma.logs_on(server, "user_prison"):
+                    em = discord.Embed(description="{} a été libéré par {}".format(
+                        user.name, ctx.message.author.mention), color=role.color, timestamp=ts)
+                    em.set_author(name=str(user) + " ─ Prison (Sortie)", icon_url=user.avatar_url)
+                    em.set_footer(text="ID:{}".format(user.id))
+                    await self.karma.add_server_logs(server, "user_prison", em)
 
                 em = discord.Embed(description="🔓 {} à été libéré par {}".format(
                     user.mention, ctx.message.author.mention), color=role.color)
