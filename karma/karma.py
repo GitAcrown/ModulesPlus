@@ -87,22 +87,33 @@ class Karma:
         self.bot = bot
         self.karma = KarmaAPI(bot, "data/karma/data.json")
         self.cache = dataIO.load_json("data/karma/cache.json") # Pour garder des trucs secondaires en mémoire
-        self.meta = {}
+        self.update_cache()
+        self.meta = {"last_save": 0}
 
-    def save_cache(self):
-        fileIO("data/karma/cache.json", "save", self.cache)
+    def save_cache(self, force: bool = False):
+        if force:
+            fileIO("data/karma/cache.json", "save", self.cache)
+        elif (time.time() - self.meta["last_save"]) >= 120:  # 2 minutes
+            fileIO("data/karma/cache.json", "save", self.cache)
+            self.meta["last_save"] = time.time()
         return True
 
     def get_meta(self, server: discord.Server):
         if server.id not in self.meta:
             self.meta[server.id] = {"spoils": {}}
         return self.meta[server.id]
+    
+    def update_cache(self):
+        for server in self.cache:
+            if "SLOW" not in self.cache[server]:
+                self.cache[server]["SLOW"] = {}
+        self.save_cache(True)
 
     def get_cache(self, server: discord.Server, sub: str = None):
         if server.id not in self.cache:
             self.cache[server.id] = {"PRISON": {},
                                      "SLOW": {}}
-            self.save_cache()
+            self.save_cache(True)
         return self.cache[server.id][sub] if sub else self.cache[server.id]
 
     def check(self, reaction, user):
@@ -166,6 +177,7 @@ class Karma:
         else:
             if user.id in self.get_cache(server, "SLOW"):
                 del self.get_cache(server, "SLOW")[user.id]
+                self.save_cache(True)
             del self.karma.get_server(server, "META")["slow"][user.id]
             self.karma.save(True)
             em = discord.Embed(description="🐢 **Slow** ─ {} n'est plus limité·e".format(user.mention), color=0xce4b1f)
@@ -442,7 +454,7 @@ class Karma:
                 await asyncio.sleep(8)
                 await self.bot.delete_message(notif)
 
-                self.save_cache()
+                self.save_cache(True)
                 while time.time() < cache[user.id]["sortie"]:
                     await asyncio.sleep(1)
 
@@ -476,7 +488,7 @@ class Karma:
                         await asyncio.sleep(8)
                         await self.bot.delete_message(notif)
                         del cache[user.id]
-                        self.save_cache()
+                        self.save_cache(True)
                     else:
                         return # Il a été sorti manuellement de prison
                 else:
@@ -486,7 +498,7 @@ class Karma:
                     await asyncio.sleep(8)
                     await self.bot.delete_message(notif)
                     del cache[user.id]
-                    self.save_cache()
+                    self.save_cache(True)
 
                     em = discord.Embed(description="{} est parti avant la fin de sa peine.".format(
                         user.mention), color=role.color, timestamp=ts)
@@ -520,7 +532,7 @@ class Karma:
                 await asyncio.sleep(8)
                 await self.bot.delete_message(notif)
                 del cache[user.id]
-                self.save_cache()
+                self.save_cache(True)
 
     @commands.command(aliases=["pmsg", "appel"], pass_context=True)
     async def prisonmsg(self, ctx, *message: str):
@@ -542,7 +554,7 @@ class Karma:
                             await asyncio.sleep(2)
                             await self.bot.send_message(pchan, embed=em)
                             cache[author.id]["notif"] = False
-                            self.save_cache()
+                            self.save_cache(True)
                             await self.bot.say("📨 **Message envoyé** sur le salon {}".format(pchan.mention))
                         else:
                             await self.bot.say("❌ **Trop long** ─ Le message ne peut faire que 500 caractères au maximum.")
@@ -894,9 +906,11 @@ class Karma:
                 user = message.author
                 if user.id not in cache:
                     cache[user.id] = time.time() + karma[user.id]
+                    self.save_cache()
                     return
                 if time.time() >= cache[user.id]:
                     cache[user.id] = time.time() + karma[user.id]
+                    self.save_cache()
                 else:
                     await self.bot.delete_message(message)
 
@@ -1106,7 +1120,7 @@ class Karma:
 
     def __unload(self):
         self.karma.save(True)
-        self.save_cache()
+        self.save_cache(True)
         print("Sauvegarde des fichiers Karma avant redémarrage effectuée")
 
 def check_folders():
