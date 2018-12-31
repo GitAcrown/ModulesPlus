@@ -34,8 +34,8 @@ class KarmaAPI:
 
     def update(self): # V0.02
         for server in self.data:
-            if not "rules" in self.data[server]["META"]:
-                self.data[server]["META"]["rules"] = {}
+            if not "slow" in self.data[server]["META"]:
+                self.data[server]["META"]["slow"] = {}
         return True
 
     def save(self, force: bool = False):
@@ -100,7 +100,8 @@ class Karma:
 
     def get_cache(self, server: discord.Server, sub: str = None):
         if server.id not in self.cache:
-            self.cache[server.id] = {"PRISON": {}}
+            self.cache[server.id] = {"PRISON": {},
+                                     "SLOW": {}}
             self.save_cache()
         return self.cache[server.id][sub] if sub else self.cache[server.id]
 
@@ -138,6 +139,44 @@ class Karma:
             n += 1
         txt = "\n".join(["• {},{}s".format(a, b) for a, b in [i for i in results]])
         await self.bot.say("**Résultats :**\n" + txt)
+
+    @commands.command(aliases=["s"], pass_context=True)
+    @checks.admin_or_permissions(manage_messages=True)
+    async def slow(self, ctx, user: discord.Member, cooldown: str = "10s"):
+        """Passe un membre en mode Slow, imposant un délai entre deux messages
+
+        <cooldown> = Valeur suivie de l'unité (s, m, h, j)"""
+        server = ctx.message.server
+        data = self.karma.get_server(server, "META")["slow"]
+        form, val = cooldown[-1:], int(cooldown[:-1])
+        if user.id not in data:
+            data[user.id] = self.convert_sec(form, val)
+            self.karma.save(True)
+            em = discord.Embed(description="🐢 **Slow** ─ {} ne peut désormais poster qu'un message toutes les {}{}"
+                                           "".format(user.mention, val, form), color=0xce4b1f)
+            msg = await self.bot.say(embed=em)
+            try:
+                em = discord.Embed(description="🐢 **Slow** par {} ─ Vous ne pouvez désormais poster qu'un message"
+                                               " toutes les {}{}".format(ctx.message.author, val, form))
+                await self.bot.send_message(user, embed=em)
+            except:
+                print("SLOW - {} m'a bloqué, impossible de lui envoyer une notification.".format(str(user)))
+            await asyncio.sleep(8)
+            await self.bot.delete_message(msg)
+        else:
+            if user.id in self.get_cache(server, "SLOW"):
+                del self.get_cache(server, "SLOW")[user.id]
+            del self.karma.get_server(server, "META")["slow"][user.id]
+            self.karma.save(True)
+            em = discord.Embed(description="🐢 **Slow** ─ {} n'est plus limité·e".format(user.mention), color=0xce4b1f)
+            msg = await self.bot.say(embed=em)
+            try:
+                em = discord.Embed(description="🐢 **Slow** ─ Vous n'êtes plus limité·e")
+                await self.bot.send_message(user, embed=em)
+            except:
+                print("SLOW - {} m'a bloqué, impossible de lui envoyer une notification.".format(str(user)))
+            await asyncio.sleep(8)
+            await self.bot.delete_message(msg)
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
@@ -739,7 +778,7 @@ class Karma:
         serv = self.karma.get_server(server, "META")
         serv = serv["logs_channels"]
         while True:
-            types = ["msg_post", "msg_delete", "msg_edit", "msg_hide",
+            types = ["msg_post", "msg_delete", "msg_edit", "msg_hide", "msg_slow",
                      "voice_join", "voice_quit", "voice_change", "voice_mute", "voice_deaf",
                      "user_prison", "user_ban", "user_warn", "user_deban", "user_join", "user_quit", "user_change_name", "user_change_nickname",
                      "notif_low", "notif_high"]
@@ -848,6 +887,18 @@ class Karma:
                     em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
                     em.set_footer(text="ID:{}".format(message.author.id))
                     await self.karma.add_server_logs(message.server, "msg_post", em)
+
+            karma = self.karma.get_server(message.server, "META")["slow"]
+            if message.author.id in karma:
+                cache = self.get_cache(message.server, "SLOW")
+                user = message.author
+                if user.id not in cache:
+                    cache[user.id] = time.time() + karma[user.id]
+                    return
+                if time.time() >= cache[user.id]:
+                    cache[user.id] = time.time() + karma[user.id]
+                else:
+                    await self.bot.delete_message(message)
 
     async def msg_delete(self, message):
         if hasattr(message, "server"):

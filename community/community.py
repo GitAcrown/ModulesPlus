@@ -195,6 +195,22 @@ class Community:
                 await self.bot.say("**Impossible** • Je n'ai pas les permissions nécessaires ou le rôle choisi (*{}*) "
                                    "n'existe plus ou a été modifié.".format(alea))
 
+    """@commands.command(pass_context=True)
+    async def porno(self, ctx, type: str = None):
+        Genère un titre de porno
+        presujet_h = ["ce", "un"]
+        sujet_h = ["jeune homme", "homme", "cet éphèbe", "TBM", "TTBM", "célibataire",
+                   "twink", "jeune twink", "cet homme poilu", "vieil homme", "SDF", "cet alpha",
+                   "policier", "médecin", "cuisinier"]
+        presujet_f = ["cette", "une"]
+        sujet_f = ["jeune femme",  "femme", "dame", "coquine", "naine", "10/10", "babysitter",
+                   "policière", "infirmière", "cougar", "vieille", "mère de famille"]
+
+        if type is None:
+            type = random.choice(["hetero", "gay"])
+        if type is "hetero":
+        em = discord.Embed(description=txt)"""
+
     def find_poll(self, message: discord.Message):
         """Retrouve le poll lié à un message"""
         session = self.get_session(message.server)
