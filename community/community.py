@@ -524,31 +524,6 @@ class Community:
             except:
                 pass
 
-    async def noelmsg(self, user):
-        server = user.server
-        roles = self.noel_activated(server)
-        if roles:
-            # Merci à Koala, Skut, Bangumi et Subo pour avoir proposé ces messages
-            msg = ["**{0}** s'est électrocuté avec une guirlande.",
-                   "**{0}** a fait une overdose de chocolat.",
-                   "**{0}** a quitté la fête.",
-                   "**{0}** s'en est allé, il faisait froid.",
-                   "**{0}** n’a pas aimé recevoir des oranges pour Noël.",
-                   "**{0}** s’en est allé mourir de froid.",
-                   "Un coup de froid, une mauvaise grippe, **{0}** nous a quitté.",
-                   "**{0}** n'avait pas l'esprit des fêtes.",
-                   "**{0}** s'est barré en ayant bouffé toute la dinde de Noël, le salaud !",
-                   "**{0}** n'a pas aimé ses cadeaux...",
-                   "**{0}** ne fête pas Noël car il n'est pas chrétiens catholique.",
-                   "**{0}** en a eu marre de tonton Bernard et ses propos racistes.",
-                   "**{0}** avait demandé des jouets genrés pour Noël..."]
-            colors = [0xff0000, 0x169f48, 0xfdfdfd, 0xe3d1bb, 0xc6e2ff]
-            nmsg = random.choice(msg).format(user.name)
-            em = discord.Embed(description="📤 {}".format(nmsg),
-                               color=random.choice(colors))
-            chan = self.bot.get_channel("526819724768575526")
-            await self.bot.send_message(chan, embed=em)
-
 
 def check_folders():
     if not os.path.exists("data/community"):
@@ -573,4 +548,3 @@ def setup(bot):
     bot.add_listener(n.grab_reaction_add, "on_reaction_add")
     bot.add_listener(n.grab_reaction_remove, "on_reaction_remove")
     bot.add_listener(n.autoattrib, "on_member_join")
-    bot.add_listener(n.noelmsg, "on_member_remove")
