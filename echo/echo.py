@@ -1620,7 +1620,8 @@ class Echo:
                 if "{user.mention}" in msg:
                     msg = msg.replace("{user.mention}", "**{user.name}**")
                 msg = msg.format(user=user, channel=channel, server=server)
-                await self.bot.send_message(channel, "\◀ {}".format(msg))
+                em = discord.Embed(description="📤 {}".format(msg), color=user.color)
+                await self.bot.send_message(channel, embed=em)
             else:
                 msg = random.choice(self.sys[server.id]["QUIT_MSG"])
                 msg = msg.format(user=user, channel=channel, server=server)
