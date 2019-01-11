@@ -1,4 +1,5 @@
 # Ce module est volontairement excessivement commenté afin d'aider les débutants à décoder le code plus facilement
+import operator
 import os
 import re
 import time
@@ -117,6 +118,7 @@ class MajorAPI:
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
+        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 10)) * data["DATA"]["msg_nb"]
         logs = data["LOGS"][::-1]
         pseudos, surnoms = data["DATA"]["pseudos"][::-1], data["DATA"]["surnoms"][::-1]
         StatsData = namedtuple('StatsData', ['msg_nb', 'msg_suppr', 'emojis', 'join', 'quit', 'pseudos', 'surnoms',
@@ -124,9 +126,16 @@ class MajorAPI:
         sd = StatsData(data["DATA"]["msg_nb"], data["DATA"]["msg_suppr"], data["DATA"]["emojis"], data["DATA"]["join"],
                        data["DATA"]["quit"], pseudos, surnoms, flammes, der_msg, fmsg_date, fmsg_jours)
         status = self.get_status_img(user)
-        FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status'])
-        return FormattedData(user, sd, logs, desc, image, color, status)
+        FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status', 'xp'])
+        return FormattedData(user, sd, logs, desc, image, color, status, xp)
 
+    def get_top_xp(self, server: discord.Server, top: int):
+        if server.id in self.data:
+            mb = [n.id for n in server.members]
+            liste = [[self.data[server.id]["USERS"][u]["DATA"]["xp"], u] for u in self.data[server.id]["USERS"] if u in mb]
+            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
+            return sort[:top]
+        return False
 
 class Major:
     """Major ─ Module social & statistique"""
@@ -313,6 +322,32 @@ class Major:
             em.add_field(name="Logs", value=hist)
             em.set_footer(text="ID · {} — Archives du membre (infos. incomplètes)".format(user.id))
             await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True, hidden=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def topxp(self, ctx, nombre: int = 20):
+        """Affiche un top des membres ayant le plus d'XP"""
+        server = ctx.message.server
+        top = self.mjr.get_top_xp(server, nombre)
+        n = 1
+        txt = ""
+        for i in top:
+            if len(txt) > 1980:
+                await self.bot.whisper("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
+                return
+            try:
+                username = server.get_member(i[1]).name
+            except:
+                username = self.bot.get_user(i[1]).name
+            txt += "**{}.** **{}** — {}\n".format(n, username, i[0])
+        em = discord.Embed(title="Top des membres avec le plus d'XP", description=txt, color=0x37e1a1,
+                           timestamp=ctx.message.timestamp)
+        try:
+            await self.bot.whisper(embed=em)
+        except:
+            await self.bot.whisper("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
+            return
+
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
