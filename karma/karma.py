@@ -183,7 +183,8 @@ class Karma:
             try:
                 em = discord.Embed(description="🐢 **Slow** par {} ─ Vous ne pouvez désormais poster qu'un message"
                                                " toutes les {}{}".format(ctx.message.author, val, form))
-                em.add_field(name="Raison", value=raison)
+                if raison:
+                    em.add_field(name="Raison", value=raison)
                 await self.bot.send_message(user, embed=em)
             except:
                 print("SLOW - {} m'a bloqué, impossible de lui envoyer une notification.".format(str(user)))
