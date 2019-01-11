@@ -129,7 +129,7 @@ class MajorAPI:
                        data["DATA"]["quit"], pseudos, surnoms, flammes, der_msg, fmsg_date, fmsg_jours)
         status = self.get_status_img(user)
         FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status', 'xp'])
-        return FormattedData(user, sd, logs, desc, image, color, status, round(xp))
+        return FormattedData(user, sd, logs, desc, image, color, status, round(xp, 2))
 
     def get_total_msg(self, server: discord.Server):
         if server.id in self.data:
@@ -152,7 +152,7 @@ class MajorAPI:
                     fmsg_jours = (datetime.now() - firstmsg).days
                     xp = ((data["DATA"]["msg_nb"] / total) * 100) * (
                                 int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20))
-                    liste.append([round(xp), u])
+                    liste.append([round(xp, 2), u])
                 except:
                     pass
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
