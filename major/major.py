@@ -139,7 +139,7 @@ class MajorAPI:
                     data = self.data[server.id]["USERS"][u]
                     firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
                     fmsg_jours = (datetime.now() - firstmsg).days
-                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 10)) * data["DATA"]["msg_nb"]
+                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 5)) * data["DATA"]["msg_nb"]
                     liste.append([xp, u])
                 except:
                     pass
