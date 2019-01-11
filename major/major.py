@@ -356,7 +356,7 @@ class Major:
                            timestamp=ctx.message.timestamp)
         em.set_footer(text="Calculé à partir de l'activité et de l'ancienneté")
         try:
-            await self.bot.say(embed=em)
+            await self.bot.whisper(embed=em)
         except:
             await self.bot.say("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
             return
