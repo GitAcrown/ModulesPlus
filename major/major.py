@@ -118,7 +118,7 @@ class MajorAPI:
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
-        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 10)) * data["DATA"]["msg_nb"]
+        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 5)) * data["DATA"]["msg_nb"]
         logs = data["LOGS"][::-1]
         pseudos, surnoms = data["DATA"]["pseudos"][::-1], data["DATA"]["surnoms"][::-1]
         StatsData = namedtuple('StatsData', ['msg_nb', 'msg_suppr', 'emojis', 'join', 'quit', 'pseudos', 'surnoms',
@@ -333,8 +333,7 @@ class Major:
             em.set_footer(text="ID · {} — Archives du membre (infos. incomplètes)".format(user.id))
             await self.bot.say(embed=em)
 
-    @commands.command(pass_context=True, hidden=True)
-    @checks.admin_or_permissions(administrator=True)
+    @commands.command(pass_context=True, no_pm=True)
     async def topxp(self, ctx, nombre: int = 20):
         """Affiche un top des membres ayant le plus d'XP"""
         server = ctx.message.server
@@ -343,7 +342,7 @@ class Major:
         txt = ""
         for i in top:
             if len(txt) > 1980:
-                await self.bot.whisper("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
+                await self.bot.say("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
                 return
             try:
                 username = server.get_member(i[1]).name
@@ -353,10 +352,11 @@ class Major:
             n += 1
         em = discord.Embed(title="Top des membres avec le plus d'XP", description=txt, color=0x37e1a1,
                            timestamp=ctx.message.timestamp)
+        em.set_footer(text="Calculé à partir de l'activité et de l'ancienneté")
         try:
-            await self.bot.whisper(embed=em)
+            await self.bot.say(embed=em)
         except:
-            await self.bot.whisper("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
+            await self.bot.say("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
             return
 
     @commands.command(pass_context=True, hidden=True)
