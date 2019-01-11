@@ -118,6 +118,7 @@ class MajorAPI:
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
+        total = self.get_total_msg(user.server)
         xp = ((data["DATA"]["msg_nb"] / total) * 100) * (int(fmsg_jours) + int(
             (datetime.now() - user.joined_at).days / 20))
         logs = data["LOGS"][::-1]
