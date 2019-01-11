@@ -118,8 +118,8 @@ class MajorAPI:
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
-        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20)) * data["DATA"]["msg_nb"]
-        xp = int(xp/(datetime.now() - user.server.created_at).days)
+        xp = ((data["DATA"]["msg_nb"] / total) * 100) * (int(fmsg_jours) + int(
+            (datetime.now() - user.joined_at).days / 20))
         logs = data["LOGS"][::-1]
         pseudos, surnoms = data["DATA"]["pseudos"][::-1], data["DATA"]["surnoms"][::-1]
         StatsData = namedtuple('StatsData', ['msg_nb', 'msg_suppr', 'emojis', 'join', 'quit', 'pseudos', 'surnoms',
@@ -128,7 +128,7 @@ class MajorAPI:
                        data["DATA"]["quit"], pseudos, surnoms, flammes, der_msg, fmsg_date, fmsg_jours)
         status = self.get_status_img(user)
         FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status', 'xp'])
-        return FormattedData(user, sd, logs, desc, image, color, status, xp)
+        return FormattedData(user, sd, logs, desc, image, color, status, round(xp))
 
     def get_total_msg(self, server: discord.Server):
         if server.id in self.data:
@@ -151,7 +151,7 @@ class MajorAPI:
                     fmsg_jours = (datetime.now() - firstmsg).days
                     xp = ((data["DATA"]["msg_nb"] / total) * 100) * (
                                 int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20))
-                    liste.append([int(xp), u])
+                    liste.append([round(xp), u])
                 except:
                     pass
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
@@ -189,6 +189,7 @@ class Major:
         profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
         profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
         profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
+        profil += "**XP** — {}\n".format(data.xp)
         profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
         if user.voice.voice_channel:
             profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
@@ -493,6 +494,7 @@ class Major:
                 profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
                 profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
                 profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
+                profil += "**XP** — {}\n".format(data.xp)
                 profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
                 if user.voice.voice_channel:
                     profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
