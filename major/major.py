@@ -119,6 +119,7 @@ class MajorAPI:
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
         xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 5)) * data["DATA"]["msg_nb"]
+        xp = xp/user.server.created_at.days
         logs = data["LOGS"][::-1]
         pseudos, surnoms = data["DATA"]["pseudos"][::-1], data["DATA"]["surnoms"][::-1]
         StatsData = namedtuple('StatsData', ['msg_nb', 'msg_suppr', 'emojis', 'join', 'quit', 'pseudos', 'surnoms',
@@ -140,6 +141,7 @@ class MajorAPI:
                     firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
                     fmsg_jours = (datetime.now() - firstmsg).days
                     xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 5)) * data["DATA"]["msg_nb"]
+                    xp = xp/server.created_at.days
                     liste.append([xp, u])
                 except:
                     pass
