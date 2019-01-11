@@ -350,6 +350,7 @@ class Major:
             except:
                 username = self.bot.get_user(i[1]).name
             txt += "**{}.** **{}** — {}\n".format(n, username, i[0])
+            n += 1
         em = discord.Embed(title="Top des membres avec le plus d'XP", description=txt, color=0x37e1a1,
                            timestamp=ctx.message.timestamp)
         try:
@@ -357,7 +358,6 @@ class Major:
         except:
             await self.bot.whisper("**Erreur** — Le nombre est trop elevé.\nEssayez avec un top plus petit.")
             return
-
 
     @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(administrator=True)
