@@ -190,7 +190,7 @@ class Major:
         profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
         profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
         profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
-        profil += "**XP** — {}\n".format(data.xp)
+        profil += "**Lvl** — {}\n".format(data.xp)
         profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
         if user.voice.voice_channel:
             profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
@@ -347,8 +347,8 @@ class Major:
             await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
-    async def topxp(self, ctx, nombre: int = 20):
-        """Affiche un top des membres ayant le plus d'XP"""
+    async def toplvl(self, ctx, nombre: int = 20):
+        """Affiche un top des membres par level"""
         server = ctx.message.server
         top = self.mjr.get_top_xp(server, nombre)
         n = 1
@@ -363,7 +363,7 @@ class Major:
                 username = self.bot.get_user(i[1]).name
             txt += "**{}.** **{}** — {}\n".format(n, username, i[0])
             n += 1
-        em = discord.Embed(title="Top des membres avec le plus d'XP", description=txt, color=0x37e1a1,
+        em = discord.Embed(title="Top des membres par Level", description=txt, color=0x37e1a1,
                            timestamp=ctx.message.timestamp)
         em.set_footer(text="Calculé à partir de l'activité et de l'ancienneté")
         try:
@@ -495,7 +495,7 @@ class Major:
                 profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
                 profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
                 profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
-                profil += "**XP** — {}\n".format(data.xp)
+                profil += "**Lvl** — {}\n".format(data.xp)
                 profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
                 if user.voice.voice_channel:
                     profil += "\n\🎙 Connecté sur {}".format(user.voice.voice_channel.mention)
