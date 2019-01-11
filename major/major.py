@@ -151,7 +151,7 @@ class MajorAPI:
                     fmsg_jours = (datetime.now() - firstmsg).days
                     xp = ((data["DATA"]["msg_nb"] / total) * 100) * (
                                 int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20))
-                    liste.append([xp, u])
+                    liste.append([int(xp), u])
                 except:
                     pass
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
