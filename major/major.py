@@ -189,7 +189,7 @@ class Major:
         em.set_thumbnail(url=user.avatar_url)
         profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
         profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
-        profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
+        profil += "**1re trace** — {} · **{}**j\n\n".format(data.data.first_msg_date, data.data.first_msg_jours)
         profil += "**Lvl** — {}\n".format(data.xp)
         profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
         if user.voice.voice_channel:
@@ -321,7 +321,7 @@ class Major:
             crea_date, crea_jours = user.created_at.strftime("%d/%m/%Y"), (datetime.now() - user.created_at).days
             em.set_thumbnail(url=user.avatar_url)
             profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
-            profil += "**1re trace** — {} · **{}**j\n".format(fmsg_date, fmsg_jours)
+            profil += "**1re trace** — {} · **{}**j\n\n".format(fmsg_date, fmsg_jours)
             profil += "\🔥{} — {}".format(flammes, der_msg)
             em.add_field(name="Profil", value=profil)
             dlogs = infos["LOGS"][::-1]
@@ -494,7 +494,7 @@ class Major:
                 em.set_thumbnail(url=user.avatar_url)
                 profil = "**Création** — {} · **{}**j\n".format(crea_date, crea_jours)
                 profil += "**Arrivée** — {} · **{}**j\n".format(ariv_date, ariv_jours)
-                profil += "**1re trace** — {} · **{}**j\n".format(data.data.first_msg_date, data.data.first_msg_jours)
+                profil += "**1re trace** — {} · **{}**j\n\n".format(data.data.first_msg_date, data.data.first_msg_jours)
                 profil += "**Lvl** — {}\n".format(data.xp)
                 profil += "\🔥{} — {}".format(data.data.flammes, data.data.dernier_msg)
                 if user.voice.voice_channel:
