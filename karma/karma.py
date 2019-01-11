@@ -940,10 +940,15 @@ class Karma:
                     await self.karma.add_server_logs(message.server, "msg_post", em)
 
             karma = self.karma.get_server(message.server, "META")["slow"]
+            muted = discord.PermissionOverwrite(send_messages=False)
+            unmuted = discord.PermissionOverwrite()
             if message.author.id in karma:
                 cache = self.get_cache(message.server, "SLOW")
                 user = message.author
-                if user.id not in cache:
+                await self.bot.edit_channel_permissions(message.channel, message.author, muted)
+                await asyncio.sleep(karma[user.id])
+                await self.bot.edit_channel_permissions(message.channel, message.author, unmuted)
+                """if user.id not in cache:
                     cache[user.id] = time.time() + karma[user.id]
                     self.save_cache()
                     return
@@ -951,7 +956,9 @@ class Karma:
                     cache[user.id] = time.time() + karma[user.id]
                     self.save_cache()
                 else:
-                    await self.bot.delete_message(message)
+                    await self.bot.delete_message(message)"""
+
+
 
     async def msg_delete(self, message):
         if hasattr(message, "server"):
