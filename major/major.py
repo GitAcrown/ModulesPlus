@@ -118,7 +118,7 @@ class MajorAPI:
         fmsg_date, fmsg_jours = firstmsg.strftime("%d/%m/%Y"), (datetime.now() - firstmsg).days
         flammes = len(data["DATA"]["flammes"])
         der_msg = data["DATA"]["flammes"][-1] if flammes else ajd
-        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 33)) * data["DATA"]["msg_nb"]
+        xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20)) * data["DATA"]["msg_nb"]
         xp = int(xp/(datetime.now() - user.server.created_at).days)
         logs = data["LOGS"][::-1]
         pseudos, surnoms = data["DATA"]["pseudos"][::-1], data["DATA"]["surnoms"][::-1]
@@ -140,7 +140,7 @@ class MajorAPI:
                     data = self.data[server.id]["USERS"][u]
                     firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
                     fmsg_jours = (datetime.now() - firstmsg).days
-                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 33)) * data["DATA"]["msg_nb"]
+                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20)) * data["DATA"]["msg_nb"]
                     xp = int(xp/(datetime.now() - server.created_at).days)
                     liste.append([xp, u])
                 except:
