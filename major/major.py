@@ -132,7 +132,17 @@ class MajorAPI:
     def get_top_xp(self, server: discord.Server, top: int):
         if server.id in self.data:
             mb = [n.id for n in server.members]
-            liste = [[self.data[server.id]["USERS"][u]["DATA"]["xp"], u] for u in self.data[server.id]["USERS"] if u in mb]
+            liste = []
+            for u in self.data[server.id]["USERS"]:
+                try:
+                    user = server.get_member(u)
+                    data = self.data[server.id]["USERS"][u]
+                    firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
+                    fmsg_jours = (datetime.now() - firstmsg).days
+                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 10)) * data["DATA"]["msg_nb"]
+                    liste.append([xp, u])
+                except:
+                    pass
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
             return sort[:top]
         return False
