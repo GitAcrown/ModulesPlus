@@ -130,18 +130,27 @@ class MajorAPI:
         FormattedData = namedtuple('FormattedData', ['user', 'data', 'logs', 'bio', 'image', 'color', 'status', 'xp'])
         return FormattedData(user, sd, logs, desc, image, color, status, xp)
 
+    def get_total_msg(self, server: discord.Server):
+        if server.id in self.data:
+            total = 0
+            for u in self.data[server.id]["USERS"]:
+                total += self.data[server.id]["USERS"][u]["DATA"]["msg_nb"]
+            return total
+        return False
+
     def get_top_xp(self, server: discord.Server, top: int):
         if server.id in self.data:
             mb = [n.id for n in server.members]
             liste = []
+            total = self.get_total_msg(server)
             for u in self.data[server.id]["USERS"]:
                 try:
                     user = server.get_member(u)
                     data = self.data[server.id]["USERS"][u]
                     firstmsg = datetime.fromtimestamp(data["DATA"]["first_msg"])
                     fmsg_jours = (datetime.now() - firstmsg).days
-                    xp = (int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20)) * data["DATA"]["msg_nb"]
-                    xp = int(xp/(datetime.now() - server.created_at).days)
+                    xp = ((data["DATA"]["msg_nb"] / total) * 100) * (
+                                int(fmsg_jours) + int((datetime.now() - user.joined_at).days / 20))
                     liste.append([xp, u])
                 except:
                     pass
