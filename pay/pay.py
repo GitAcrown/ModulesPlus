@@ -115,12 +115,12 @@ class PayAPI:
         if server:
             serv = self.get_server(server, "USERS")
             for u in serv:
-                liste.append(self.obj_account(u))
+                liste.append(self.obj_account(serv[u]))
             return liste
         else:
             for serv in self.data:
                 for u in serv["USERS"]:
-                    liste.append(self.obj_account(u))
+                    liste.append(self.obj_account(serv["USERS"][u]))
             return liste
 
     async def account_dial(self, user: discord.Member):
