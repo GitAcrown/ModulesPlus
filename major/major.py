@@ -210,7 +210,7 @@ class Major:
         if perms:
             roles = roles + "\n— **Perms :** {}".format(" ".join(perms))
         em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
-        logs = data.logs[-3:]
+        logs = data.logs[:3]
         if logs:
             hist = "— **Historique :**\n"
             for act in logs:
@@ -222,9 +222,9 @@ class Major:
                 else:
                     hist += "• {} · *{}*\n".format(act[1], act[2])
             if data.data.pseudos:
-                hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[-3:]))
+                hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[:3]))
             if data.data.surnoms:
-                hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[-3:]))
+                hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[:3]))
         else:
             hist = "Aucun historique"
         em.add_field(name="Logs", value=hist)
@@ -515,7 +515,7 @@ class Major:
                 if perms:
                     roles = roles + "\n— **Perms :** {}".format(" ".join(perms))
                 em.add_field(name="Hiérarchie", value=roles if roles else "Aucun")
-                logs = data.logs[-3:]
+                logs = data.logs[:3]
                 if logs:
                     hist = "— **Historique :**\n"
                     for act in logs:
@@ -527,9 +527,9 @@ class Major:
                         else:
                             hist += "• {} · *{}*\n".format(act[1], act[2])
                     if data.data.pseudos:
-                        hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[-3:]))
+                        hist += "\n— **Pseudos :** {}".format(", ".join(data.data.pseudos[:3]))
                     if data.data.surnoms:
-                        hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[-3:]))
+                        hist += "\n— ** Surnoms: ** {}".format(", ".join(data.data.surnoms[:3]))
                 else:
                     hist = "Aucun historique"
                 em.add_field(name="Logs", value=hist)
