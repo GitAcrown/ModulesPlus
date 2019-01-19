@@ -492,7 +492,7 @@ class Pay:
                     em.add_field(name="Historique", value=hist)
                 await self.bot.say(embed=em)
             return
-        await self.bot.say("**Inconnu** ─ *{}*ne possède pas de compte bancaire".format(user.name))
+        await self.bot.say("**Inconnu** ─ *{}* ne possède pas de compte bancaire".format(user.name))
 
     @pay_account.command(pass_context=True)
     async def logs(self, ctx, user: discord.Member = None):
