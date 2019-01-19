@@ -247,17 +247,14 @@ class PayAPI:
             return self.obj_transaction(event)
         return False
 
-    def link_transactions(self, transactions: list):
-        trsbrut = []
-        for t in transactions:
-            if type(t) is str:
-                trsbrut.append(self.get_transaction(t, True))
-            else:
-                trsbrut.append(self.get_transaction(t[0], True))
-        for trs in trsbrut:
-            trs["link"] = [self.get_transaction(i).id for i in trsbrut if self.get_transaction(i).id != self.get_transaction(trs).id]
-        self.save()
-        return True
+    def link_transactions(self, trs_a, trs_b):
+        a, b = self.get_transaction(trs_a, True), self.get_transaction(trs_b, True)
+        if a and b:
+            a[5].append(b[0])
+            b[5].append(a[0])
+            self.save()
+            return True
+        return False
 
     def get_transaction(self, trs_id: str, brut: bool = False):
         """Renvoie une transaction à partir de l'ID"""
@@ -341,7 +338,7 @@ class PayAPI:
                 if self.enough_credits(donneur, somme):
                     don = self.remove_credits(donneur, somme, raison)
                     recu = self.add_credits(receveur, somme, raison)
-                    self.link_transactions([don, recu])
+                    self.link_transactions(don, recu)
                     return (don, recu)
         return False
 
@@ -479,7 +476,6 @@ class Pay:
                 em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name=user.name, icon_url=user.avatar_url)
                 trs = self.pay.get_transactions_from(user, 3)
-                em.set_footer(icon_url=goldimg)
                 if trs:
                     hist = ""
                     for i in trs:
@@ -515,13 +511,13 @@ class Pay:
                 if len(txt) > 1980 * page:
                     em = discord.Embed(title="Logs du compte de {}".format(user.name), description=txt,
                                        color=user.color, timestamp=ctx.message.timestamp)
-                    em.set_footer(text="Page {}".format(page), icon_url=goldimg)
+                    em.set_footer(text="Page {}".format(page))
                     await self.bot.say(embed=em)
                     txt = ""
                     page += 1
             em = discord.Embed(title="Logs du compte de {}".format(user.name), description=txt,
                                color=user.color, timestamp=ctx.message.timestamp)
-            em.set_footer(text="Page {}".format(page), icon_url=goldimg)
+            em.set_footer(text="Page {}".format(page))
             await self.bot.say(embed=em)
         else:
             await self.bot.say("**Inconnu** ─ Aucun compte bancaire n'est lié à ce compte")
@@ -609,7 +605,7 @@ class Pay:
                     txt += "(...)\n**{}.** **{}** ─ {}G".format(place[0], ctx.message.author.name, place[1].solde)
             em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
-            em.set_footer(text="Total = {} Golds".format(total), icon_url=goldimg)
+            em.set_footer(text="Total = {} Golds".format(total))
             try:
                 await self.bot.say(embed=em)
             except:
@@ -665,7 +661,7 @@ class Pay:
 
                 em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name="Revenus", icon_url=user.avatar_url)
-                em.set_footer(text="Solde actuel : {}G".format(data["solde"]), icon_url=goldimg)
+                em.set_footer(text="Solde actuel : {}G".format(data["solde"]))
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
