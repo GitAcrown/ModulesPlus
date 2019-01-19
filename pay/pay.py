@@ -270,7 +270,7 @@ class PayAPI:
         data = self.get_account(user, True)
         if data and nb >= 1:
             logs = data.logs[::-1]
-            return [self.obj_transaction(t) for t in logs[-nb:]]
+            return logs[-nb:]
         return False
 
     def daily_trs_from(self, user: discord.Member, jour: str = None):
