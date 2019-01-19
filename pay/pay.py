@@ -451,7 +451,7 @@ class Pay:
                 membre = ctx.message.author
             await ctx.invoke(self.compte, user=membre)
 
-    @pay_account.command()
+    @pay_account.command(pass_context=True)
     async def new(self, ctx):
         """Ouvre un compte bancaire Pay"""
         data = self.pay.get_account(ctx.message.author)
@@ -461,7 +461,7 @@ class Pay:
             await self.pay.create_account(ctx.message.author)
             await self.bot.say("**Compte créé ─ Consultez-le avec `.b`")
 
-    @pay_account.command()
+    @pay_account.command(pass_context=True)
     async def compte(self, ctx, user: discord.Member = None):
         """Voir son compte Pay
 
@@ -494,7 +494,7 @@ class Pay:
             return
         await self.bot.say("**Inconnu** ─ *{}*ne possède pas de compte bancaire".format(user.name))
 
-    @pay_account.command()
+    @pay_account.command(pass_context=True)
     async def logs(self, ctx, user: discord.Member = None):
         """Affiche les dernières transactions du membre"""
         user = user if user else ctx.message.author
@@ -526,7 +526,7 @@ class Pay:
         else:
             await self.bot.say("**Inconnu** ─ Aucun compte bancaire n'est lié à ce compte")
 
-    @pay_account.command()
+    @pay_account.command(pass_context=True)
     async def check(self, ctx, transaction_id: str):
         """Affiche les détails d'une transaction"""
         if len(transaction_id) == 5:
