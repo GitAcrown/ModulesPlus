@@ -141,6 +141,7 @@ class PayAPI:
             rep = await self.bot.wait_for_reaction(["✔", "✖", "❔"], message=msg, timeout=20, check=check,
                                                    user=user)
             if rep is None or rep.reaction.emoji == "✖":
+                await self.bot.clear_reactions(msg)
                 em = discord.Embed(
                     description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
                         user.mention), color=palette["dark"])
@@ -150,6 +151,7 @@ class PayAPI:
                 return False
             elif rep.reaction.emoji == "✔":
                 if self.create_account(user):
+                    await self.bot.clear_reactions(msg)
                     em = discord.Embed(
                         description="{} ─ Votre compte à été ouvert, vous pouvez désormais profiter des "
                                     "fonctionnalités économiques.".format(
@@ -168,6 +170,7 @@ class PayAPI:
                     await self.bot.delete_message(msg)
                     return False
             elif rep.reaction.emoji == "❔":
+                await self.bot.clear_reactions(msg)
                 em = discord.Embed(color=user.color, title="Ouvrir un compte Pay",
                                    description="Certaines fonctionnalités sur ce bot utilisent un système monétaire appelé"
                                                " ***Pay*** permettant par exemple de pouvoir participer à divers jeux.\n"
@@ -175,13 +178,14 @@ class PayAPI:
                                                "donc aucune réelle valeur.\n"
                                                "A la création du compte, aucune information ne sera demandée.")
                 em.set_footer(text="Veux-tu ouvrir un compte ?")
-                info = await self.bot.edit_message(msg, embed=em)
+                msg = await self.bot.edit_message(msg, embed=em)
                 await self.bot.add_reaction(info, "✔")
                 await self.bot.add_reaction(info, "✖")
                 await asyncio.sleep(0.1)
                 rep = await self.bot.wait_for_reaction(["✔", "✖"], message=info, timeout=20, check=check,
                                                        user=user)
                 if rep is None or rep.reaction.emoji == "✖":
+                    await self.bot.clear_reactions(msg)
                     em = discord.Embed(
                         description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
                             user.mention), color=palette["dark"])
@@ -191,6 +195,7 @@ class PayAPI:
                     return False
                 elif rep.reaction.emoji == "✔":
                     if self.create_account(user):
+                        await self.bot.clear_reactions(msg)
                         em = discord.Embed(
                             description="{} ─ Votre compte à été ouvert, vous pouvez désormais profiter des "
                                         "fonctionnalités économiques.".format(
@@ -533,14 +538,17 @@ class Pay:
                 if trs.type != "modification":
                     if trs.somme > 0:
                         somme = "+" + str(trs.somme)
+                if trs.link:
+                    link = " ".join(["`{}`".format(i) for i in trs.link])
+                else:
+                    link = "Aucune"
                 txt = "*{}*\n\n" \
                       "**Type** ─ {}\n" \
                       "**Somme** ─ {}\n" \
                       "**Sur le compte de** ─ {}\n" \
                       "**Serveur** ─ {}\n" \
                       "**Transactions liées** ─ {}".format(trs.raison, trs.type.title(), somme,
-                                                           details[1].name, details[0].name,
-                                                           " ".join(["`{}`".format(i) for i in trs.link]))
+                                                           details[1].name, details[0].name, link)
                 em = discord.Embed(title="Relevé de transaction · {}".format(trs.id), description=txt, color=palette["stay"],
                                    timestamp=trs.timestamp.brut)
                 await self.bot.say(embed=em)
@@ -564,7 +572,7 @@ class Pay:
                         if not cool:
                             if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
                                 self.pay.new_cooldown(ctx.message.author, "give", 1800)
-                                await self.bot.say("**Transfert réalisé** ─ {}G ont été donnés à *{}*".format(somme, user.name))
+                                await self.bot.say("**Transfert réalisé** ─ **{}**G ont été donnés à *{}*".format(somme, user.name))
                             else:
                                 await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
                         else:
@@ -594,15 +602,15 @@ class Pay:
                 except:
                     username = self.bot.get_user(l.userid).name
                 if l.userid == ctx.message.author.id:
-                    txt += "**{}.** __**{}**__ ─ {}G\n".format(n, username, l[0])
+                    txt += "**{}.** __**{}**__ ─ **{}**G\n".format(n, username, l[0])
                     found = True
                 else:
-                    txt += "**{}.** **{}** ─ {}G\n".format(n, username, l[0])
+                    txt += "**{}.** **{}** ─ **{}**G\n".format(n, username, l[0])
                 n += 1
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n**{}.** **{}** ─ {}G".format(place[0], ctx.message.author.name, place[1].solde)
+                    txt += "(...)\n**{}.** **{}** ─ **{}**G".format(place[0], ctx.message.author.name, place[1].solde)
             em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
             em.set_footer(text="Total = {} Golds".format(total))
