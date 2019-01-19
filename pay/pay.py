@@ -816,6 +816,13 @@ class Pay:
         self.pay.reset_all(ctx.message.server)
         await self.bot.say("**Succès** ─ Toutes les données du serveur ont été reset")
 
+    @_modpay.command(pass_context=True, hidden=True)
+    @checks.is_owner()
+    async def totalreset(self, ctx):
+        """Reset les données des serveurs, y compris la monnaie et les comptes bancaires des membres"""
+        self.pay.reset_all()
+        await self.bot.say("**Succès** ─ Toutes les données de TOUS les serveurs ont été reset")
+
     @_modpay.command(pass_context=True)
     async def grant(self, ctx, user: discord.Member, somme: int, *raison):
         """Ajoute des crédits au compte d'un membre"""
