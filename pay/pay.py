@@ -591,28 +591,31 @@ class Pay:
         n = 1
         txt = ""
         found = False
-        for l in palm:
+        if palm:
+            for l in palm:
+                try:
+                    username = server.get_member(l.userid).name
+                except:
+                    username = self.bot.get_user(l.userid).name
+                if l.userid == ctx.message.author.id:
+                    txt += "**{}.** __**{}**__ ─ {}G\n".format(n, username, l[0])
+                    found = True
+                else:
+                    txt += "**{}.** **{}** ─ {}G\n".format(n, username, l[0])
+                n += 1
+            if not found:
+                if self.pay.get_account(ctx.message.author):
+                    place = self.pay.get_top_usernum(ctx.message.author)
+                    txt += "(...)\n**{}.** **{}** ─ {}G".format(place[0], ctx.message.author.name, place[1].solde)
+            em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
+            total = self.pay.total_credits_on_server(server)
+            em.set_footer(text="Total = {} Golds".format(total), icon_url=goldimg)
             try:
-                username = server.get_member(l.userid).name
+                await self.bot.say(embed=em)
             except:
-                username = self.bot.get_user(l.userid).name
-            if l.userid == ctx.message.author.id:
-                txt += "**{}.** __**{}**__ ─ {}G\n".format(n, username, l[0])
-                found = True
-            else:
-                txt += "**{}.** **{}** ─ {}G\n".format(n, username, l[0])
-            n += 1
-        if not found:
-            if self.pay.get_account(ctx.message.author):
-                place = self.pay.get_top_usernum(ctx.message.author)
-                txt += "(...)\n**{}.** **{}** ─ {}G".format(place[0], ctx.message.author.name, place[1].solde)
-        em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
-        total = self.pay.total_credits_on_server(server)
-        em.set_footer(text="Total = {} Golds".format(total), icon_url=goldimg)
-        try:
-            await self.bot.say(embed=em)
-        except:
-            await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
+                await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
+        else:
+            await self.bot.say("**Erreur** ─ Aucun membre n'a de compte sur ce serveur")
 
     @commands.command(pass_context=True, no_pm=True, aliases=["rj"])
     async def revenu(self, ctx):
