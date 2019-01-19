@@ -1,11 +1,11 @@
 import asyncio
-from datetime import datetime, timedelta
 import operator
 import os
 import random
 import string
 import time
 from collections import namedtuple
+from datetime import datetime, timedelta
 
 import discord
 from __main__ import send_cmd_help
@@ -16,486 +16,38 @@ from .utils.dataIO import fileIO, dataIO
 
 # Ce module est volontairement "sur-commenté" dans un soucis de lisibilité et afin que certaines personnes puisse
 # s'en servir de base
+palette = {"lighter": 0x34bba7,
+           "light" : 0x219d7e,
+           "dark": 0x2c7972,
+           "warning": 0xfb4e4e,
+           "info": 0xFFDD94,
+           "stay": 0xfff952}
+goldimg = "https://i.imgur.com/IoRv050.png"
 
 class PayAPI:
     """API Turing Pay | Système de monnaie globale par serveur"""
+
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.sys_defaut = {"MONNAIE": {"SINGULIER": "crédit", "PLURIEL": "crédits", "SYMBOLE": "cds"}}
-        self.default = {"USERS": {}, "SYSTEM": self.sys_defaut}
+        self.meta = {"last_save": 0}
         self.cooldown = {}
 
-    def _save(self):
-        fileIO("data/pay/data.json", "save", self.data)
-        return True
+    def save(self, force: bool = False):
+        if force:
+            fileIO("data/pay/data.json", "save", self.data)
+        elif (time.time() - self.meta["last_save"]) > 30: # 30 secondes
+            fileIO("data/pay/data.json", "save", self.data)
+            self.meta["last_save"] = time.time()
 
-    def api_pong(self):
-        """Renvoie un pong signifiant que l'API est connectée"""
-        return True
+    def ttd(self, timestamp: float):  # Ex: Transforme 1547147012 en 2019, 1, 10, 20, 3, 44
+        """Convertisseur timestamp-to-date"""
+        UniTimestamp = namedtuple('UniTimestamp', ["brut", "heure", "jour", "float"])
+        brut = datetime.fromtimestamp(timestamp)
+        return UniTimestamp(brut, brut.strftime("%H:%M"), brut.strftime("%d/%m/%Y"), timestamp)
 
-    def backup_capitalAPI(self, server: discord.Server):
-        """Backup les données de l'ancien module Capital"""
-        if server.id in self.backup_capital:
-            backup = self.backup_capital[server.id]
-            for user in backup["USERS"]:
-                backup["USERS"][user]["SOLDE"] = round(backup["USERS"][user]["SOLDE"] / 2)
-                backup["USERS"][user]["TRSAC"] = []
-                del backup["USERS"][user]["EXTRA"]
-                backup["USERS"][user]["PLUS"] = {}
-                backup["USERS"][user]["OPEN"] = True
-            mon = backup["SYSTEM"]["MONNAIE"]
-            backup["SYSTEM"] = {"MONNAIE": {"SINGULIER": mon["SINGULIER"], "PLURIEL": mon["PLURIEL"],
-                                            "SYMBOLE": mon["SYMBOLE"]}}
-            self.data[server.id] = backup
-            self._save()
-            return True
-        else:
-            return False
-    
-    # SERVEUR ------------------------
-    def _get_server_raw_data(self, server: discord.Server):
-        """Renvoie les données du serveur en brut
-
-        >> création si absence"""
-        if server.id not in self.data:
-            self.data[server.id] = self.default
-            self._save()
-        return self.data[server.id]
-
-    # COMPTES ------------------------
-    def new_account(self, user: discord.Member):
-        """Créer un nouveau compte sur le serveur"""
-        server = user.server
-        data = self._get_server_raw_data(server)["USERS"]
-        if user.id not in data:
-            data[user.id] = {"SOLDE": 100,
-                             "OPEN": True,
-                             "TRSAC": [],
-                             "CREE": datetime.now().strftime("%d/%m/%Y à %H:%M"),
-                             "PLUS": {}}
-            self._save()
-            return self._account_obj(user)
-        return False
-
-    def _account_obj(self, user: discord.Member):
-        """Renvoie un objet Account() contenant les informations bancaires du membre"""
-        server = user.server
-        data = self._get_server_raw_data(server)["USERS"][user.id]
-        Account = namedtuple('Account', ['user','solde', 'historique', 'creation', 'open'])
-        return Account(user, data["SOLDE"], data["TRSAC"], data["CREE"], data["OPEN"])
-
-    def get_account(self, user: discord.Member, w: bool = False, m: bool = False, ignore_close: bool = False):
-        """Renvoie le compte Turing Pay du membre
-
-        -w : 'Write', renvoie les données en brut
-        -m : 'Make', créé un compte si le membre n'en a pas"""
-        server = user.server
-        data = self._get_server_raw_data(server)["USERS"]
-        if user.id not in data:
-            if m:  # make
-                return self.new_account(user)
-            return False
-        if w:  # write
-            if data[user.id]["OPEN"] or ignore_close:
-                return data[user.id]
-            return False  # Dans le doute
-        if data[user.id]["OPEN"] or ignore_close:
-            return self._account_obj(user)
-        return False
-
-    def sum_pay_data(self, user: discord.Member):
-        """Renvoie un pack d'informations essentielles sur le membre et son serveur
-
-        Utile pour obtenir un maximum d'information dans un unique Namedtuple"""
-        pay = self.get_account(user, ignore_close=True)
-        serv = self.get_server_sys(user.server)
-        m_auto = self.get_money_name(user.server, pay.solde)
-        open = "Valide" if pay.open else "Suspendu"
-        total = self.total_server_credits(user.server)
-        Essential = namedtuple('Essential', ['user', 'server', 'solde', 'monnaie', 'monnaie_auto', 'valide',
-                                             'timestamp', 'server_total'])
-        return Essential(user, user.server, pay.solde, serv.monnaie, m_auto, open, pay.creation, total)
-
-    def get_all_accounts(self, server: discord.Server = None):
-        """Renvoie une liste de tous les comptes de membre"""
-        liste = []
-        if not server:
-            for serv in self.data:
-                server = self.bot.get_server(serv)
-                for member in server.members:
-                    if self.get_account(member):
-                        liste.append(self.get_account(member))
-        else:
-            for member in server.members:
-                if self.get_account(member):
-                    liste.append(self.get_account(member))
-        return liste
-
-    def account_migration(self, source: discord.Member, destinataire: discord.Member):
-        """Effectue une migration de compte entre deux membres"""
-        server = source.server
-        if source.id in self.data[server.id]["USERS"]:
-            compte = self.data[server.id]["USERS"][source.id]
-            self.data[server.id]["USERS"][destinataire.id] = compte
-            del self.data[server.id]["USERS"][source.id]
-            self._save()
-            return True
-        return False
-
-    async def sign_up(self, ctx, user: discord.Member = None):
-        """Inscrit un membre sur le système bancaire du serveur"""
-        user = user if user else ctx.message.author
-        msg = await self.bot.say("**Tu n'as pas de compte Pay** ─ Veux-tu en ouvrir un ?")
-        await self.bot.add_reaction(msg, "✔")
-        await self.bot.add_reaction(msg, "✖")
-        await self.bot.add_reaction(msg, "❔")
-        await asyncio.sleep(0.1)
-        def check(reaction, user):
-            return not user.bot
-
-        rep = await self.bot.wait_for_reaction(["✔", "✖", "❔"], message=msg, timeout=30, check=check,
-                                               user=user)
-        if rep is None or rep.reaction.emoji == "✖":
-            await self.bot.delete_message(msg)
-            await self.bot.say("**Annulé** ─ Tu pourra toujours en créer un avec `{}pay new`".format(ctx.prefix))
-            return False
-        elif rep.reaction.emoji == "✔":
-            if self.new_account(user):
-                await self.bot.delete_message(msg)
-                await self.bot.say("**Ouvert** ─ Ton compte a été ouvert avec succès {} !".format(
-                    user.name))
-                return True
-            else:
-                await self.bot.delete_message(msg)
-                await self.bot.say("**Erreur** ─ Impossible de créer ton compte {} !\nLe serveur est peut-être sur "
-                                   "Blacklist.".format(user.name))
-                return False
-        elif rep.reaction.emoji == "❔":
-            await self.bot.delete_message(msg)
-            em = discord.Embed(color= user.color, title="Ouvrir un compte Turing Pay",
-                               description= "Certaines fonctionnalités sur ce bot utilisent un système monétaire appelé"
-                                            " *Turing Pay* permettant par exemple de pouvoir participer à divers jeux.\n"
-                                            "Il est important de savoir que cette monnaie est **virtuelle** et ne "
-                                            "pourra être échangée contre de l'argent réel.\n"
-                                            "A la création du compte, aucune information ne te sera demandée.")
-            em.set_footer(text="Veux-tu ouvrir un compte ?")
-            info = await self.bot.say(embed=em)
-            await self.bot.add_reaction(info, "✔")
-            await self.bot.add_reaction(info, "✖")
-            await asyncio.sleep(0.1)
-            rep = await self.bot.wait_for_reaction(["✔", "✖"], message=info, timeout=20, check=check,
-                                                   user=user)
-            if rep is None or rep.reaction.emoji == "✖":
-                await self.bot.delete_message(info)
-                await self.bot.say("**Annulé** ─ Tu pourra toujours en créer un avec `{}pay new`".format(ctx.prefix))
-                return False
-            elif rep.reaction.emoji == "✔":
-                if self.new_account(user):
-                    await self.bot.delete_message(info)
-                    await self.bot.say("**Ouvert** ─ Ton compte a été ouvert avec succès {} !".format(
-                        user.name))
-                    return True
-                else:
-                    await self.bot.delete_message(info)
-                    await self.bot.say("**Erreur** ─ Impossible de créer ton compte {} !\nLe serveur est peut-être sur "
-                                       "Blacklist.".format(user.name))
-                    return False
-        await self.bot.say("**Erreur** ─ Je n'ai pas compris ...")
-        return False
-
-    async def verify(self, ctx, user: discord.Member = None, ignore_close: bool=False):
-        """Vérifie si le membre possède un compte et lui demande automatiquement sa création en cas de besoin"""
-        user = user if user else ctx.message.author
-        data = self.get_account(user=user, ignore_close=True)
-        if data:
-            if data.open or ignore_close:
-                return True
-            await self.bot.say("**Compte bloqué** ─ Il semblerait que ton compte soit bloqué. "
-                               "Consulte un modérateur pour en savoir plus.")
-            return False
-        done = await self.sign_up(ctx)
-        if done:
-            return True
-        return False
-
-    # HISTORIQUE ------------------------
-    def _transaction_obj(self, trans: list):
-        """Renvoie un objet Transaction()"""
-        server_id = user_id = None
-        for server in self.data:
-            for user in self.data[server]["USERS"]:
-                if trans in self.data[server]["USERS"][user]["TRSAC"]:
-                    server_id, user_id = server, user
-        Transaction = namedtuple('Transaction', ['id', 'ts_heure', 'ts_jour', 'somme', 'desc', 'user_id', 'server_id',
-                                                 'liens', 'type'])
-        return Transaction(trans[0], trans[1], trans[2], trans[3], trans[4], user_id, server_id, trans[5], trans[6])
-        # --Info             id       heure     jour      somme     desc      ----    ----    link       type
-
-    def _obj_transaction(self, trans: list):  # Pour la compatibilité avec Capital
-        return self._transaction_obj(trans)
-
-    def id_to_transaction(self, trs_id: str, w: bool = False):
-        """Retrouve la transaction liée à l'identifiant"""
-        for serv in self.data:
-            trs_list = []
-            for user in self.data[serv]["USERS"]:
-                for trs in self.data[serv]["USERS"][user]["TRSAC"]:
-                    if trs[0] == trs_id:
-                        return self._transaction_obj(trs) if not w else trs
-        return False
-
-    def ajt_transaction(self, user: discord.Member, type_t: str, somme: int, reason: str):
-        """Ajoute une transaction à l'historique du membre"""
-        user = self.get_account(user, True)
-        if user:
-            jour, heure = time.strftime("%d/%m/%Y", time.localtime()), time.strftime("%H:%M", time.localtime())
-            clef = str(''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(4)))
-            while self.id_to_transaction(clef):
-                clef = str(
-                    ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(4)))
-            event = [clef, heure, jour, somme, reason, [], type_t]
-            user['TRSAC'].append(event)
-            if len(user["TRSAC"]) > 20:
-                user["TRSAC"].remove(user["TRSAC"][0])
-            return self._transaction_obj(event)
-        return False
-
-    def link_transactions(self, trans_a, trans_b):
-        """Relie deux transactions entre elles"""
-        a, b = self.id_to_transaction(trans_a, True), self.id_to_transaction(trans_b, True)
-        if a and b:
-            a[5].append(b[0]); b[5].append(a[0])
-            self._save()
-            return True
-        return False
-
-    def get_lasts_transactions(self, user: discord.Member, nb: int = 1):
-        """Renvoie les dernières transactions du membre"""
-        user = self.get_account(user, True, ignore_close=True)
-        if user:
-            if nb >= 1:
-                h = user['TRSAC'][-nb:]
-                return [self._transaction_obj(i) for i in h]
-            else:
-                return [self._transaction_obj(i) for i in user['TRSAC']]
-        return False
-
-    def get_day_transactions(self, user: discord.Member, jour: str = None):
-        if not jour:
-            jour = time.strftime("%d/%m/%Y", time.localtime())
-        user = self.get_account(user, True)
-        if user:
-            liste = []
-            for t in user['TRSAC']:
-                if t[2] == jour:
-                    j, h = t[2], t[1]
-                    liste.append([time.mktime(time.strptime("{} {}".format(j, h), "%d/%m/%Y %H:%M")),
-                                  self._obj_transaction(t)])
-            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
-            liste = [s[1] for s in sort]
-            return liste
-        return False
-
-    def get_total_day_gain(self, user : discord.Member, jour: str = None):
-        if self.get_day_transactions(user, jour):
-            return sum([t.somme for t in self.get_day_transactions(user, jour)])
-        return 0
-
-    # TRANSACTIONS ------------------------
-    def gain_credits(self, user: discord.Member, somme: int, raison: str):
-        """Ajoute des crédits au membre"""
-        data = self.get_account(user, True)
-        if somme > 0:
-            data["SOLDE"] += somme
-            t = self.ajt_transaction(user, "GAIN", somme, raison)
-            self._save()
-            return t
-        return False
-
-    def gain_credits_prc(self, user: discord.Member, pourcent: int, raison: str):
-        """Ajoute des crédits au membre par rapport à un pourcentage"""
-        data = self.get_account(user, True)
-        if 0 < pourcent <= 100:
-            diff = data.solde * (pourcent / 100)
-            return self.gain_credits(user, round(diff), raison)
-        return False
-
-    def depot_credits(self, user: discord.Member, somme: int, raison: str):  # Compatibilité Capital
-        return self.gain_credits(user, somme, raison)
-
-    def perte_credits(self, user: discord.Member, somme: int, raison: str, ignore_min: bool=False):
-        """Retire des crédits au membre"""
-        somme = abs(somme)  # On s'assure que 'somme' est positive
-        data = self.get_account(user, True)
-        if self.enough_credits(user, somme):
-            data["SOLDE"] -= somme
-            t = self.ajt_transaction(user, "PERTE", -somme, raison)
-            self._save()
-            return t
-        elif ignore_min:
-            somme = data["SOLDE"]
-            data["SOLDE"] = 0
-            t = self.ajt_transaction(user, "PERTE", -somme, raison)
-            self._save()
-            return t
-        return False
-
-    def perte_credits_prc(self, user: discord.Member, pourcent: int, raison: str):
-        """Retire des crédits au membre par rapport à un pourcentage"""
-        data = self.get_account(user, True)
-        if 0 < pourcent <= 100:
-            diff = data.solde * (pourcent / 100)
-            return self.perte_credits(user, round(diff), raison)
-        return False
-
-    def set_credits(self, user: discord.Member, somme: int, raison: str):
-        """Change la valeur du solde du membre"""
-        data = self.get_account(user, True)
-        if somme >= 0:
-            data["SOLDE"] = somme
-            t = self.ajt_transaction(user, "SET", somme, raison)
-            self._save()
-            return t
-        return False
-
-    def enough_credits(self, user: discord.Member, depense: int):
-        """Vérifie que le membre peut dépenser cette somme"""
-        data = self.get_account(user)
-        if data:
-            return True if data.solde - depense >= 0 else False
-        return False
-
-    def transfert_credits(self, donneur: discord.Member, receveur: discord.Member, somme: int, raison: str):
-        """Transfère les crédits d'un membre à un autre"""
-        if donneur != receveur:
-            if somme > 0:
-                if self.enough_credits(donneur, somme):
-                    dvr = self.perte_credits(donneur, somme, raison)
-                    rvd = self.gain_credits(receveur, somme, raison)
-                    self.link_transactions(dvr.id, rvd.id)
-                    return True
-        return False
-
-    # SERVEUR ------------------------
-    def total_server_credits(self, server: discord.Server):
-        """Retourne le nombre total de crédits se trouvant sur le serveur"""
-        if server.id in self.data:
-            return sum([u.solde for u in self.get_all_accounts(server)])
-        return False
-
-    def _system_obj(self, server: discord.Server):
-        """Retourne l'objet Systeme() contenant les paramètres du serveur"""
-        data = self._get_server_raw_data(server)["SYSTEM"]
-        Monnaie = namedtuple('Monnaie', ['singulier', 'pluriel', 'symbole'])
-        money = Monnaie(data["MONNAIE"]["SINGULIER"], data["MONNAIE"]["PLURIEL"], data["MONNAIE"]["SYMBOLE"])
-        System = namedtuple('System', ['server', 'monnaie'])
-        return System(server, money)
-
-    def get_server_sys(self, server: discord.Server = False, w: bool = False):
-        if not server:
-            tot = []
-            for s in self.data:
-                server = self.bot.get_server(s)
-                tot.append(self._system_obj(server) if not w else self.data[server.id]["SYSTEM"])
-            return tot
-        return self._system_obj(server) if not w else self.data[server.id]["SYSTEM"]
-
-    def gen_palmares(self, server: discord.Server, nombre: int):
-        """Génère un top des membres les plus riches du serveur"""
-        if server.id in self.data:
-            mb = [n.id for n in server.members]
-            liste = [[self.data[server.id]["USERS"][u]["SOLDE"], u] for u in self.data[server.id]["USERS"] if u in mb]
-            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
-            return sort[:nombre]
-        return False
-
-    def get_money_name(self, server: discord.Server, somme: int = 0, symbole: bool = False):
-        """Renvoie le nom de la monnaie en fonction du contexte"""
-        data = self._get_server_raw_data(server)["SYSTEM"]
-        if symbole:
-            return data["MONNAIE"]["SYMBOLE"]
-        if somme > 1:
-            return data["MONNAIE"]["PLURIEL"]
-        return data["MONNAIE"]["SINGULIER"]
-
-    def get_money(self, server: discord.Server, nombre: int = 0, symbole: bool = False):  # Compatibilité Capital
-        return self.get_money_name(server, nombre, symbole)
-
-    # COOLDOWN ------------------------
-    def add_cooldown(self, user: discord.Member, nom: str, duree: int):
-        """Ajoute un cooldown à un membre
-
-        -duree : en secondes"""
-        server = user.server
-        date = time.time() + duree
-        if server.id in self.cooldown:
-            if nom.lower() in self.cooldown[server.id]:
-                if user.id in self.cooldown[server.id][nom.lower()]:
-                    self.cooldown[server.id][nom.lower()][user.id] += duree
-                else:
-                    self.cooldown[server.id][nom.lower()][user.id] = date
-            else:
-                self.cooldown[server.id][nom.lower()] = {user.id : date}
-        else:
-            self.cooldown[server.id] = {nom.lower() : {user.id : date}}
-        return self.cooldown[server.id][nom.lower()][user.id]
-
-    def get_cooldown(self, user : discord.Member, nom: str):
-        """Renvoie le cooldown - si il est nul, renvoie False
-
-        -format_time : change le format du temps en output (j,h,m ou s)"""
-        server = user.server
-        now = time.time()
-        if server.id not in self.cooldown:
-            self.cooldown[server.id] = {}
-            return False
-        if nom.lower() not in self.cooldown[server.id]:
-            return False
-        if user.id in self.cooldown[server.id][nom.lower()]:
-            if now <= self.cooldown[server.id][nom.lower()][user.id]:
-                duree = int(self.cooldown[server.id][nom.lower()][user.id] - now)
-                return self.auto_timeconvert(duree)
-            else:
-                del self.cooldown[server.id][nom.lower()][user.id]
-                return False
-        return False
-
-    def is_cooldown_blocked(self, user: discord.Member, nom: str):  # Compatibilité Capital
-        return self.get_cooldown(user, nom)
-
-    # SYSTEME ------------------------
-    def forcesave(self):
-        """Force la sauvegarde de l'API"""
-        return self._save()
-
-    def reset_all_data(self, server: discord.Server = None):
-        """Reset toutes les données d'un serveur (ou de tous les serveurs)"""
-        if server:
-            if server.id in self.data:
-                self.data[server.id] = self.default
-            else:
-                return False
-        else:
-            self.data = {}
-        self._save()
-        return True
-
-    def reset_user_data(self, user: discord.Member):
-        """Reset toutes les données d'un membre"""
-        server = user.server
-        data = self._get_server_raw_data(server)["USERS"]
-        if user.id in data:
-            del data[user.id]
-            self._save()
-            return True
-        return False
-
-    # AUTRES -------------------------
-    def auto_timeconvert(self, val: int):
-        """Convertis automatiquement les secondes en unités plus pratiques
-
-        > Objet TimeConv()"""
+    def timeformat(self, val: int):
+        """Converti automatiquement les secondes en unités plus pratiques"""
         j = h = m = 0
         while val >= 60:
             m += 1
@@ -514,9 +66,373 @@ class PayAPI:
         TimeConv = namedtuple('TimeConv', ['jours', 'heures', 'minutes', 'secondes', 'string'])
         return TimeConv(j, h, m, val, txt)
 
+    def get_server(self, server: discord.Server, sub: str = None, reset: bool = False):
+        """Renvoie les données du serveur"""
+        if server.id not in self.data or reset:
+            self.data[server.id] = {"USERS": {},
+                                    "SYS": {},
+                                    "MARKET": {}}
+            self.save(True)
+        return self.data[server.id][sub] if sub else self.data[server.id]
+
+
+    def obj_account(self, user_dict: dict):
+        """Transforme les données brutes d'un profil en Namedtuple facile à exploiter"""
+        userid = False
+        for server in self.data:
+            for user in self.data[server]["USERS"]:
+                if self.data[server]["USERS"][user] == user_dict:
+                    userid = user
+        solde = user_dict["solde"]
+        logs = []
+        for l in user_dict["logs"]:
+            logs.append(self.obj_transaction(l))
+        inventory = user_dict["inventory"]
+        cache = user_dict["cache"]
+        PayAccount = namedtuple("PayAccount", ["solde", "logs", "inventory", "cache", "userid"])
+        return PayAccount(solde, logs, inventory, cache, userid)
+
+    def create_account(self, user: discord.Member):
+        """Créer un nouveau compte Pay"""
+        data = self.get_server(user.server, "USERS")
+        if user.id not in data:
+            data[user.id] = {"solde": 500,
+                             "logs": [],
+                             "inventory" : {},
+                             "cache": {}}
+            self.save(True)
+        return data[user.id]
+
+    def get_account(self, user: discord.Member, tuple: bool = False):
+        """Renvoie le compte d'un membre s'il en possède un"""
+        data = self.get_server(user.server, "USERS")
+        if user.id in data:
+            return data[user.id] if not tuple else self.obj_account(data[user.id])
+        return False
+
+    def get_all_accounts(self, server: discord.Server = None):
+        liste = []
+        if server:
+            serv = self.get_server(server, "USERS")
+            for u in serv:
+                liste.append(self.obj_account(u))
+            return liste
+        else:
+            for serv in self.data:
+                for u in serv["USERS"]:
+                    liste.append(self.obj_account(u))
+            return liste
+
+    async def account_dial(self, user: discord.Member):
+        """S'inscrire sur le système Pay du serveur"""
+        if not self.get_account(user):
+            em = discord.Embed(description="{} ─ Vous n'avez pas de compte **Pay**, voulez-vous en ouvrir un ?".format(
+                user.mention), color=palette["light"])
+
+            msg = await self.bot.say(embed=em)
+            await self.bot.add_reaction(msg, "✔")
+            await self.bot.add_reaction(msg, "✖")
+            await self.bot.add_reaction(msg, "❔")
+            await asyncio.sleep(0.1)
+
+            def check(reaction, user):
+                return not user.bot
+
+            rep = await self.bot.wait_for_reaction(["✔", "✖", "❔"], message=msg, timeout=20, check=check,
+                                                   user=user)
+            if rep is None or rep.reaction.emoji == "✖":
+                em = discord.Embed(
+                    description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
+                        user.mention), color=palette["dark"])
+                await self.bot.edit_message(msg, embed=em)
+                await asyncio.sleep(8)
+                await self.bot.delete_message(msg)
+                return False
+            elif rep.reaction.emoji == "✔":
+                if self.create_account(user):
+                    em = discord.Embed(
+                        description="{} ─ Votre compte à été ouvert, vous pouvez désormais profiter des "
+                                    "fonctionnalités économiques.".format(
+                            user.mention), color=palette["lighter"])
+                    await self.bot.edit_message(msg, embed=em)
+                    await asyncio.sleep(8)
+                    await self.bot.delete_message(msg)
+                    return True
+                else:
+                    em = discord.Embed(
+                        description="{} ─ Je n'ai pas réussi à vous ouvrir un compte.\n"
+                                    "Réessayez plus tard avec `.pay new`".format(
+                            user.mention), color=palette["warning"])
+                    await self.bot.edit_message(msg, embed=em)
+                    await asyncio.sleep(8)
+                    await self.bot.delete_message(msg)
+                    return False
+            elif rep.reaction.emoji == "❔":
+                em = discord.Embed(color=user.color, title="Ouvrir un compte Pay",
+                                   description="Certaines fonctionnalités sur ce bot utilisent un système monétaire appelé"
+                                               " ***Pay*** permettant par exemple de pouvoir participer à divers jeux.\n"
+                                               "Il est important de savoir que cette monnaie est **virtuelle** et n'a "
+                                               "donc aucune réelle valeur.\n"
+                                               "A la création du compte, aucune information ne sera demandée.")
+                em.set_footer(text="Veux-tu ouvrir un compte ?")
+                info = await self.bot.edit_message(embed=em)
+                await self.bot.add_reaction(info, "✔")
+                await self.bot.add_reaction(info, "✖")
+                await asyncio.sleep(0.1)
+                rep = await self.bot.wait_for_reaction(["✔", "✖"], message=info, timeout=20, check=check,
+                                                       user=user)
+                if rep is None or rep.reaction.emoji == "✖":
+                    em = discord.Embed(
+                        description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
+                            user.mention), color=palette["dark"])
+                    await self.bot.edit_message(msg, embed=em)
+                    await asyncio.sleep(8)
+                    await self.bot.delete_message(msg)
+                    return False
+                elif rep.reaction.emoji == "✔":
+                    if self.create_account(user):
+                        em = discord.Embed(
+                            description="{} ─ Votre compte à été ouvert, vous pouvez désormais profiter des "
+                                        "fonctionnalités économiques.".format(
+                                user.mention), color=palette["lighter"])
+                        await self.bot.edit_message(msg, embed=em)
+                        await asyncio.sleep(8)
+                        await self.bot.delete_message(msg)
+                        return True
+            await self.bot.say("**Erreur** ─ Je n'ai pas compris ...")
+            return False
+        return True
+
+
+    def obj_transaction(self, trs: list):
+        """Transforme les données brutes d'une transaction en tuple facile à exploiter"""
+        """server_id = user_id = None
+        for server in self.data:
+            for user in self.data[server]["USERS"]:
+                if trs in self.data[server]["USERS"][user]["logs"]:
+                    server_id, user_id = server, user
+        if server_id and user_id:
+            server = self.bot.get_server(server_id)
+            user = server.get_member(user_id)"""
+        PayTrs = namedtuple('PayTrs', ['id', 'timestamp', 'somme', 'type', 'raison', 'link'])
+        return PayTrs(trs[0], self.ttd(trs[1]), trs[3], trs[2], trs[4], trs[5])
+
+    def get_transaction_metadata(self, trs_id: str):
+        """Retrouve le membre et le serveur lié à une transaction"""
+        server_id = user_id = None
+        for server in self.data:
+            for user in self.data[server]["USERS"]:
+                if trs_id in [r[0] for r  in self.data[server]["USERS"][user]["logs"]]:
+                    server_id, user_id = server, user
+        if server_id and user_id:
+            server = self.bot.get_server(server_id)
+            user = server.get_member(user_id)
+            return (server, user)
+        return False
+
+    def new_transaction(self, user: discord.Member, somme: int, type:str, raison: str):
+        """Ajoute une transaction à un membre"""
+        data = self.get_account(user)
+        if data:
+            timestamp = datetime.now().timestamp()
+            trs_id = str(''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(5)))
+            while self.get_transaction(trs_id):
+                trs_id = str(
+                    ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(5)))
+            event = [trs_id, timestamp, type, somme, raison, []]
+            data["logs"].append(event)
+            if len(data["logs"]) > 30:
+                data["logs"].remove(data["logs"][0])
+            self.save()
+            return self.obj_transaction(event)
+        return False
+
+    def link_transactions(self, transactions: list):
+        trsbrut = []
+        for t in transactions:
+            if type(t) is str:
+                trsbrut.append(self.get_transaction(t, True))
+            else:
+                trsbrut.append(self.get_transaction(t[0], True))
+        for trs in trsbrut:
+            trs["link"] = [self.get_transaction(i).id for i in trsbrut if self.get_transaction(i).id != self.get_transaction(trs).id]
+        self.save()
+        return True
+
+    def get_transaction(self, trs_id: str, brut: bool = False):
+        """Renvoie une transaction à partir de l'ID"""
+        for serv in self.data:
+            for user in self.data[serv]["USERS"]:
+                for trs in self.data[serv]["USERS"][user]["logs"]:
+                    if trs[0] == trs_id:
+                        return self.obj_transaction(trs) if not brut else trs
+        return False
+
+    def get_transactions_from(self, user: discord.Member, nb: int = 1):
+        """Renvoie les transactions d'un membre"""
+        data = self.get_account(user, True)
+        if data and nb >= 1:
+            logs = data.logs[::-1]
+            return [self.obj_transaction(t) for t in logs[-nb:]]
+        return False
+
+    def daily_trs_from(self, user: discord.Member, jour: str = None):
+        """Retourne les transactions d'un jour d'un membre"""
+        if not jour:
+            jour = time.strftime("%d/%m/%Y", time.localtime())
+        data = self.get_account(user, True)
+        if data:
+            liste = []
+            for t in data.logs:
+                if t.timestamp.jour == jour:
+                    liste.append([t.timestamp.float, t])
+            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
+            return [i[1] for i in sort]
+        return False
+
+    def daily_total_from(self, user: discord.member, jour: str = None):
+        """Retourne la valeur totale de toutes les transactions d'un jour"""
+        trs = self.daily_trs_from(user, jour)
+        if trs:
+            return sum([t.somme for t in trs])
+        return 0
+
+
+    def enough_credits(self, user: discord.Member, depense: int):
+        """Vérifie que le membre peut réaliser cette transaction"""
+        data = self.get_account(user, True)
+        if data:
+            return True if data.solde - depense >= 0 else False
+        return False
+
+    def add_credits(self, user: discord.Member, somme: int, raison: str):
+        """Ajoute des crédits au membre"""
+        data = self.get_account(user)
+        if somme > 0:
+            data["solde"] += somme
+            return self.new_transaction(user, somme, "gain", raison)
+        return False
+
+    def remove_credits(self, user: discord.Member, somme: int, raison: str, accept_null: bool = False):
+        """Retire des crédits à un membre"""
+        somme = abs(somme)
+        data = self.get_account(user)
+        if self.enough_credits(user, somme):
+            data["solde"] -= somme
+            return self.new_transaction(user, -somme, "perte", raison)
+        elif accept_null:
+            somme = data["solde"]
+            data["solde"] = 0
+            return self.new_transaction(user, -somme, "perte", raison)
+        return False
+
+    def set_credits(self, user: discord.Member, somme: int, raison: str):
+        """Modifie le solde du membre"""
+        data = self.get_account(user)
+        if somme >= 0:
+            data["solde"] = somme
+            return self.new_transaction(user, somme, "modification", raison)
+        return False
+
+    def transfert_credits(self, donneur: discord.Member, receveur: discord.Member, somme: int, raison: str):
+        """Transfère les crédits d'un membre donneur à un membre receveur"""
+        if donneur != receveur:
+            if somme > 0:
+                if self.enough_credits(donneur, somme):
+                    don = self.remove_credits(donneur, somme, raison)
+                    recu = self.add_credits(receveur, somme, raison)
+                    self.link_transactions([don, recu])
+                    return (don, recu)
+        return False
+
+
+    def total_credits_on_server(self, server: discord.Server):
+        """Renvoie la valeur totale de la monnaie en circulation sur le serveur"""
+        if server.id in self.data:
+            return sum([user.solde for user in self.get_all_accounts(server)])
+        return False
+
+    def get_top(self, server: discord.Server, nombre: int):
+        """Renvoie un top des plus riches du serveur"""
+        if server.id in self.data:
+            liste = [[u.solde, u] for u in self.get_all_accounts(server)]
+            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
+            return [i[1] for i in sort][:nombre]
+        return False
+
+    def get_top_usernum(self, user: discord.Member):
+        """Renvoie la place du membre dans le top de son serveur"""
+        server = user.server
+        if server.id in self.data:
+            liste = [[u.solde, u] for u in self.get_all_accounts(server)]
+            sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
+            n = 1
+            for i in sort:
+                if i[1].userid == user.id:
+                    return (n, i[1])
+                n += 1
+        return False
+
+    def new_cooldown(self, user: discord.Member, id: str, duree: int):
+        """Attribue un cooldown à un membre
+
+        La durée est en secondes"""
+        server = user.server
+        fin = time.time() + duree
+        if server.id not in self.cooldown:
+            self.cooldown[server.id] = {}
+        if id.lower() in self.cooldown[server.id]:
+            if user.id in self.cooldown[server.id][id.lower()]:
+                self.cooldown[server.id][id.lower()][user.id] += duree
+            else:
+                self.cooldown[server.id][id.lower()][user.id] = fin
+        else:
+            self.cooldown[server.id][id.lower()] = {user.id : fin}
+        return self.cooldown[server.id][id.lower()][user.id]
+
+    def get_cooldown(self, user: discord.Member, id: str):
+        """Renvoie le cooldown du membre s'il y en a un"""
+        server = user.server
+        now = time.time()
+        if server.id not in self.cooldown:
+            self.cooldown[server.id] = {}
+            return False
+        if id.lower() not in self.cooldown[server.id]:
+            return False
+        if user.id in self.cooldown[server.id][id.lower()]:
+            if now <= self.cooldown[server.id][id.lower()][user.id]:
+                duree = int(self.cooldown[server.id][id.lower()][user.id] - now)
+                return self.timeformat(duree)
+            else:
+                del self.cooldown[server.id][id.lower()][user.id]
+                return False
+        return False
+
+
+    def reset_user(self, user: discord.Member):
+        """Reset les données d'un membre"""
+        server = user.server
+        data = self.get_server(server, "USERS")
+        if user.id in data:
+            del data[user.id]
+            self.save(True)
+            return True
+        return False
+
+    def reset_all(self, server: discord.Server = None):
+        """Reset toutes les données d'un serveur (ou tous les servs.)"""
+        if server:
+            self.get_server(server, reset=True)
+            return True
+        else:
+            self.data = {}
+            self.save(True)
+            return True
+
 
 class Pay:
     """Système monétaire virtuel et systèmes divers exploitant celle-ci"""
+
     def __init__(self, bot):
         self.bot = bot
         self.pay = PayAPI(bot, "data/pay/data.json")
@@ -535,223 +451,229 @@ class Pay:
                 membre = ctx.message.author
             await ctx.invoke(self.compte, user=membre)
 
-    @pay_account.command(pass_context=True)
+    @pay_account.command()
     async def new(self, ctx):
-        """Ouvre un compte bancaire sur ce serveur"""
+        """Ouvre un compte bancaire Pay"""
         data = self.pay.get_account(ctx.message.author)
         if data:
-            await self.bot.say("**Tu as déjà un compte** ─ Consulte-le avec `{}pay`".format(ctx.prefix))
+            await self.bot.say("**Inutile** ─ Vous avez déjà un compte : consultez-le avec `.b`")
         else:
-            await self.pay.sign_up(ctx)
+            await self.pay.create_account(ctx.message.author)
+            await self.bot.say("**Compte créé ─ Consultez-le avec `.b`")
 
-    @pay_account.command(pass_context=True)
+    @pay_account.command()
     async def compte(self, ctx, user: discord.Member = None):
-        """Voir son compte Turing Pay sur ce serveur
+        """Voir son compte Pay
 
-        [user] - permet de voir le compte d'un autre membre"""
+        [user] -> Permet de voir le compte d'un autre membre"""
         user = user if user else ctx.message.author
         same = True if user == ctx.message.author else False
-        data = self.pay.get_account(user, ignore_close=True)
         server = ctx.message.server
-        if same or data:
-            if await self.pay.verify(ctx, user, True):
-                data = self.pay.get_account(user, ignore_close=True)
-                blocktxt = " [Suspendu]" if not data.open else ""
-                money, symb = self.pay.get_money_name(server, data.solde), self.pay.get_money_name(server, symbole=True)
-                gains = self.pay.get_total_day_gain(user)
+        if same or self.pay.get_account(user):
+            if await self.pay.account_dial(user):
+                data = self.pay.get_account(user, True)
+                gains = self.pay.daily_total_from(user)
                 gainstxt = "+{}".format(gains) if gains >= 0 else "{}".format(gains)
-                em = discord.Embed(description="**Solde** ─ {0} {1}\n"
-                                               "**Aujourd'hui** ─ {2} {3}".format(data.solde, money, gainstxt, symb),
-                                   color=user.color)
-                em.set_author(name=str(user) + blocktxt, icon_url=user.avatar_url)
-                trs = self.pay.get_lasts_transactions(user, 3)
-                trs.reverse()
+                txt = "**Solde** ─ {} Gold{}\n" \
+                      "**Aujourd'hui** ─ {}".format(data.solde, "s" if data.solde > 1 else "", gainstxt)
+                em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.timestamp)
+                em.set_author(name=user.name, icon_url=user.avatar_url)
+                trs = self.pay.get_transactions_from(user, 3)
+                em.set_footer(icon_url=goldimg)
                 if trs:
-                    txt = ""
+                    hist = ""
                     for i in trs:
-                        if i.type == "SET":
-                            somme = "!{}".format(i.somme)
+                        if i.type == "modification":
+                            somme = "=" + str(i.somme)
                         else:
-                            somme = str(i.somme) if i.somme < 0 else "+{}".format(i.somme)
-                        desc = i.desc if len(i.desc) <= 40 else i.desc[:40] + "..."
-                        txt += "**{}** ─ *{}* `#{}`\n".format(somme, desc, i.id)
-                    em.add_field(name="Historique", value=txt)
-                em.set_footer(text="Turing Pay | {0}pay histo ─ Voir historique".format(ctx.prefix))
+                            somme = str(i.somme) if i.somme < 0 else "+" + str(i.somme)
+                        raison = i.raison if len(i.raison) <= 40 else i.raison[:40] + "..."
+                        hist += "**{}** ─ *{}* `{}`\n".format(somme, raison, i.id)
+                    em.add_field(name="Historique", value=hist)
                 await self.bot.say(embed=em)
             return
-        else:
-            await self.bot.say("**Compte introuvable** ─ Ce membre ne possède pas de compte Turing Pay valide")
+        await self.bot.say("**Inconnu** ─ *{}*ne possède pas de compte bancaire".format(user.name))
 
-    @pay_account.command(aliases=["histo"], pass_context=True)
-    async def historique(self, ctx, user: discord.Member = None):
-        """Affiche les 20 dernières transactions du membre"""
+    @pay_account.command()
+    async def logs(self, ctx, user: discord.Member = None):
+        """Affiche les dernières transactions du membre"""
         user = user if user else ctx.message.author
-        data = self.pay.get_account(user, ignore_close=True)
-        server = ctx.message.server
+        data = self.pay.get_account(user, True)
         if data:
+            txt = "Utilisez `.b check` pour voir une transaction en détails\n"
+            page = 1
             jour = time.strftime("%d/%m/%Y", time.localtime())
             heure = time.strftime("%H:%M", time.localtime())
-            txt = "*Consultez une transaction en détail avec* `{}pay show`\n\n".format(ctx.prefix)
-            n = 1
-            for t in self.pay.get_lasts_transactions(user, 0):
-                temps = t.ts_jour
-                if t.ts_jour == jour:
-                    if t.ts_heure == heure:
-                        temps = "À l'instant"
+            for t in self.pay.get_transactions_from(user, 30):
+                ts = t.timestamp.jour
+                if t.timestamp.jour == jour:
+                    if t.timestamp.heure == heure:
+                        ts = "À l'instant"
                     else:
-                        temps = t.ts_heure
-                txt += "{} | **{}** ─ *{}* `#{}`\n".format(temps, t.somme, t.desc, t.id)
-                if len(txt) > 1980 * n:
-                    em = discord.Embed(title="Historique de {}".format(user.name), description=txt, color= user.color)
-                    em.set_footer(text="Turing Pay | Page {}".format(n))
+                        ts = t.timestamp.heure
+                txt += "• `{}`{} ─ **{}** · *{}*\n".format(t.id, ts, t.somme, t.raison)
+                if len(txt) > 1980 * page:
+                    em = discord.Embed(title="Logs du compte de {}".format(user.name), description=txt,
+                                       color=user.color, timestamp=ctx.message.timestamp)
+                    em.set_footer(text="Page {}".format(page), icon_url=goldimg)
                     await self.bot.say(embed=em)
                     txt = ""
-                    n += 1
-
-            em = discord.Embed(title="Historique de {}".format(user.name), description=txt, color=user.color)
-            em.set_footer(text="Turing Pay | Page {}".format(n))
+                    page += 1
+            em = discord.Embed(title="Logs du compte de {}".format(user.name), description=txt,
+                               color=user.color, timestamp=ctx.message.timestamp)
+            em.set_footer(text="Page {}".format(page), icon_url=goldimg)
             await self.bot.say(embed=em)
+        else:
+            await self.bot.say("**Inconnu** ─ Aucun compte bancaire n'est lié à ce compte")
 
-    @pay_account.command(aliases=["trs"], pass_context=True)
-    async def show(self, ctx, identifiant: str):
+    @pay_account.command()
+    async def check(self, ctx, transaction_id: str):
         """Affiche les détails d'une transaction"""
-        if "#" in identifiant:
-            identifiant = identifiant[1:]
-        if len(identifiant) == 4:
-            get = self.pay.id_to_transaction(trs_id=identifiant)
-            if get:
-                somme = str(get.somme) if get.somme < 0 else "+{}".format(get.somme)
-                serveur = "Ici" if get.server_id == ctx.message.server.id else get.server_id
-                txt = "*{}*\n\n**Type** ─ {}\n**Somme** ─ {}\n**Date** ─ Le {} à {}\n**Compte** ─ <@{}>\n" \
-                      "**Serveur** ─ {}".format(get.desc, get.type, somme, get.ts_jour, get.ts_heure, get.user_id,
-                                                serveur)
-                em = discord.Embed(title="Transaction #{}".format(identifiant), description=txt, color=0xff4971)
-                em.set_footer(text="Liées: {}".format(", ".join(get.liens) if get.liens else "aucune"))
+        if len(transaction_id) == 5:
+            trs = self.pay.get_transaction(transaction_id)
+            if trs:
+                details = self.pay.get_transaction_metadata(trs.id)
+                somme = trs.somme
+                if trs.type != "modification":
+                    if trs.somme > 0:
+                        somme = "+" + str(trs.somme)
+                txt = "*{}*\n\n" \
+                      "**Type** ─ {}\n" \
+                      "**Somme** ─ {}\n" \
+                      "**Sur le compte de** ─ {}\n" \
+                      "**Serveur** ─ {}\n" \
+                      "**Transactions liées** ─ {}".format(trs.raison, trs.type.title(), somme,
+                                                           details[1].name, details[0].name,
+                                                           " ".join(["`{}`".format(i) for i in trs.link]))
+                em = discord.Embed(title="Relevé de transaction · {}".format(trs.id), description=txt, color=palette["stay"],
+                                   timestamp=trs.timestamp.brut)
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Introuvable** ─ Mauvais identifiant ou transaction expirée")
         else:
-            await self.bot.say("**Erreur** ─ Identifiant invalide (composé de 4 lettres et/ou chiffres)")
+            await self.bot.say("**Erreur** ─ L'identifiant est normalement composé de 5 caractères (chiffres et lettres)")
 
-    @commands.command(aliases=["don"], pass_context=True)
-    async def give(self, ctx, user: discord.Member, somme: int, *raison):
-        """Transférer de l'argent à un autre membre"""
+
+    @commands.command(pass_context=True, no_pm=True, aliases=["don"])
+    async def give(self, ctx, receveur: discord.Member, somme: int, *raison):
+        """Donner de l'argent à un autre membre"""
         server = ctx.message.server
+        user = receveur
         raison = " ".join(raison) if raison else "Don de {} pour {}".format(ctx.message.author.name, user.name)
         if somme > 0:
             if self.pay.get_account(user):
-                if await self.pay.verify(ctx):
+                if await self.pay.account_dial(ctx.message.author):
                     if self.pay.enough_credits(ctx.message.author, somme):
                         cool = self.pay.get_cooldown(ctx.message.author, "give")
                         if not cool:
                             if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
-                                money = self.pay.get_money_name(server, symbole=True)
-                                self.pay.add_cooldown(ctx.message.author, "give", 43200)  # Une demie journée
-                                await self.bot.say("**Succès** ─ {} {} ont été transférés à *{}*".format(somme, money,
-                                                                                                         user.name))
+                                self.pay.new_cooldown(ctx.message.author, "give", 1800)
+                                await self.bot.say("**Transfert réalisé** ─ {}G ont été donnés à *{}*".format(somme, user.name))
                             else:
-                                await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée")
+                                await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
                         else:
-                            await self.bot.say("**Cooldown** ─ Attendez encore {}".format(cool.string))
+                            await self.bot.say("**Cooldown** ─ Don possible dans `{}`".format(cool.string)) # MDR COOLSTRING
                     else:
-                        await self.bot.say("**Impossible** ─ Tu n'as pas cette somme sur ton compte")
+                        await self.bot.say("**Crédits insuffisants** ─ ***{}*** vous n'avez pas cette somme, "
+                                           "soyez raisonnable.".format(ctx.message.author.name))
                 else:
-                    await self.bot.say("**Impossible** ─ Tu as besoin d'un compte *Pay* valide pour réaliser cette "
-                                       "action")
+                    await self.bot.say("Un compte Pay est nécessaire pour réaliser un don.")
             else:
-                await self.bot.say("**Impossible** ─ Le membre visé n'a pas de compte bancaire valide")
+                await self.bot.say("**Impossible** ─ Le membre cible n'a pas ouvert de compte")
         else:
-            await self.bot.say("**Somme nulle ou négative** ─ Tu n'espérais pas lui voler de l'argent quand même ?!")
+            await self.bot.say("**Somme nulle ou négative** ─ Quels étaient tes projets ? Voler de l'argent ? (...)")
 
-    @commands.command(aliases=["classement"], pass_context=True)
-    async def palmares(self, ctx, nombre: int = 20):
+    @commands.command(pass_context=True, no_pm=True, aliases=["palmares"])
+    async def top(self, ctx, top: int = 10):
         """Affiche un top des membres les plus riches du serveur"""
         server = ctx.message.server
-        palm = self.pay.gen_palmares(server, nombre)
-        uid = ctx.message.author.id
+        palm = self.pay.get_top(server, top)
         n = 1
-        symb = self.pay.get_money(server, symbole=True)
         txt = ""
+        found = False
         for l in palm:
-            if len(txt) > 1980:
-                await self.bot.say("**Trop grand** ─ Discord n'accepte pas des messages aussi longs, "
-                                   "réduisez le nombre")
-                return
             try:
-                username = server.get_member(l[1]).name
+                username = server.get_member(l.userid).name
             except:
-                username = self.bot.get_user(l[1]).name
-            if l[1] == uid:
-                txt += "**{}.** __**{}**__ ─ {}{}\n".format(n, username, l[0], symb)
+                username = self.bot.get_user(l.userid).name
+            if l.userid == ctx.message.author.id:
+                txt += "**{}.** __**{}**__ ─ {}G\n".format(n, username, l[0])
+                found = True
             else:
-                txt += "**{}.** **{}** ─ {}{}\n".format(n, username, l[0], symb)
+                txt += "**{}.** **{}** ─ {}G\n".format(n, username, l[0])
             n += 1
-        em = discord.Embed(title="Palmares", description=txt, color=0xff4971)
-        total = self.pay.total_server_credits(server)
-        em.set_footer(text="Serveur {} | Total = {} {}".format(server.name, total,self.pay.get_money(server, total)))
+        if not found:
+            if self.pay.get_account(ctx.message.author):
+                place = self.pay.get_top_usernum(ctx.message.author)
+                txt += "(...)\n**{}.** **{}** ─ {}G".format(place[0], ctx.message.author.name, place[1].solde)
+        em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
+        total = self.pay.total_credits_on_server(server)
+        em.set_footer(text="Total = {} Golds".format(total), icon_url=goldimg)
         try:
             await self.bot.say(embed=em)
         except:
-            await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé, réduisez le nombre")
+            await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
 
-    @commands.command(pass_context=True, aliases=["rj", "rsa"])
+    @commands.command(pass_context=True, no_pm=True, aliases=["rj"])
     async def revenu(self, ctx):
-        """Récupère les revenus personnels"""
-        user = ctx.message.author
-        server = ctx.message.server
+        """Récupérer son revenu journalier"""
+        user, server = ctx.message.author, ctx.message.server
         today = datetime.now().strftime("%d/%m/%Y")
         hier = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
-        base_rj = 20
-        base_jc = 5
-        if await self.pay.verify(ctx):
-            data = self.pay.get_account(user, True)
-            if "RJ" not in data["PLUS"]:
-                data["PLUS"]["RJ"] = {"last": None,
-                                      "suite": []}
-            if today != data["PLUS"]["RJ"]["last"]:
-                money = self.pay.get_money_name(server, symbole=True)
-                if data["PLUS"]["RJ"]["last"]:
-                    then = datetime.strptime(data["PLUS"]["RJ"]["last"], "%d/%m/%Y")
+        # Afin de pouvoir facilement modifier :
+        base_rj = 100 # Revenu journalier de base
+        base_jc = 20 # Bonus jours consécutifs
+        if await self.pay.account_dial(user):
+            data = self.pay.get_account(user)
+
+            if "revenu" not in data["cache"]:
+                data["cache"]["revenu"] = {"last": None, "suite": []}
+
+            if today != data["cache"]["revenu"]["last"]:
+                if data["cache"]["revenu"]["last"]:
+                    then = datetime.strptime(data["cache"]["revenu"]["last"], "%d/%m/%Y")
                     delta_jour = (datetime.now() - then).days if (datetime.now() - then).days <= 7 else 7
                 else:
                     delta_jour = 1
-                data["PLUS"]["RJ"]["last"] = today
-                if hier not in data["PLUS"]["RJ"]["suite"]:
-                    data["PLUS"]["RJ"]["suite"] = [today]
+                data["cache"]["revenu"]["last"] = today
+
+                if hier not in data["cache"]["revenu"]["suite"]:
+                    data["cache"]["revenu"]["suite"] = [today]
                 else:
-                    if len(data["PLUS"]["RJ"]["suite"]) < 7:
-                        data["PLUS"]["RJ"]["suite"].append(today)
+                    if len(data["cache"]["revenu"]["suite"]) < 7:
+                        data["cache"]["revenu"]["suite"].append(today)
                     else:
-                        data["PLUS"]["RJ"]["suite"] = data["PLUS"]["RJ"]["suite"][1:]
-                        data["PLUS"]["RJ"]["suite"].append(today)
+                        data["cache"]["revenu"]["suite"] = data["cache"]["revenu"]["suite"][1:]
+                        data["cache"]["revenu"]["suite"].append(today)
 
                 rj = base_rj * delta_jour
-                save_txt = " (x{} jours)".format(delta_jour) if delta_jour > 1 else ""
-                bonus_jc = (len(data["PLUS"]["RJ"]["suite"]) - 1) * base_jc
-                if self.pay.get_account(user).solde >= 10000:
-                    bonus_jc = 0
-                    bonus_txt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 10 000)"
+                savetxt = " (x{}j)".format(delta_jour) if delta_jour > 1 else ""
+                bonusjc = (len(data["cache"]["revenu"]["suite"]) - 1) * base_jc
+                if data["solde"] >= 50000:
+                    bonusjc = 0
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 G)"
                 else:
-                    bonus_txt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**{}".format(bonus_jc, money) if \
-                        bonus_jc > 0 else ""
-                self.pay.gain_credits(user, rj + bonus_jc, "Revenus")
-                em = discord.Embed(title="Revenus",
-                                   description="• **Revenu journalier** ─ **{}**{}{}{}".format(
-                                       rj, money, save_txt, bonus_txt),
-                                   color= user.color)
-                em.set_footer(text="Turing Pay | Tu as désormais {} {}".format(self.pay.get_account(user).solde,
-                                                                             self.pay.get_money_name(server, rj)))
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**G".format(bonusjc) if \
+                        bonusjc > 0 else ""
+
+                self.pay.add_credits(user, rj + bonusjc, "Revenus")
+                notif = "• **Aide journalière** ─ **{}**G{}".format(rj, savetxt)
+                notif += bonustxt
+
+                em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
+                em.set_author(name="Revenus", icon_url=user.avatar_url)
+                em.set_footer(text="Solde actuel : {}G".format(data["solde"]), icon_url=goldimg)
                 await self.bot.say(embed=em)
             else:
-                await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui")
+                await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
         else:
-            await self.bot.say("**Refusé** ─ Tu as besoin d'un compte valide pour demander un revenu")
+            await self.bot.say("**Refusé** ─ Un compte Pay est nécessaire afin de percevoir ces aides.")
 
-    @commands.command(aliases=["mas"], pass_context=True)
+    @commands.command(pass_context=True, aliases=["mas"])
     async def slot(self, ctx, offre: int = None):
         """Jouer à la machine à sous
 
-        L'offre doit être comprise entre 10 et 300"""
+        L'offre doit être comprise entre 10 et 500"""
         user = ctx.message.author
         server = ctx.message.server
         if not offre:
@@ -767,15 +689,15 @@ class Pay:
             em = discord.Embed(title="Gains possibles", description=txt)
             await self.bot.say(embed=em)
             return
-        if not 10 <= offre <= 300:
-            await self.bot.say("**Offre invalide** | Elle doit être comprise entre 10 et 300.")
+        if not 10 <= offre <= 500:
+            await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
         base = offre
-        if await self.pay.verify(ctx):
+        if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    self.pay.add_cooldown(user, "slot", 20)
+                    self.pay.new_cooldown(user, "slot", 10)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
                     plus_after = [":zap:", ":gem:", ":cherries:"]
@@ -786,7 +708,7 @@ class Pay:
                         n = random.randint(3, 11)
                         cols.append([roue[n - 1], roue[n], roue[n + 1]])
                     centre = [cols[0][1], cols[1][1], cols[2][1]]
-                    disp = "**Offre:** {}{}\n\n".format(base, self.pay.get_money_name(server, symbole=True))
+                    disp = "**Offre:** {}G\n\n".format(base)
                     disp += "{}|{}|{}\n".format(cols[0][0], cols[1][0], cols[2][0])
                     disp += "{}|{}|{} **<<<**\n".format(cols[0][1], cols[1][1], cols[2][1])
                     disp += "{}|{}|{}\n".format(cols[0][2], cols[1][2], cols[2][2])
@@ -797,7 +719,7 @@ class Pay:
                             gaintxt = "3x ⚡ ─ Tu gagnes {} {}"
                         else:
                             offre = 0
-                            gaintxt = "Tu t'es fait ⚡ ─ Tu perds ta mise !"
+                            gaintxt = "Tu t'es fait zap ⚡ ─ Tu perds ta mise !"
                     elif c("100") == 3:
                         offre *= 100
                         gaintxt = "3x 💯 ─ Tu gagnes {} {}"
@@ -830,9 +752,10 @@ class Pay:
                               "C'est parti", "Bling bling", "Le début de la richesse"]
                     intro = random.choice(intros)
                     if base == 69: intro = "Oh, petit cochon"
-                    if base == 42: intro = "La réponse à la Vie, l'Univers et tout le reste"
+                    if base == 42: intro = "La réponse à la vie, l'univers et tout le reste"
                     if base == 28: intro = "Un nombre parfait pour jouer"
                     if base == 161: intro = "Le nombre d'or pour porter chance"
+                    if base == 420: intro = "420BLAZEIT"
                     msg = None
                     for i in range(3):
                         points = "•" * (i + 1)
@@ -844,164 +767,107 @@ class Pay:
                         await asyncio.sleep(0.6)
                     if offre > 0:
                         gain = offre - base
-                        self.pay.gain_credits(user, gain, "Gain machine à sous")
+                        self.pay.add_credits(user, gain, "Gain à la machine à sous")
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
                                            color=0x49ff6a)
                     else:
-                        self.pay.perte_credits(user, base, "Perte machine à sous")
+                        self.pay.remove_credits(user, base, "Perte à la machine à sous")
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
                                            color=0xff4971)
-                    em.set_footer(text=gaintxt.format(offre, self.pay.get_money_name(server, symbole=True)))
+                    em.set_footer(text=gaintxt.format(offre, "Golds"))
                     await self.bot.delete_message(msg)
                     await self.bot.say(embed=em)
                 else:
-                    await self.bot.say("**Cooldown** ─ Patientez encore {}".format(cool.string))
+                    await self.bot.say("**Cooldown** ─ Slot possible dans {}".format(cool.string))
             else:
                 await self.bot.say("**Solde insuffisant** ─ Réduisez votre offre si possible")
         else:
-            await self.bot.say("**Refusé** ─ Tu as besoin d'un compte *Turing Pay* valide y jouer")
+            await self.bot.say("Un compte Pay est nécessaire pour jouer à la machine à sous.")
 
-    @commands.group(name="modpay", aliases=["modbank", "mb"], pass_context=True)
+
+    @commands.group(name="modpay", aliases=["modbank", "mb"], pass_context=True, no_pm=True)
     @checks.admin_or_permissions(ban_members=True)
     async def _modpay(self, ctx):
-        """Paramètres de Turing Pay"""
+        """Gestion de la banque pay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
     @_modpay.command(pass_context=True)
-    async def migration(self, ctx, source: discord.Member, destinataire: discord.Member):
-        """Migre le compte d'un membre source à un membre destinataire"""
-        if self.pay.get_account(source, ignore_close=True):
-            if self.pay.account_migration(source, destinataire):
-                await self.bot.say("**Migration effectuée** ─ Le compte appartient désormais à {}".format(
-                    destinataire.name))
-            else:
-                await self.bot.say("**Erreur** ─ La migration à échouée")
-        await self.bot.say("**Impossible** ─ Le membre source n'a pas de compte à migrer")
-
-    @_modpay.command(pass_context=True)
-    async def monnaie(self, ctx, *champs):
-        """Changer le nom de la monnaie et son symbole
-
-        Format: singuler/pluriel/symbole
-        Ex: crédit/crédits/cdts"""
-        champs = " ".join(champs)
-        server = ctx.message.server
-        data = self.pay.get_server_sys(server, True)
-        if "/" in champs:
-            splitted = champs.split("/")
-            if len(splitted) == 3:
-                data["MONNAIE"]["SINGULIER"] = splitted[0]
-                data["MONNAIE"]["PLURIEL"] = splitted[1]
-                data["MONNAIE"]["SYMBOLE"] = splitted[2]
-                self.pay.forcesave()
-                txt = "• Singulier: {}\n" \
-                      "• Pluriel: {}\n" \
-                      "• Symbole: {}".format(splitted[0], splitted[1], splitted[2])
-                em = discord.Embed(title="Changement de monnaie", description=txt)
-                em.set_footer(text="La monnaie sur ce serveur à été changée avec succès !")
-                await self.bot.say(embed=em)
-            else:
-                await self.bot.say("**Aide pour le format** ─ *singulier*/*pluriel*/*symbole*")
-        else:
-            await self.bot.say("**Aide pour le format** ─ *singulier*/*pluriel*/*symbole*")
-
-    @_modpay.command(pass_context=True)
     async def forcenew(self, ctx, user: discord.Member):
-        """Ouvre de force un compte Turing Pay à un membre"""
-        if not self.pay.get_account(user, ignore_close=True):
-            self.pay.new_account(user)
+        """Force l'ouverture du compte d'un membre"""
+        if not self.pay.get_account(user):
+            self.pay.create_account(user)
             await self.bot.say("**Succès** ─ Le compte bancaire de {} à été créé".format(user.mention))
         else:
             await self.bot.say("**Erreur** ─ Ce membre possède déjà un compte bancaire")
 
     @_modpay.command(pass_context=True)
-    async def deleteuser(self, ctx, user: discord.Member):
+    async def delete(self, ctx, user: discord.Member):
         """Supprime le compte bancaire d'un membre"""
-        if self.pay.get_account(user, ignore_close=True):
-            self.pay.reset_user_data(user)
+        if self.pay.get_account(user):
+            self.pay.reset_user(user)
             await self.bot.say("**Succès** ─ Le compte du membre a été effacé")
         else:
             await self.bot.say("**Erreur** ─ Le membre ne possède pas de compte bancaire")
 
-    @_modpay.command(pass_context=True)
-    async def resetserveur(self, ctx):
+    @_modpay.command(pass_context=True, hidden=True)
+    async def resetall(self, ctx):
         """Reset les données du serveur, y compris la monnaie et les comptes bancaires des membres"""
-        self.pay.reset_all_data(ctx.message.server)
+        self.pay.reset_all(ctx.message.server)
         await self.bot.say("**Succès** ─ Toutes les données du serveur ont été reset")
 
     @_modpay.command(pass_context=True)
-    @checks.admin_or_permissions(administrator=True)
-    async def block(self, ctx, user: discord.Member):
-        """Bloque le compte d'un membre"""
-        data = self.pay.get_account(user, ignore_close=True)
-        if data.open:
-            self.pay.get_account(user, True, ignore_close=True)["OPEN"] = False
-            await self.bot.say("**Compte fermé** ─ Ce membre ne pourra plus utiliser son compte")
-        else:
-            self.pay.get_account(user, True, ignore_close=True)["OPEN"] = True
-            await self.bot.say("**Compte rouvert** ─ Ce membre peut de nouveau utiliser son compte")
-        self.pay.forcesave()
-
-    @_modpay.command(pass_context=True)
-    @checks.admin_or_permissions(administrator=True)
     async def grant(self, ctx, user: discord.Member, somme: int, *raison):
-        """Donne de l'argent à un membre"""
+        """Ajoute des crédits au compte d'un membre"""
         server = ctx.message.server
-        raison = "Ajout par administrateur" if not raison else " ".join(raison)
+        raison = "Ajout par modération" if not raison else " ".join(raison)
         if somme > 0:
-            if self.pay.get_account(user, ignore_close=True):
-                self.pay.gain_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}{} ont été donnés au membre".format(somme, self.pay.get_money_name(
-                    server, symbole=True)))
+            if self.pay.get_account(user):
+                self.pay.add_credits(user, somme, raison)
+                await self.bot.say("**Succès** ─ {}G ont été donnés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
             await self.bot.say("**Erreur** ─ La somme doit être positive")
 
     @_modpay.command(pass_context=True)
-    @checks.admin_or_permissions(administrator=True)
     async def take(self, ctx, user: discord.Member, somme: int, *raison):
-        """Retire de l'argent à un membre"""
+        """Retire des crédits à un membre"""
         server = ctx.message.server
-        raison = "Retrait par administrateur" if not raison else " ".join(raison)
+        raison = "Retrait par modérateur" if not raison else " ".join(raison)
         if somme > 0:
-            if self.pay.get_account(user, ignore_close=True):
+            if self.pay.get_account(user):
                 if not self.pay.enough_credits(user, somme):
-                    somme = self.pay.get_account(user, ignore_close=True).solde
-                self.pay.perte_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}{} ont été retirés au membre".format(somme, self.pay.get_money_name(
-                    server, symbole=True)))
+                    somme = self.pay.get_account(user, True).solde
+                self.pay.remove_credits(user, somme, raison)
+                await self.bot.say("**Succès** ─ {}G ont été retirés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
             await self.bot.say("**Erreur** ─ La somme doit être positive")
 
     @_modpay.command(pass_context=True)
-    @checks.admin_or_permissions(administrator=True)
     async def set(self, ctx, user: discord.Member, somme: int, *raison):
         """Modifie le solde d'un membre"""
         server = ctx.message.server
-        raison = "Changement par administrateur" if not raison else " ".join(raison)
+        raison = "Modification par modération" if not raison else " ".join(raison)
         if somme >= 0:
-            if self.pay.get_account(user, ignore_close=True):
+            if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ Le membre possède désormais {} {}".format(
-                    somme, self.pay.get_money_name(server, self.pay.get_account(user, ignore_close=True).solde)))
+                await self.bot.say("**Succès** ─ Le membre possède désormais {}G".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
             await self.bot.say("**Erreur** ─ La somme doit être positive ou nulle")
 
-    @_modpay.command(pass_context=True, hidden=True)
-    async def backupcapital(self, ctx):
-        """Permet de backup les données du module Capital pour ce serveur"""
-        server = ctx.message.server
-        if self.pay.backup_capitalAPI(server):
-            await self.bot.say("**Succès** | Les données de Capital ont été importées et traitées")
-        else:
-            await self.bot.say("**Erreur** | Les données de Capital n'ont pas été importées")
-
+    @_modpay.command(name="import", pass_context=True, hidden=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def user_import(self, ctx, user: discord.Member, base_solde: int):
+        if not self.pay.get_account(user):
+            self.pay.create_account(user)
+        solde = (base_solde + 500) * 1.5
+        self.pay.set_credits(user, int(solde), "Importation du compte v2")
+        await self.bot.say("**Importé** ─ Le solde de {} a été rétabli".format(user.name))
 
 def check_folders():
     if not os.path.exists("data/pay"):
