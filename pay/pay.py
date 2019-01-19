@@ -175,7 +175,7 @@ class PayAPI:
                                                "donc aucune réelle valeur.\n"
                                                "A la création du compte, aucune information ne sera demandée.")
                 em.set_footer(text="Veux-tu ouvrir un compte ?")
-                info = await self.bot.edit_message(embed=em)
+                info = await self.bot.edit_message(msg, embed=em)
                 await self.bot.add_reaction(info, "✔")
                 await self.bot.add_reaction(info, "✖")
                 await asyncio.sleep(0.1)
