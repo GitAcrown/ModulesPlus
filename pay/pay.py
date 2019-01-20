@@ -275,7 +275,7 @@ class PayAPI:
         data = self.get_account(user, True)
         if data and nb >= 1:
             logs = data.logs[::-1]
-            return logs[-nb:]
+            return logs[:nb]
         return False
 
     def daily_trs_from(self, user: discord.Member, jour: str = None):
@@ -512,7 +512,7 @@ class Pay:
                         ts = "À l'instant"
                     else:
                         ts = t.timestamp.heure
-                txt += "• `{}` | {} ─ **{}** · *{}*\n".format(t.id, ts, t.somme, t.raison)
+                txt += "`{}` | {} ─ **{}** · *{}*\n".format(t.id, ts, t.somme, t.raison)
                 if len(txt) > 1980 * page:
                     em = discord.Embed(title="Logs du compte de {}".format(user.name), description=txt,
                                        color=user.color, timestamp=ctx.message.timestamp)
