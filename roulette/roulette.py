@@ -1,5 +1,3 @@
-#  Roulette.py was created by Redjumpman for Redbot
-#  This will create a rrgame.JSON file and a data folder
 import asyncio
 import os
 import random
@@ -87,13 +85,13 @@ class Russianroulette:
             msg = "**Erreur** ─ La valeur doit être supérieure à 0"
         await self.bot.say(msg)
 
-    @setroulette.command(name="paycheck", pass_context=True)
+    @setroulette.command(name="payping", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _pay_verify(self, ctx):
         """Vérifie que le système Turing Pay est connecté"""
         pay = self.bot.get_cog("Pay").pay
         try:
-            pay.api_pong()
+            pay.pong()
         except:
             await self.bot.say("**Erreur** ─ L'API Pay ne répond pas")
             return
@@ -118,7 +116,7 @@ class Russianroulette:
         server = ctx.message.server
         settings = self.check_server_settings(server)
         pay = self.bot.get_cog("Pay").pay
-        if await pay.verify(ctx):
+        if await pay.account_dial(user):
             if await self.logic_checks(settings, user, bet):
                 if settings["System"]["Roulette Initial"]:
                     if user.id in settings["Players"]:
@@ -126,22 +124,19 @@ class Russianroulette:
                     elif len(settings["Players"].keys()) >= 6:
                         msg = "**Maximum** | Le nombre maximal de joueurs est de 6"
                     else:
-                        if bet == settings["System"]["Start Bet"]:
+                        if bet >= settings["System"]["Start Bet"]:
                             self.player_add(settings, user, bet)
                             self.subtract_credits(settings, user, bet)
                             msg = "**{}** ─ A rejoint la partie".format(user.name)
                         else:
                             start_bet = settings["System"]["Start Bet"]
-                            money = pay.get_money(server, start_bet)
-                            msg = "**Offre** | L'offre doit être égale à **{} {}**".format(start_bet, money)
+                            msg = "**Offre** | L'offre doit être supérieure ou égale à **{}**G".format(start_bet)
                     await self.bot.say(msg)
                 else:
                     self.initial_set(settings, bet)
                     self.player_add(settings, user, bet)
                     self.subtract_credits(settings, user, bet)
-                    money = pay.get_money(server, bet)
-                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{} {}**.".format(user.mention, bet,
-                                                                                                        money)
+                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{}**G.".format(user.mention, bet)
                     em = discord.Embed(title="Roulette russe", description=txt, color=0x6b554e)
                     em.set_footer(text="Le jeu commence dans 45 secondes ou si 5 autres joueurs y participe. "
                                        "({}rr <offre>)".format(ctx.prefix))
@@ -162,7 +157,7 @@ class Russianroulette:
                         player = list(settings["Players"].keys())[0]
                         mobj = server.get_member(player)
                         initial_bet = settings["Players"][player]["Bet"]
-                        pay.depot_credits(mobj, initial_bet, "Remboursement partie vide (Roulette)")
+                        pay.add_credits(mobj, initial_bet, "Remboursement roulette (partie vide)")
                         self.reset_game(settings)
                     else:
                         settings["System"]["Active"] = True
@@ -190,7 +185,7 @@ class Russianroulette:
                         await self.roulette_game(settings, server)
                         self.reset_game(settings)
         else:
-            await self.bot.say("**Impossible** ─ Il te faut un comptre *Pay* valide pour y jouer.")
+            await self.bot.say("**Impossible** ─ Il te faut un compte *Pay* valide pour y jouer.")
 
     async def logic_checks(self, settings, user, bet):
         if settings["System"]["Active"]:
@@ -225,10 +220,10 @@ class Russianroulette:
                 txt = "Bravo {}, tu es la dernière personne en vie.\n" \
                       "Tu gagnes **{} {}**.".format(winner.mention, pot, pay.get_money_name(server, pot))
                 em = discord.Embed(title="Roulette russe ─ Gagnant", description=txt, color=0x6b554e)
-                em.set_footer(text="{} {} ont été déposés sur le compte de {}".format(
-                    pot, pay.get_money(server, pot), winner.name))
+                em.set_footer(text="{}G ont été déposés sur le compte de {}".format(
+                    pot, winner.name))
                 await self.bot.say(embed=em)
-                pay.gain_credits(winner, pot, "Gain Roulette")
+                pay.add_credits(winner, pot, "Gain Roulette")
                 break
 
     async def roulette_round(self, settings, server, players, turn):
@@ -290,17 +285,11 @@ class Russianroulette:
 
     def subtract_credits(self, settings, user, bet):
         pay = self.bot.get_cog("Pay").pay
-        pay.perte_credits(user, bet, "Offre Roulette")
+        pay.remove_credits(user, bet, "Offre partie de Roulette")
 
     def enough_credits(self, user, amount):
         pay = self.bot.get_cog("Pay").pay
-        if pay.get_account(user):
-            if pay.enough_credits(user, amount):
-                return True
-            else:
-                return False
-        else:
-            return False
+        return pay.enough_credits(user, amount)
 
     def check_server_settings(self, server):
         if server.id not in self.system["Servers"]:

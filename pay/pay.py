@@ -40,6 +40,10 @@ class PayAPI:
             fileIO("data/pay/data.json", "save", self.data)
             self.meta["last_save"] = time.time()
 
+    def pong(self):
+        """Envoie un PONG permettant de vérifier si l'API est connectée à un autre module"""
+        return datetime.now()
+
     def ttd(self, timestamp: float):  # Ex: Transforme 1547147012 en 2019, 1, 10, 20, 3, 44
         """Convertisseur timestamp-to-date"""
         UniTimestamp = namedtuple('UniTimestamp', ["brut", "heure", "jour", "float"])
@@ -178,7 +182,7 @@ class PayAPI:
                                                "donc aucune réelle valeur.\n"
                                                "A la création du compte, aucune information ne sera demandée.")
                 em.set_footer(text="Veux-tu ouvrir un compte ?")
-                msg = await self.bot.edit_message(msg, embed=em)
+                info = await self.bot.edit_message(msg, embed=em)
                 await self.bot.add_reaction(info, "✔")
                 await self.bot.add_reaction(info, "✖")
                 await asyncio.sleep(0.1)
