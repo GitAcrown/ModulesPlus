@@ -150,7 +150,7 @@ class PayAPI:
                     description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
                         user.mention), color=palette["dark"])
                 await self.bot.edit_message(msg, embed=em)
-                await asyncio.sleep(8)
+                await asyncio.sleep(5)
                 await self.bot.delete_message(msg)
                 return False
             elif rep.reaction.emoji == "✔":
@@ -161,8 +161,6 @@ class PayAPI:
                                     "fonctionnalités économiques.".format(
                             user.mention), color=palette["lighter"])
                     await self.bot.edit_message(msg, embed=em)
-                    await asyncio.sleep(8)
-                    await self.bot.delete_message(msg)
                     return True
                 else:
                     em = discord.Embed(
@@ -170,7 +168,7 @@ class PayAPI:
                                     "Réessayez plus tard avec `.pay new`".format(
                             user.mention), color=palette["warning"])
                     await self.bot.edit_message(msg, embed=em)
-                    await asyncio.sleep(8)
+                    await asyncio.sleep(5)
                     await self.bot.delete_message(msg)
                     return False
             elif rep.reaction.emoji == "❔":
@@ -205,8 +203,6 @@ class PayAPI:
                                         "fonctionnalités économiques.".format(
                                 user.mention), color=palette["lighter"])
                         await self.bot.edit_message(msg, embed=em)
-                        await asyncio.sleep(8)
-                        await self.bot.delete_message(msg)
                         return True
             await self.bot.say("**Erreur** ─ Je n'ai pas compris ...")
             return False

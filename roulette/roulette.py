@@ -120,17 +120,17 @@ class Russianroulette:
             if await self.logic_checks(settings, user, bet):
                 if settings["System"]["Roulette Initial"]:
                     if user.id in settings["Players"]:
-                        msg = "**Déjà présent·e** | Tu es déjà dans la partie"
+                        msg = "**Déjà présent·e** ─ Tu es déjà dans la partie"
                     elif len(settings["Players"].keys()) >= 6:
-                        msg = "**Maximum** | Le nombre maximal de joueurs est de 6"
+                        msg = "**Maximum** ─ Le nombre maximal de joueurs est de 6"
                     else:
                         if bet >= settings["System"]["Start Bet"]:
                             self.player_add(settings, user, bet)
                             self.subtract_credits(settings, user, bet)
-                            msg = "**{}** ─ A rejoint la partie".format(user.name)
+                            msg = "─ **{}** a rejoint la partie".format(user.name)
                         else:
                             start_bet = settings["System"]["Start Bet"]
-                            msg = "**Offre** | L'offre doit être supérieure ou égale à **{}**G".format(start_bet)
+                            msg = "**Offre** ─ L'offre doit être supérieure ou égale à **{}**G".format(start_bet)
                     await self.bot.say(msg)
                 else:
                     self.initial_set(settings, bet)
@@ -153,7 +153,7 @@ class Russianroulette:
                                    "pas participer vu que vous êtes seul·e.",
                                    "Dommage que vous soyez seul·e, plus on est de fous plus on rit.",
                                    "J'étais pret mais apparemment vous êtes seul·e... inutile."]
-                        await self.bot.say("**Seul·e...** | {}".format(random.choice(seultxt)))
+                        await self.bot.say("**Seul·e...** ─ {}".format(random.choice(seultxt)))
                         player = list(settings["Players"].keys())[0]
                         mobj = server.get_member(player)
                         initial_bet = settings["Players"][player]["Bet"]
@@ -189,17 +189,17 @@ class Russianroulette:
 
     async def logic_checks(self, settings, user, bet):
         if settings["System"]["Active"]:
-            await self.bot.say("**En cours** | Attendez que la partie se termine avant d'en démarrer une autre.")
+            await self.bot.say("**En cours** ─ Attendez que la partie se termine avant d'en démarrer une autre.")
             return False
         elif bet < settings["System"]["Min Bet"]:
             min_bet = settings["System"]["Min Bet"]
-            await self.bot.say("**Offre** | Votre offre doit être supérieure ou égale à {}.".format(min_bet))
+            await self.bot.say("**Offre** ─ Votre offre doit être supérieure ou égale à {}.".format(min_bet))
             return False
         elif len(settings["Players"].keys()) >= 6:
-            await self.bot.say("**Maximum de joueurs** | Trop de joueurs jouent actuellement.")
+            await self.bot.say("**Maximum de joueurs** ─ Trop de joueurs jouent actuellement.")
             return False
         elif not self.enough_credits(user, bet):
-            await self.bot.say("**Banque** | Vous n'avez pas assez de crédit ou vous n'avez pas de compte.")
+            await self.bot.say("**Banque** ─ Vous n'avez pas assez de crédit ou vous n'avez pas de compte.")
             return False
         else:
             return True
@@ -218,7 +218,7 @@ class Russianroulette:
                 pay = self.bot.get_cog("Pay").pay
                 winner = players[0]
                 txt = "Bravo {}, tu es la dernière personne en vie.\n" \
-                      "Tu gagnes **{} {}**.".format(winner.mention, pot, pay.get_money_name(server, pot))
+                      "Tu gagnes **{}**G.".format(winner.mention, pot)
                 em = discord.Embed(title="Roulette russe ─ Gagnant", description=txt, color=0x6b554e)
                 em.set_footer(text="{}G ont été déposés sur le compte de {}".format(
                     pot, winner.name))
