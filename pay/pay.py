@@ -562,25 +562,29 @@ class Pay:
         """Donner de l'argent à un autre membre"""
         server = ctx.message.server
         user = receveur
+        dj = int((datetime.now() - ctx.message.author.created_at).days)
         raison = " ".join(raison) if raison else "Don de {} pour {}".format(ctx.message.author.name, user.name)
         if somme > 0:
             if self.pay.get_account(user):
                 if await self.pay.account_dial(ctx.message.author):
                     if self.pay.enough_credits(ctx.message.author, somme):
-                        cool = self.pay.get_cooldown(ctx.message.author, "give")
-                        if not cool:
-                            solde_before = self.pay.get_account(ctx.message.author, True).solde
-                            if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
-                                prc = (somme / solde_before) * 100
-                                ctime = 180 + (60 * round(prc))/2
-                                cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
-                                em.set_footer(text="Prochain don possible dans {}".format(cool.string))
-                                await self.bot.say(embed=em)
+                        if dj > 7:
+                            cool = self.pay.get_cooldown(ctx.message.author, "give")
+                            if not cool:
+                                solde_before = self.pay.get_account(ctx.message.author, True).solde
+                                if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
+                                    prc = (somme / solde_before) * 100
+                                    ctime = 180 + (60 * round(prc))/2
+                                    cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
+                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                    em.set_footer(text="Prochain don possible dans {}".format(cool.string))
+                                    await self.bot.say(embed=em)
+                                else:
+                                    await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
                             else:
-                                await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
+                                await self.bot.say("**Cooldown** ─ Don possible dans `{}`".format(cool.string)) # MDR COOLSTRING
                         else:
-                            await self.bot.say("**Cooldown** ─ Don possible dans `{}`".format(cool.string)) # MDR COOLSTRING
+                            await self.bot.say("**Interdit** ─ Votre compte est trop récent.")
                     else:
                         await self.bot.say("**Crédits insuffisants** ─ ***{}*** vous n'avez pas cette somme, "
                                            "soyez raisonnable.".format(ctx.message.author.name))
