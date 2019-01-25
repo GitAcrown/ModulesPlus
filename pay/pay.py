@@ -430,7 +430,7 @@ class PayAPI:
             self.meta["script"][user.id]["last_diffs"] = []
 
         if self.meta["script"][user.id]["last"]:
-            diff = now - self.meta["script"][user.id]["logs"]
+            diff = now - self.meta["script"][user.id]["last"]
             self.meta["script"][user.id]["last_diffs"].append(diff)
             self.meta["script"][user.id]["last"] = now
             if len(self.meta["script"][user.id]["last_diffs"]) > tol:
