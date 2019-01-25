@@ -433,10 +433,11 @@ class PayAPI:
             diff = now - self.meta["script"][user.id]["last"]
             self.meta["script"][user.id]["last_diffs"].append(diff)
             self.meta["script"][user.id]["last"] = now
-            if len(self.meta["script"][user.id]["last_diffs"]) > tol:
+            if len(self.meta["script"][user.id]["last_diffs"]) >= tol:
                 moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
                 minval = min(self.meta["script"][user.id]["last_diffs"])
                 maxval = max(self.meta["script"][user.id]["last_diffs"])
+                self.meta["script"][user.id]["last_diffs"] = self.meta["script"][user.id]["last_diffs"][-1]
                 if (now - self.meta["script"][user.id]["bot_test"]) > 1800:
                     if moy - minval < 1:
                         if maxval - moy < 1:
@@ -487,6 +488,7 @@ class PayAPI:
                                 return True
                 else:
                     return self.meta["script"][user.id]["is_script"]
+
         else:
             self.meta["script"][user.id]["last"] = now
         return False
