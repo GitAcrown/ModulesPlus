@@ -726,7 +726,7 @@ class Pay:
         cooldown = 10
         clogs = self.get_command_logs(user, "slot")
         if len(clogs) > 5:
-            cooldown += 2 * clogs
+            cooldown += 2 * len(clogs)
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
