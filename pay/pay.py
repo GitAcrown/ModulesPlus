@@ -434,6 +434,7 @@ class PayAPI:
             self.meta["script"][user.id]["last_diffs"].append(diff)
             self.meta["script"][user.id]["last"] = now
             if len(self.meta["script"][user.id]["last_diffs"]) > tol:
+                print("PAY - Soupçon de script")
                 moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
                 minval = min(self.meta["script"][user.id]["last_diffs"])
                 maxval = max(self.meta["script"][user.id]["last_diffs"])
@@ -793,7 +794,7 @@ class Pay:
         cooldown = 10
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
-                if await self.pay.script_detect(user, "slot"):
+                if await self.pay.script_detect(user, "slot", 3):
                     cooldown *= 6
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
