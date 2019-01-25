@@ -795,10 +795,10 @@ class Pay:
         cooldown = 10
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
-                if await self.pay.script_detect(user, "slot", 3):
-                    cooldown *= 6
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
+                    if await self.pay.script_detect(user, "slot", 3):
+                        cooldown *= 6
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
