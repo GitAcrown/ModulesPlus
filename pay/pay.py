@@ -799,15 +799,13 @@ class Pay:
         if not 10 <= offre <= 500:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
-        if self.pay.script_detect(user, "slot") == "WAIT":
-            return
         base = offre
         cooldown = 10
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    if await self.pay.script_detect(user, "slot", 7):
+                    if await self.pay.script_detect(user, "slot", 5):
                         cooldown *= 6
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
