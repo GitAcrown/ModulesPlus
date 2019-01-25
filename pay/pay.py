@@ -443,7 +443,7 @@ class PayAPI:
                             self.meta["script"][user.id]["bot_test"] = time.time()
                             result = ""
                             msg = None
-                            typecaptcha = random.choice["maths", "copy"]
+                            typecaptcha = random.choice(["maths", "copy"])
                             if typecaptcha == "maths":
                                 typemaths = random.choice["addition", "multiplication"]
                                 if typemaths == "addition":
