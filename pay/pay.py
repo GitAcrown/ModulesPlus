@@ -474,23 +474,25 @@ class PayAPI:
                             rep = await self.bot.wait_for_message(channel=msg.channel,
                                                                   author=user,
                                                                   timeout=30)
-                            self.meta["script"][user.id]["wait_for_test"] = False
                             if rep is None:
                                 await self.bot.delete_message(msg)
                                 await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
                                                    "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
                                 self.meta["script"][user.id]["is_script"] = True
+                                self.meta["script"][user.id]["wait_for_test"] = False
                                 return True
                             elif result in rep.content:
                                 await self.bot.add_reaction(rep, "✅")
                                 await self.bot.delete_message(msg)
                                 self.meta["script"][user.id]["is_script"] = False
+                                self.meta["script"][user.id]["wait_for_test"] = False
                                 return False
                             else:
                                 await self.bot.delete_message(msg)
                                 await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
                                                    "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
                                 self.meta["script"][user.id]["is_script"] = True
+                                self.meta["script"][user.id]["wait_for_test"] = False
                                 return True
                 else:
                     return self.meta["script"][user.id]["is_script"]
@@ -797,7 +799,7 @@ class Pay:
         if not 10 <= offre <= 500:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
-        if self.pay.script_detect(user, "slot") is "WAIT":
+        if self.pay.script_detect(user, "slot") == "WAIT":
             return
         base = offre
         cooldown = 10
