@@ -448,8 +448,11 @@ class Pay:
         if user.id not in self.logs:
             self.logs[user.id] = []
         if id:
-            if id == self.logs[user.id][-1]:
-                self.logs[user.id].append(id)
+            if self.logs[user.id]:
+                if id == self.logs[user.id][-1]:
+                    self.logs[user.id].append(id)
+                else:
+                    self.logs[user.id] = [id]
             else:
                 self.logs[user.id] = [id]
         return self.logs[user.id]
