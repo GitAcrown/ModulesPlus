@@ -418,7 +418,11 @@ class PayAPI:
                                             "last": None,
                                             "last_diffs": [],
                                             "bot_test": 0,
-                                            "is_script": False}
+                                            "is_script": False,
+                                            "wait_for_test": False}
+
+        if self.meta["script"][user.id]["wait_for_test"]:
+            return "WAIT"
         if self.meta["script"][user.id]["logs"]:
             if id == self.meta["script"][user.id]["logs"][-1]:
                 self.meta["script"][user.id]["logs"].append(id)
@@ -444,6 +448,7 @@ class PayAPI:
                             self.meta["script"][user.id]["bot_test"] = time.time()
                             result = ""
                             msg = None
+                            self.meta["script"][user.id]["wait_for_test"] = True
                             typecaptcha = random.choice(["maths", "copy"])
                             if typecaptcha == "maths":
                                 typemaths = random.choice(["addition", "multiplication"])
@@ -469,6 +474,7 @@ class PayAPI:
                             rep = await self.bot.wait_for_message(channel=msg.channel,
                                                                   author=user,
                                                                   timeout=30)
+                            self.meta["script"][user.id]["wait_for_test"] = False
                             if rep is None:
                                 await self.bot.delete_message(msg)
                                 await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
@@ -790,6 +796,8 @@ class Pay:
             return
         if not 10 <= offre <= 500:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
+            return
+        if self.pay.script_detect(user, "slot") is "WAIT":
             return
         base = offre
         cooldown = 10
