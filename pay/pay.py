@@ -417,7 +417,7 @@ class PayAPI:
             self.meta["script"][user.id] = {"logs": [],
                                             "last": None,
                                             "last_diffs": [],
-                                            "bot_test": now,
+                                            "bot_test": 0,
                                             "is_script": False}
         if self.meta["script"][user.id]["logs"]:
             if id == self.meta["script"][user.id]["logs"][-1]:
@@ -434,7 +434,6 @@ class PayAPI:
             self.meta["script"][user.id]["last_diffs"].append(diff)
             self.meta["script"][user.id]["last"] = now
             if len(self.meta["script"][user.id]["last_diffs"]) > tol:
-                print("PAY - Soupçon de script")
                 moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
                 minval = min(self.meta["script"][user.id]["last_diffs"])
                 maxval = max(self.meta["script"][user.id]["last_diffs"])
