@@ -448,11 +448,11 @@ class PayAPI:
                                 typemaths = random.choice["addition", "multiplication"]
                                 if typemaths == "addition":
                                     n1, n2 = random.randint(1, 100), random.randint(1, 100)
-                                    result = n1 + n2
+                                    result = str(n1 + n2)
                                     txt = "Combien font **{}+{}** ?".format(n1, n2)
                                 if typemaths == "multiplication":
                                     n1, n2 = random.randint(1, 10), random.randint(1, 10)
-                                    result = n1 * n2
+                                    result = str(n1 * n2)
                                     txt = "Combien font **{}+{}** ?".format(n1, n2)
                                 em = discord.Embed(color=palette["warning"], description=txt)
                                 em.set_author(name="Êtes-vous humain ? · Résolvez ce calcul", icon_url=user.avatar_url)
@@ -474,7 +474,7 @@ class PayAPI:
                                                    "Certaines fonctionnalités seront adaptées en conséquence.")
                                 self.meta["script"][user.id]["is_script"] = True
                                 return True
-                            elif int(result) in rep.content:
+                            elif result in rep.content:
                                 await self.bot.add_reaction(rep, "✅")
                                 await self.bot.delete_message(msg)
                                 self.meta["script"][user.id]["is_script"] = False
