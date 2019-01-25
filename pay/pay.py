@@ -793,8 +793,8 @@ class Pay:
         cooldown = 10
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
-                if self.pay.script_detect(user, "slot"):
-                    print("SCRIPT")
+                if await self.pay.script_detect(user, "slot"):
+                    cooldown *= 6
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
                     self.pay.new_cooldown(user, "slot", cooldown)
