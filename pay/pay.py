@@ -794,7 +794,7 @@ class Pay:
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 if self.pay.script_detect(user, "slot"):
-                    cooldown *= 6
+                    print("SCRIPT")
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
                     self.pay.new_cooldown(user, "slot", cooldown)
