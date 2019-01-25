@@ -410,7 +410,6 @@ class PayAPI:
                 return False
         return False
 
-
     def reset_user(self, user: discord.Member):
         """Reset les données d'un membre"""
         server = user.server
@@ -570,8 +569,11 @@ class Pay:
                     if self.pay.enough_credits(ctx.message.author, somme):
                         cool = self.pay.get_cooldown(ctx.message.author, "give")
                         if not cool:
+                            solde_before = self.pay.get_account(ctx.message.author, True).solde
                             if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
-                                self.pay.new_cooldown(ctx.message.author, "give", 1800)
+                                prc = (somme / solde_before) * 100
+                                ctime = 120 + (60 * round(prc))
+                                self.pay.new_cooldown(ctx.message.author, "give", ctime)
                                 await self.bot.say("**Transfert réalisé** ─ **{}**G ont été donnés à *{}*".format(somme, user.name))
                             else:
                                 await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
