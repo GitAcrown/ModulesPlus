@@ -572,7 +572,7 @@ class Pay:
                             solde_before = self.pay.get_account(ctx.message.author, True).solde
                             if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
                                 prc = (somme / solde_before) * 100
-                                ctime = 120 + (60 * round(prc))
+                                ctime = 180 + (60 * round(prc))/2
                                 cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
                                 em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                 em.set_footer(text="Prochain don possible dans {}".format(cool.string))
