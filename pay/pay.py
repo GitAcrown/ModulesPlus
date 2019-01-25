@@ -390,7 +390,7 @@ class PayAPI:
                 self.cooldown[server.id][id.lower()][user.id] = fin
         else:
             self.cooldown[server.id][id.lower()] = {user.id : fin}
-        return self.cooldown[server.id][id.lower()][user.id]
+        return self.get_cooldown(user, id)
 
     def get_cooldown(self, user: discord.Member, id: str):
         """Renvoie le cooldown du membre s'il y en a un"""
@@ -573,8 +573,10 @@ class Pay:
                             if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
                                 prc = (somme / solde_before) * 100
                                 ctime = 120 + (60 * round(prc))
-                                self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                await self.bot.say("**Transfert réalisé** ─ **{}**G ont été donnés à *{}*".format(somme, user.name))
+                                cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
+                                em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                em.set_footer(text="Prochain don possible dans {}".format(cool.string))
+                                await self.bot.say(embed=em)
                             else:
                                 await self.bot.say("**Erreur** ─ La transaction n'a pas été réalisée correctement")
                         else:
