@@ -30,7 +30,7 @@ class PayAPI:
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.meta = {"last_save": 0}
+        self.meta = {"last_save": 0, "script": {}}
         self.cooldown = {}
 
     def save(self, force: bool = False):
@@ -410,6 +410,87 @@ class PayAPI:
                 return False
         return False
 
+    async def script_detect(self, user: discord.Member, id: str, tol: int = 5):
+        """Détecte un script et agit en conséquence"""
+        now = time.time()
+        if user.id not in self.meta["script"]:
+            self.meta["script"][user.id] = {"logs": [],
+                                            "last": None,
+                                            "last_diffs": [],
+                                            "bot_test": now,
+                                            "is_script": False}
+        if self.meta["script"][user.id]["logs"]:
+            if id == self.meta["script"][user.id]["logs"][-1]:
+                self.meta["script"][user.id]["logs"].append(id)
+            else:
+                self.meta["script"][user.id]["logs"] = [id]
+                self.meta["script"][user.id]["last_diffs"] = []
+        else:
+            self.meta["script"][user.id]["logs"] = [id]
+            self.meta["script"][user.id]["last_diffs"] = []
+
+        if self.meta["script"][user.id]["last"]:
+            diff = now - self.meta["script"][user.id]["logs"]
+            self.meta["script"][user.id]["last_diffs"].append(diff)
+            self.meta["script"][user.id]["last"] = now
+            if len(self.meta["script"][user.id]["last_diffs"]) > tol:
+                moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
+                minval = min(self.meta["script"][user.id]["last_diffs"])
+                maxval = max(self.meta["script"][user.id]["last_diffs"])
+                if (now - self.meta["script"][user.id]["bot_test"]) > 1800:
+                    if moy - minval < 1:
+                        if maxval - moy < 1:
+                            self.meta["script"][user.id]["bot_test"] = time.time()
+                            result = ""
+                            msg = None
+                            typecaptcha = random.choice["maths", "copy"]
+                            if typecaptcha == "maths":
+                                typemaths = random.choice["addition", "multiplication"]
+                                if typemaths == "addition":
+                                    n1, n2 = random.randint(1, 100), random.randint(1, 100)
+                                    result = n1 + n2
+                                    txt = "Combien font **{}+{}** ?".format(n1, n2)
+                                if typemaths == "multiplication":
+                                    n1, n2 = random.randint(1, 10), random.randint(1, 10)
+                                    result = n1 * n2
+                                    txt = "Combien font **{}+{}** ?".format(n1, n2)
+                                em = discord.Embed(color=palette["warning"], description=txt)
+                                em.set_author(name="Êtes-vous humain ? · Résolvez ce calcul", icon_url=user.avatar_url)
+                                msg = await self.bot.say(embed=em)
+                            elif typecaptcha == "copy":
+                                result =  str(''.join(random.SystemRandom().choice(
+                                    string.ascii_letters + string.digits) for _ in range(6)))
+                                txt = "Recopiez `{}`".format(result)
+                                em = discord.Embed(color=palette["warning"], description=txt)
+                                em.set_author(name="Êtes-vous humain ? · Recopiez ce texte", icon_url=user.avatar_url)
+                                msg = await self.bot.say(embed=em)
+
+                            rep = await self.bot.wait_for_message(channel=msg.channel,
+                                                                  author=user,
+                                                                  timeout=30)
+                            if rep is None:
+                                await self.bot.delete_message(msg)
+                                await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
+                                                   "Certaines fonctionnalités seront adaptées en conséquence.")
+                                self.meta["script"][user.id]["is_script"] = True
+                                return True
+                            elif int(result) in rep.content:
+                                await self.bot.add_reaction(rep, "✅")
+                                await self.bot.delete_message(msg)
+                                self.meta["script"][user.id]["is_script"] = False
+                                return False
+                            else:
+                                await self.bot.delete_message(msg)
+                                await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
+                                                   "Certaines fonctionnalités seront adaptées en conséquence.")
+                                self.meta["script"][user.id]["is_script"] = True
+                                return True
+                else:
+                    return self.meta["script"][user.id]["is_script"]
+        else:
+            self.meta["script"][user.id]["last"] = now
+        return False
+
     def reset_user(self, user: discord.Member):
         """Reset les données d'un membre"""
         server = user.server
@@ -442,20 +523,6 @@ class Pay:
 
     def check(self, reaction, user):
         return not user.bot
-
-    def get_command_logs(self, user: discord.Member, id: str = None):
-        """Retrouve les logs d'un membre"""
-        if user.id not in self.logs:
-            self.logs[user.id] = []
-        if id:
-            if self.logs[user.id]:
-                if id == self.logs[user.id][-1]:
-                    self.logs[user.id].append(id)
-                else:
-                    self.logs[user.id] = [id]
-            else:
-                self.logs[user.id] = [id]
-        return self.logs[user.id]
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def pay_account(self, ctx, membre: discord.Member = None):
@@ -724,11 +791,10 @@ class Pay:
             return
         base = offre
         cooldown = 10
-        clogs = self.get_command_logs(user, "slot")
-        if len(clogs) > 5:
-            cooldown += 2 * len(clogs)
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
+                if self.pay.script_detect(user, "slot"):
+                    cooldown *= 6
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
                     self.pay.new_cooldown(user, "slot", cooldown)
