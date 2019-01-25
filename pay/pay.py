@@ -442,7 +442,7 @@ class PayAPI:
                 minval = min(self.meta["script"][user.id]["last_diffs"])
                 maxval = max(self.meta["script"][user.id]["last_diffs"])
                 self.meta["script"][user.id]["last_diffs"] = [self.meta["script"][user.id]["last_diffs"][-1]]
-                if (now - self.meta["script"][user.id]["bot_test"]) > 1800:
+                if (now - self.meta["script"][user.id]["bot_test"]) > 600:
                     if moy - minval < 1:
                         if maxval - moy < 1:
                             self.meta["script"][user.id]["bot_test"] = time.time()
@@ -807,7 +807,7 @@ class Pay:
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    if await self.pay.script_detect(user, "slot", 3):
+                    if await self.pay.script_detect(user, "slot", 7):
                         cooldown *= 6
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
