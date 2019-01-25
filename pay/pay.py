@@ -437,10 +437,22 @@ class Pay:
     def __init__(self, bot):
         self.bot = bot
         self.pay = PayAPI(bot, "data/pay/data.json")
+        self.logs = {}
         # Pour importer l'API : self.bot.get_cog("Pay").pay
 
     def check(self, reaction, user):
         return not user.bot
+
+    def get_command_logs(self, user: discord.Member, id: str = None):
+        """Retrouve les logs d'un membre"""
+        if user.id not in self.logs:
+            self.logs[user.id] = []
+        if id:
+            if id == self.logs[user.id][-1]:
+                self.logs[user.id].append(id)
+            else:
+                self.logs[user.id] = [id]
+        return self.logs[user.id]
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def pay_account(self, ctx, membre: discord.Member = None):
@@ -708,11 +720,15 @@ class Pay:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
         base = offre
+        cooldown = 10
+        clogs = self.get_command_logs(user, "slot")
+        if len(clogs) > 5:
+            cooldown += 2 * clogs
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    self.pay.new_cooldown(user, "slot", 10)
+                    self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
                     plus_after = [":zap:", ":gem:", ":cherries:"]
