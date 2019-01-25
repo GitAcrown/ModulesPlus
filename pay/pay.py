@@ -437,7 +437,7 @@ class PayAPI:
                 moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
                 minval = min(self.meta["script"][user.id]["last_diffs"])
                 maxval = max(self.meta["script"][user.id]["last_diffs"])
-                self.meta["script"][user.id]["last_diffs"] = self.meta["script"][user.id]["last_diffs"][-1]
+                self.meta["script"][user.id]["last_diffs"] = [self.meta["script"][user.id]["last_diffs"][-1]]
                 if (now - self.meta["script"][user.id]["bot_test"]) > 1800:
                     if moy - minval < 1:
                         if maxval - moy < 1:
@@ -472,7 +472,7 @@ class PayAPI:
                             if rep is None:
                                 await self.bot.delete_message(msg)
                                 await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
-                                                   "Certaines fonctionnalités seront adaptées en conséquence.")
+                                                   "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
                                 self.meta["script"][user.id]["is_script"] = True
                                 return True
                             elif result in rep.content:
@@ -483,7 +483,7 @@ class PayAPI:
                             else:
                                 await self.bot.delete_message(msg)
                                 await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
-                                                   "Certaines fonctionnalités seront adaptées en conséquence.")
+                                                   "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
                                 self.meta["script"][user.id]["is_script"] = True
                                 return True
                 else:
