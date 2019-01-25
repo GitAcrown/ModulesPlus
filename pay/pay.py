@@ -446,7 +446,7 @@ class PayAPI:
                             msg = None
                             typecaptcha = random.choice(["maths", "copy"])
                             if typecaptcha == "maths":
-                                typemaths = random.choice["addition", "multiplication"]
+                                typemaths = random.choice(["addition", "multiplication"])
                                 if typemaths == "addition":
                                     n1, n2 = random.randint(1, 100), random.randint(1, 100)
                                     result = str(n1 + n2)
