@@ -410,8 +410,8 @@ class PayAPI:
                 return False
         return False
 
-    async def script_detect(self, user: discord.Member, id: str, tol: int = 5):
-        """Détecte un script et agit en conséquence"""
+    """async def script_detect(self, user: discord.Member, id: str, tol: int = 5):
+        Détecte un script et agit en conséquence
         now = time.time()
         if user.id not in self.meta["script"]:
             self.meta["script"][user.id] = {"logs": [],
@@ -499,7 +499,7 @@ class PayAPI:
 
         else:
             self.meta["script"][user.id]["last"] = now
-        return False
+        return False"""
 
     def reset_user(self, user: discord.Member):
         """Reset les données d'un membre"""
@@ -528,7 +528,6 @@ class Pay:
     def __init__(self, bot):
         self.bot = bot
         self.pay = PayAPI(bot, "data/pay/data.json")
-        self.logs = {}
         # Pour importer l'API : self.bot.get_cog("Pay").pay
 
     def check(self, reaction, user):
@@ -666,7 +665,7 @@ class Pay:
                                 solde_before = self.pay.get_account(ctx.message.author, True).solde
                                 if self.pay.transfert_credits(ctx.message.author, user, somme, raison):
                                     prc = (somme / solde_before) * 100
-                                    ctime = 180 + (60 * round(prc))/2
+                                    ctime = 180 + (20 * round(prc))
                                     cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
                                     em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                     em.set_footer(text="Prochain don possible dans {}".format(cool.string))
@@ -784,15 +783,15 @@ class Pay:
         user = ctx.message.author
         server = ctx.message.server
         if not offre:
-            txt = ":100: x3 = Offre x 100\n" \
-                  ":gem: x3 = Offre x 30\n" \
-                  ":gem: x2 = Offre + 300\n" \
+            txt = ":100: x3 = Offre x 50\n" \
+                  ":gem: x3 = Offre x 20\n" \
+                  ":gem: x2 = Offre + 500\n" \
                   ":four_leaf_clover: x3 = Offre x 12\n" \
-                  ":four_leaf_clover: x2 = Offre + 100\n" \
-                  "**fruit** x3 = Offre x 4\n" \
-                  "**fruit** x2 = Offre x 2\n" \
+                  ":four_leaf_clover: x2 = Offre + 250\n" \
+                  "**fruit** x3 = Offre x 6\n" \
+                  "**fruit** x2 = Offre x 3\n" \
                   ":zap: x1 ou x2 = Gains nuls\n" \
-                  ":zap: x3 = Offre x 200"
+                  ":zap: x3 = Offre x 100"
             em = discord.Embed(title="Gains possibles", description=txt)
             await self.bot.say(embed=em)
             return
@@ -800,13 +799,11 @@ class Pay:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
         base = offre
-        cooldown = 10
+        cooldown = 15
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    if await self.pay.script_detect(user, "slot", 5):
-                        cooldown *= 6
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
@@ -825,33 +822,33 @@ class Pay:
                     c = lambda x: centre.count(":{}:".format(x))
                     if ":zap:" in centre:
                         if c("zap") == 3:
-                            offre *= 200
+                            offre *= 100
                             gaintxt = "3x ⚡ ─ Tu gagnes {} {}"
                         else:
                             offre = 0
                             gaintxt = "Tu t'es fait zap ⚡ ─ Tu perds ta mise !"
                     elif c("100") == 3:
-                        offre *= 100
+                        offre *= 50
                         gaintxt = "3x 💯 ─ Tu gagnes {} {}"
                     elif c("gem") == 3:
-                        offre *= 30
+                        offre *= 20
                         gaintxt = "3x 💎 ─ Tu gagnes {} {}"
                     elif c("gem") == 2:
-                        offre += 300
+                        offre += 500
                         gaintxt = "2x 💎 ─ Tu gagnes {} {}"
                     elif c("four_leaf_clover") == 3:
                         offre *= 12
                         gaintxt = "3x 🍀 ─ Tu gagnes {} {}"
                     elif c("four_leaf_clover") == 2:
-                        offre += 100
+                        offre += 250
                         gaintxt = "2x 🍀 ─ Tu gagnes {} {}"
                     elif c("cherries") == 3 or c("strawberry") == 3 or c("watermelon") == 3 or c("tangerine") == 3 or c(
                             "lemon") == 3:
-                        offre *= 4
+                        offre *= 6
                         gaintxt = "3x un fruit ─ Tu gagnes {} {}"
                     elif c("cherries") == 2 or c("strawberry") == 2 or c("watermelon") == 2 or c("tangerine") == 2 or c(
                             "lemon") == 2:
-                        offre *= 2
+                        offre *= 3
                         gaintxt = "2x un fruit ─ Tu gagnes {} {}"
                     else:
                         offre = 0
