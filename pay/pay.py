@@ -790,7 +790,7 @@ class Pay:
                         await self.bot.say(embed=em)
                         return
                     self.pay.remove_credits(user, 1, "Fontaine")
-                    randomtxt = (["Vous lancez la pièce et... rien.",
+                    randomtxt = random.choice(["Vous lancez la pièce et... rien.",
                                   "Vous y aviez cru mais il ne se passe rien.",
                                   "Désolé mais votre essai est infructeux...",
                                   "Dommage, la chance n'est pas venue cette fois-ci !",
