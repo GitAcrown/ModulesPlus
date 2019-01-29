@@ -68,7 +68,7 @@ class PayAPI:
         if m: txt += str(m) + "m "
         if val > 0: txt += str(val) + "s"
         TimeConv = namedtuple('TimeConv', ['jours', 'heures', 'minutes', 'secondes', 'string'])
-        return TimeConv(j, h, m, val, txt)
+        return TimeConv(j, h, m, val, txt if txt else "1s")
 
     def get_server(self, server: discord.Server, sub: str = None, reset: bool = False):
         """Renvoie les données du serveur"""
@@ -410,6 +410,17 @@ class PayAPI:
                 return False
         return False
 
+    def reset_cooldown(self, user: discord.Member, id: str):
+        """Remet à 0 un cooldown d'un membre"""
+        server = user.server
+        if server.id in self.cooldown:
+            if id.lower() in self.cooldown[server.id]:
+                if user.id in self.cooldown[server.id][id.lower()]:
+                    del self.cooldown[server.id][id.lower()][user.id]
+                    return True
+        return False
+
+
     """async def script_detect(self, user: discord.Member, id: str, tol: int = 5):
         Détecte un script et agit en conséquence
         now = time.time()
@@ -667,7 +678,7 @@ class Pay:
                                     prc = (somme / solde_before) * 100
                                     ctime = 180 + (20 * round(prc))
                                     cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**G ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**g ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                     em.set_footer(text="Prochain don possible dans {}".format(cool.string))
                                     await self.bot.say(embed=em)
                                 else:
@@ -701,15 +712,15 @@ class Pay:
                 except:
                     username = self.bot.get_user(l.userid).name
                 if l.userid == ctx.message.author.id:
-                    txt += "**{}.** __**{}**__ ─ **{}**G\n".format(n, username, l[0])
+                    txt += "**{}.** __**{}**__ ─ **{}**g\n".format(n, username, l[0])
                     found = True
                 else:
-                    txt += "**{}.** **{}** ─ **{}**G\n".format(n, username, l[0])
+                    txt += "**{}.** **{}** ─ **{}**g\n".format(n, username, l[0])
                 n += 1
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n**{}.** **{}** ─ **{}**G".format(place[0], ctx.message.author.name, place[1].solde)
+                    txt += "(...)\n**{}.** **{}** ─ **{}**g".format(place[0], ctx.message.author.name, place[1].solde)
             em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
             em.set_footer(text="Total = {} Golds".format(total))
@@ -719,6 +730,84 @@ class Pay:
                 await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
         else:
             await self.bot.say("**Erreur** ─ Aucun membre n'a de compte sur ce serveur")
+
+    @commands.command(pass_context=True, no_pm=True, aliases=["ftn"])
+    async def fontaine(self, ctx):
+        """Lancer une pièce dans la fontaine
+
+        A une certaine chance de déclencher un évenement aléatoire"""
+        user = ctx.message.author
+        if self.pay.account_dial(user):
+            if self.pay.enough_credits(user, 1):
+                cool = self.pay.get_cooldown(user, "ftn")
+                if not cool:
+                    self.pay.new_cooldown(user, "ftn", 5)
+                    event_type = random.randint(0, 100)
+                    em = discord.Embed(color=0x4286f4)
+                    em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                    if 0 <= event_type <= 10: # Reset de cooldown give
+                        coolgive = self.pay.get_cooldown(user, "give")
+                        self.pay.remove_credits(user, 1, "Fontaine")
+                        if coolgive:
+                            self.pay.reset_cooldown(user, "give")
+                            randomtxt = random.choice(["Quelle chance ! Vous avez reset le cooldown du don !",
+                                                       "Vous vous sentez revigoré, prêt à faire un nouveau don immédiatement !",
+                                                       "Bingo ! Vous avez reset le cooldown pour le prochain don !"])
+                            em.description = randomtxt
+                            await self.bot.say(embed=em)
+                            return
+                    elif 11 <= event_type <= 16:
+                        raisonrandom = random.choice(["Magie de la fontaine", "Un coup de chance",
+                                                      "Fontaine de la chance"])
+                        self.pay.add_credits(user, 100, raisonrandom)
+                        randomtxt = random.choice(["Quelle chance ! Vous avez gagné un salaire ! (+100g)",
+                                                   "Vous trouvez 100g trainant au fond de la fontaine !",
+                                                   "La fontaine se met à cracher 100g d'un coup !"])
+                        em.description = randomtxt
+                        await self.bot.say(embed=em)
+                        return
+                    elif 17 <= event_type <= 20:
+                        raisonrandom = random.choice(["La fontaine...", "Un coup de la fontaine", "Fontaine de la malchance"])
+                        self.pay.remove_credits(user, 10, raisonrandom, True)
+                        randomtxt = random.choice(["Mince, vous avez malencontreusement lancé 10g qui n'ont eu aucun effet...",
+                                                   "Oups ! Votre porte-monnaie tombe à l'eau et quelques pièces sont perdues... (-10g)",
+                                                   "Pendant que vous étiez occupé à lancer une pièce, un voleur vous a retiré 10g !"])
+                        em.description = randomtxt
+                        await self.bot.say(embed=em)
+                        return
+                    elif 21 <= event_type <= 23:
+                        raisonrandom = random.choice(
+                            ["La fontaine...", "Un coup de la fontaine", "Fontaine de la malchance"])
+                        self.pay.remove_credits(user, 1, raisonrandom, True)
+                        self.pay.new_cooldown(user, "ftn", 300)
+                        randomtxt = random.choice(
+                            ["Vous vous sentez faible... Le cooldown de la fontaine s'allonge... (+5m)",
+                             "Vous avez tenté de ramasser les pièces des autres - la police vous embarque (+5m de cooldown)",
+                             "Dans votre précipitation vous vous êtes brisé le poignet (+5m de cooldown)"])
+                        em.description = randomtxt
+                        await self.bot.say(embed=em)
+                        return
+                    self.pay.remove_credits(user, 1, "Fontaine")
+                    randomtxt = (["Vous lancez la pièce et... rien.",
+                                  "Vous y aviez cru mais il ne se passe rien.",
+                                  "Désolé mais votre essai est infructeux...",
+                                  "Dommage, la chance n'est pas venue cette fois-ci !",
+                                  "Ça vous portera peut-être chance IRL, mais pas cette fois là.",
+                                  "Vous lancez la pièce et... c'est un échec cuisant.",
+                                  "Vous y aviez cru cette fois-ci hein ?",
+                                  "Encore un échec de plus.",
+                                  "Mince, pas cette fois là.",
+                                  "Allez-y, gaspillez votre argent, ça n'a servit à rien."])
+                    em.description = randomtxt
+                    await self.bot.say(embed=em)
+                    return
+                else:
+                    await self.bot.say("**Cooldown** ─ Revenez voir la fontaine dans {}".format(cool.string))
+            else:
+                await self.bot.say("**Banque** ─ Vous êtes trop pauvre pour lancer la moindre pièce...")
+        else:
+            await self.bot.say("**Banque** ─ Vous n'avez pas l'argent pour ça.")
+
 
     @commands.command(pass_context=True, no_pm=True, aliases=["rj"])
     async def revenu(self, ctx):
@@ -757,18 +846,18 @@ class Pay:
                 bonusjc = (len(data["cache"]["revenu"]["suite"]) - 1) * base_jc
                 if data["solde"] >= 50000:
                     bonusjc = 0
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 G)"
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 g)"
                 else:
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**G".format(bonusjc) if \
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**g".format(bonusjc) if \
                         bonusjc > 0 else ""
 
                 self.pay.add_credits(user, rj + bonusjc, "Revenus")
-                notif = "• **Aide journalière** ─ **{}**G{}".format(rj, savetxt)
+                notif = "• **Aide journalière** ─ **{}**g{}".format(rj, savetxt)
                 notif += bonustxt
 
                 em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name="Revenus", icon_url=user.avatar_url)
-                em.set_footer(text="Solde actuel : {}G".format(data["solde"]))
+                em.set_footer(text="Solde actuel : {}g".format(data["solde"]))
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
@@ -815,7 +904,7 @@ class Pay:
                         n = random.randint(3, 11)
                         cols.append([roue[n - 1], roue[n], roue[n + 1]])
                     centre = [cols[0][1], cols[1][1], cols[2][1]]
-                    disp = "**Offre:** {}G\n\n".format(base)
+                    disp = "**Offre:** {}g\n\n".format(base)
                     disp += "{}|{}|{}\n".format(cols[0][0], cols[1][0], cols[2][0])
                     disp += "{}|{}|{} **<<<**\n".format(cols[0][1], cols[1][1], cols[2][1])
                     disp += "{}|{}|{}\n".format(cols[0][2], cols[1][2], cols[2][2])
@@ -938,7 +1027,7 @@ class Pay:
         if somme > 0:
             if self.pay.get_account(user):
                 self.pay.add_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}G ont été donnés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}g ont été donnés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -954,7 +1043,7 @@ class Pay:
                 if not self.pay.enough_credits(user, somme):
                     somme = self.pay.get_account(user, True).solde
                 self.pay.remove_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}G ont été retirés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}g ont été retirés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -968,7 +1057,7 @@ class Pay:
         if somme >= 0:
             if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ Le membre possède désormais {}G".format(somme))
+                await self.bot.say("**Succès** ─ Le membre possède désormais {}g".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
