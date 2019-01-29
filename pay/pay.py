@@ -68,7 +68,7 @@ class PayAPI:
         if m: txt += str(m) + "m "
         if val > 0: txt += str(val) + "s"
         TimeConv = namedtuple('TimeConv', ['jours', 'heures', 'minutes', 'secondes', 'string'])
-        return TimeConv(j, h, m, val, txt if txt else "1s")
+        return TimeConv(j, h, m, val, txt if txt else "< 1s")
 
     def get_server(self, server: discord.Server, sub: str = None, reset: bool = False):
         """Renvoie les données du serveur"""
