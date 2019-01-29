@@ -741,7 +741,7 @@ class Pay:
             if self.pay.enough_credits(user, 1):
                 cool = self.pay.get_cooldown(user, "ftn")
                 if not cool:
-                    self.pay.new_cooldown(user, "ftn", 5)
+                    self.pay.new_cooldown(user, "ftn", 120)
                     event_type = random.randint(0, 100)
                     if 0 <= event_type <= 10: # Reset de cooldown give
                         coolgive = self.pay.get_cooldown(user, "give")
@@ -758,10 +758,10 @@ class Pay:
                     elif 11 <= event_type <= 16:
                         raisonrandom = random.choice(["Magie de la fontaine", "Un coup de chance",
                                                       "Fontaine de la chance"])
-                        self.pay.add_credits(user, 100, raisonrandom)
-                        randomtxt = random.choice(["Quelle chance ! Vous avez gagné un salaire ! (+100g)",
-                                                   "Vous trouvez 100g trainant au fond de la fontaine !",
-                                                   "La fontaine se met à cracher 100g d'un coup !"])
+                        self.pay.add_credits(user, 50, raisonrandom)
+                        randomtxt = random.choice(["Quelle chance ! Vous avez gagné un salaire ! (+50g)",
+                                                   "Vous trouvez 50g trainant au fond de la fontaine !",
+                                                   "La fontaine se met à cracher 50g d'un coup !"])
                         em = discord.Embed(color=palette["stay"], description=randomtxt)
                         em.set_author(name="Fontaine · Bonus de golds", icon_url=user.avatar_url)
                         await self.bot.say(embed=em)
@@ -780,11 +780,11 @@ class Pay:
                         raisonrandom = random.choice(
                             ["La fontaine...", "Un coup de la fontaine", "Fontaine de la malchance"])
                         self.pay.remove_credits(user, 1, raisonrandom, True)
-                        self.pay.new_cooldown(user, "ftn", 300)
+                        self.pay.new_cooldown(user, "ftn", 600)
                         randomtxt = random.choice(
-                            ["Vous vous sentez faible... Le cooldown de la fontaine s'allonge... (+5m)",
-                             "Vous avez tenté de ramasser les pièces des autres - la police vous embarque (+5m de cooldown)",
-                             "Dans votre précipitation vous vous êtes brisé le poignet (+5m de cooldown)"])
+                            ["Vous vous sentez faible... Le cooldown de la fontaine s'allonge... (+10m)",
+                             "Vous avez tenté de ramasser les pièces des autres - la police vous embarque (+10m de cooldown)",
+                             "Dans votre précipitation vous vous êtes brisé le poignet (+10m de cooldown)"])
                         em = discord.Embed(color=palette["stay"], description=randomtxt)
                         em.set_author(name="Fontaine · Cooldown augmenté", icon_url=user.avatar_url)
                         await self.bot.say(embed=em)
