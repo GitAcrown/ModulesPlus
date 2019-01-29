@@ -737,7 +737,7 @@ class Pay:
 
         A une certaine chance de déclencher un évenement aléatoire"""
         user = ctx.message.author
-        if self.pay.account_dial(user):
+        if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, 1):
                 cool = self.pay.get_cooldown(user, "ftn")
                 if not cool:
