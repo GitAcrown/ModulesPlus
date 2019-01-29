@@ -743,8 +743,6 @@ class Pay:
                 if not cool:
                     self.pay.new_cooldown(user, "ftn", 5)
                     event_type = random.randint(0, 100)
-                    em = discord.Embed(color=0x4286f4)
-                    em.set_author(name="Fontaine", icon_url=user.avatar_url)
                     if 0 <= event_type <= 10: # Reset de cooldown give
                         coolgive = self.pay.get_cooldown(user, "give")
                         self.pay.remove_credits(user, 1, "Fontaine")
@@ -753,7 +751,8 @@ class Pay:
                             randomtxt = random.choice(["Quelle chance ! Vous avez reset le cooldown du don !",
                                                        "Vous vous sentez revigoré, prêt à faire un nouveau don immédiatement !",
                                                        "Bingo ! Vous avez reset le cooldown pour le prochain don !"])
-                            em.description = randomtxt
+                            em = discord.Embed(color=0x4286f4, description=randomtxt)
+                            em.set_author(name="Fontaine · Cooldown reset", icon_url=user.avatar_url)
                             await self.bot.say(embed=em)
                             return
                     elif 11 <= event_type <= 16:
@@ -763,7 +762,8 @@ class Pay:
                         randomtxt = random.choice(["Quelle chance ! Vous avez gagné un salaire ! (+100g)",
                                                    "Vous trouvez 100g trainant au fond de la fontaine !",
                                                    "La fontaine se met à cracher 100g d'un coup !"])
-                        em.description = randomtxt
+                        em = discord.Embed(color=0x4286f4, description=randomtxt)
+                        em.set_author(name="Fontaine · Bonus de golds", icon_url=user.avatar_url)
                         await self.bot.say(embed=em)
                         return
                     elif 17 <= event_type <= 20:
@@ -772,7 +772,8 @@ class Pay:
                         randomtxt = random.choice(["Mince, vous avez malencontreusement lancé 10g qui n'ont eu aucun effet...",
                                                    "Oups ! Votre porte-monnaie tombe à l'eau et quelques pièces sont perdues... (-10g)",
                                                    "Pendant que vous étiez occupé à lancer une pièce, un voleur vous a retiré 10g !"])
-                        em.description = randomtxt
+                        em = discord.Embed(color=0x4286f4, description=randomtxt)
+                        em.set_author(name="Fontaine · Malus de golds", icon_url=user.avatar_url)
                         await self.bot.say(embed=em)
                         return
                     elif 21 <= event_type <= 23:
@@ -784,7 +785,8 @@ class Pay:
                             ["Vous vous sentez faible... Le cooldown de la fontaine s'allonge... (+5m)",
                              "Vous avez tenté de ramasser les pièces des autres - la police vous embarque (+5m de cooldown)",
                              "Dans votre précipitation vous vous êtes brisé le poignet (+5m de cooldown)"])
-                        em.description = randomtxt
+                        em = discord.Embed(color=0x4286f4, description=randomtxt)
+                        em.set_author(name="Fontaine · Cooldown augmenté", icon_url=user.avatar_url)
                         await self.bot.say(embed=em)
                         return
                     self.pay.remove_credits(user, 1, "Fontaine")
@@ -798,7 +800,8 @@ class Pay:
                                   "Encore un échec de plus.",
                                   "Mince, pas cette fois là.",
                                   "Allez-y, gaspillez votre argent, ça n'a servit à rien."])
-                    em.description = randomtxt
+                    em = discord.Embed(color=0x4286f4, description=randomtxt)
+                    em.set_author(name="Fontaine", icon_url=user.avatar_url)
                     await self.bot.say(embed=em)
                     return
                 else:
