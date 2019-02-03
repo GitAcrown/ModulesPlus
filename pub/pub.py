@@ -39,10 +39,10 @@ class Pub:
         couleur = int("".join([random.choice(string.digits + "abcdef") for _ in range(6)]), 16)
         cmdlist = self.c_commands[server.id]
         url = None
-        reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(text)
+        reg = re.compile(r'(https?:\/\/(?:\S*)\.(?:jpg|png|jpeg|gif))', re.DOTALL | re.IGNORECASE).findall(text)
         if reg:
             url = reg[0]
-            text.replace(url, "")
+            text = text.replace(url, "")
         if command not in cmdlist:
             cmdlist[command] = {"contenu": text,
                                 "image": url,
@@ -62,10 +62,10 @@ class Pub:
         if server.id in self.c_commands:
             cmdlist = self.c_commands[server.id]
             url = None
-            reg = re.compile(r'(https?://(?:.*)/\w*\.[A-z]*)', re.DOTALL | re.IGNORECASE).findall(text)
+            reg = re.compile(r'(https?:\/\/(?:\S*)\.(?:jpg|png|jpeg|gif))', re.DOTALL | re.IGNORECASE).findall(text)
             if reg:
                 url = reg[0]
-                text.replace(url, "")
+                text = text.replace(url, "")
             if command in cmdlist:
                 cmdlist[command]["contenu"] = text
                 cmdlist[command]["image"] = url
