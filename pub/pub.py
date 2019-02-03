@@ -128,13 +128,13 @@ class Pub:
             cmdlist = self.c_commands[server.id]
             cmd = message.content[len(prefix):]
             if cmd in cmdlist:
-                cmd = cmdlist[cmd]["text"]
+                cmd = cmdlist[cmd]["contenu"]
                 cmd = self.format_cc(cmd, message)
                 em = discord.Embed(description=cmd, color=cmdlist[cmd]["color"])
                 em.set_image(url=cmdlist[cmd]["image"])
                 await self.bot.send_message(message.channel, embed=em)
             elif cmd.lower() in cmdlist:
-                cmd = cmdlist[cmd.lower()]["text"]
+                cmd = cmdlist[cmd]["contenu"]
                 cmd = self.format_cc(cmd, message)
                 em = discord.Embed(description=cmd, color=cmdlist[cmd]["color"])
                 em.set_image(url=cmdlist[cmd]["image"])
