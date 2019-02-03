@@ -133,7 +133,8 @@ class Pub:
                 cmd = cmdlist[cmd]["contenu"]
                 cmd = self.format_cc(cmd, message)
                 em = discord.Embed(description=cmd, color=color)
-                em.set_image(url=image)
+                if image:
+                    em.set_image(url=image)
                 await self.bot.send_message(message.channel, embed=em)
             elif cmd.lower() in cmdlist:
                 color = cmdlist[cmd.lower()]["color"]
@@ -141,7 +142,8 @@ class Pub:
                 cmd = cmdlist[cmd.lower()]["contenu"]
                 cmd = self.format_cc(cmd, message)
                 em = discord.Embed(description=cmd, color=color)
-                em.set_image(url=image)
+                if image:
+                    em.set_image(url=image)
                 await self.bot.send_message(message.channel, embed=em)
 
     def get_prefix(self, message):
