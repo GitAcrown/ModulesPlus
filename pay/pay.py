@@ -392,7 +392,7 @@ class PayAPI:
             self.cooldown[server.id][id.lower()] = {user.id : fin}
         return self.get_cooldown(user, id)
 
-    def get_cooldown(self, user: discord.Member, id: str):
+    def get_cooldown(self, user: discord.Member, id: str, brut: bool = False):
         """Renvoie le cooldown du membre s'il y en a un"""
         server = user.server
         now = time.time()
@@ -404,7 +404,7 @@ class PayAPI:
         if user.id in self.cooldown[server.id][id.lower()]:
             if now <= self.cooldown[server.id][id.lower()][user.id]:
                 duree = int(self.cooldown[server.id][id.lower()][user.id] - now)
-                return self.timeformat(duree)
+                return self.timeformat(duree) if not brut else duree
             else:
                 del self.cooldown[server.id][id.lower()][user.id]
                 return False
@@ -896,6 +896,10 @@ class Pay:
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
+                    self.pay.new_cooldown(user, "slot_antispam", 17)
+                    if self.pay.get_cooldown(user, "slot_antispam", True) > 90:
+                        self.pay.reset_cooldown(user, "slot_antispam")
+                        cooldown = 60
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
