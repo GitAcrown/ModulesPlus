@@ -540,6 +540,7 @@ class Pay:
         self.bot = bot
         self.pay = PayAPI(bot, "data/pay/data.json")
         # Pour importer l'API : self.bot.get_cog("Pay").pay
+        self.karma = self.bot.get_cog("Karma").karma
 
     def check(self, reaction, user):
         return not user.bot
@@ -1035,6 +1036,14 @@ class Pay:
             if self.pay.get_account(user):
                 self.pay.add_credits(user, somme, raison)
                 await self.bot.say("**Succès** ─ {}g ont été donnés au membre".format(somme))
+                if self.karma.logs_on(server, "notif_low"):
+                    em = discord.Embed(
+                        description="{}g ont été donnés à {} par {}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
+                        timestamp=ctx.message.timestamp)
+                    em.add_field(name="Raison", value=raison)
+                    em.set_author(name=str(user) + " ─ Notification Pay · Grant", icon_url=user.avatar_url)
+                    em.set_footer(text="ID:{}".format(user.id))
+                    self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1051,6 +1060,14 @@ class Pay:
                     somme = self.pay.get_account(user, True).solde
                 self.pay.remove_credits(user, somme, raison)
                 await self.bot.say("**Succès** ─ {}g ont été retirés au membre".format(somme))
+                if self.karma.logs_on(server, "notif_low"):
+                    em = discord.Embed(
+                        description="{}g ont été retirés à {} par {}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
+                        timestamp=ctx.message.timestamp)
+                    em.add_field(name="Raison", value=raison)
+                    em.set_author(name=str(user) + " ─ Notification Pay · Take", icon_url=user.avatar_url)
+                    em.set_footer(text="ID:{}".format(user.id))
+                    self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1065,6 +1082,14 @@ class Pay:
             if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
                 await self.bot.say("**Succès** ─ Le membre possède désormais {}g".format(somme))
+                if self.karma.logs_on(server, "notif_low"):
+                    em = discord.Embed(
+                        description="Le solde de {1} a été réglé à {0}g par {2}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
+                        timestamp=ctx.message.timestamp)
+                    em.add_field(name="Raison", value=raison)
+                    em.set_author(name=str(user) + " ─ Notification Pay · Set", icon_url=user.avatar_url)
+                    em.set_footer(text="ID:{}".format(user.id))
+                    self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
