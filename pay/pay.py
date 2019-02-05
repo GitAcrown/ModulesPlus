@@ -659,6 +659,11 @@ class Pay:
         else:
             await self.bot.say("**Erreur** ─ L'identifiant est normalement composé de 5 caractères (chiffres et lettres)")
 
+    @pay_account.command(pass_context=True)
+    async def unlock(self, ctx, code: str):
+        """Débloque un item"""
+
+
 
     @commands.command(pass_context=True, no_pm=True, aliases=["don"])
     async def give(self, ctx, receveur: discord.Member, somme: int, *raison):
@@ -900,6 +905,7 @@ class Pay:
                     self.pay.new_cooldown(user, "slot_antispam", 30)
                     if self.pay.get_cooldown(user, "slot_antispam", True) > 90:
                         self.pay.reset_cooldown(user, "slot_antispam")
+                        self.pay.new_cooldown(user, "slot_antispam", 20)
                         cooldown = 60
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
