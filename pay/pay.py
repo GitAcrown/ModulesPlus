@@ -1011,6 +1011,14 @@ class Pay:
         if self.pay.get_account(user):
             self.pay.reset_user(user)
             await self.bot.say("**Succès** ─ Le compte du membre a été effacé")
+            if self.karma.logs_on(ctx.message.server, "notif_low"):
+                em = discord.Embed(
+                    description="Le compte Pay de {} a été supprimé par {}".format(user.mention,
+                                                                        ctx.message.author.mention), color=0xfffc51,
+                    timestamp=ctx.message.timestamp)
+                em.set_author(name=str(user) + " ─ Notification Pay · Suppression de compte", icon_url=user.avatar_url)
+                em.set_footer(text="ID:{}".format(user.id))
+                await self.karma.add_server_logs(ctx.message.server, "notif_low", em)
         else:
             await self.bot.say("**Erreur** ─ Le membre ne possède pas de compte bancaire")
 
@@ -1043,7 +1051,7 @@ class Pay:
                     em.add_field(name="Raison", value=raison)
                     em.set_author(name=str(user) + " ─ Notification Pay · Grant", icon_url=user.avatar_url)
                     em.set_footer(text="ID:{}".format(user.id))
-                    self.karma.add_server_logs(server, "notif_low", em)
+                    await self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1067,7 +1075,7 @@ class Pay:
                     em.add_field(name="Raison", value=raison)
                     em.set_author(name=str(user) + " ─ Notification Pay · Take", icon_url=user.avatar_url)
                     em.set_footer(text="ID:{}".format(user.id))
-                    self.karma.add_server_logs(server, "notif_low", em)
+                    await self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1089,7 +1097,7 @@ class Pay:
                     em.add_field(name="Raison", value=raison)
                     em.set_author(name=str(user) + " ─ Notification Pay · Set", icon_url=user.avatar_url)
                     em.set_footer(text="ID:{}".format(user.id))
-                    self.karma.add_server_logs(server, "notif_low", em)
+                    await self.karma.add_server_logs(server, "notif_low", em)
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
