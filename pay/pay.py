@@ -896,7 +896,7 @@ class Pay:
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
                 if not cool:
-                    self.pay.new_cooldown(user, "slot_antispam", 17)
+                    self.pay.new_cooldown(user, "slot_antispam", 30)
                     if self.pay.get_cooldown(user, "slot_antispam", True) > 90:
                         self.pay.reset_cooldown(user, "slot_antispam")
                         cooldown = 60
