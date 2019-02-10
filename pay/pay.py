@@ -35,11 +35,11 @@ class PayAPI:
         self.data = dataIO.load_json(path)
         self.meta = {"last_save": 0, "script": {}}
         self.cooldown = {}
-        self.schedule()
         scope = ['https://spreadsheets.google.com/feeds']
         creds = ServiceAccountCredentials.from_json_keyfile_name('data/client/client_secret.json', scope)
         gs = gspread.authorize(creds)
         self.sheets = gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
+        self.schedule()
 
 
     def save(self, force: bool = False):
