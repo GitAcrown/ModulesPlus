@@ -62,7 +62,11 @@ class PayAPI:
                 data_list.append([user.userid, username, user.solde])
         maxrow = len(data_list)
         ws.resize(maxrow, 3)
-        self.convert_sheet(ws, data_list)
+        try:
+            self.convert_sheet(ws, data_list)
+            return True
+        except:
+            return False
 
     """try:
         if server.id not in [i.title for i in self.sheets.worksheets()]:
@@ -157,10 +161,7 @@ class PayAPI:
             cell.value = val
 
         # update in batch
-        try:
-            ws.update_cells(cell_list)
-        except Exception as e:
-            print(e)
+        ws.update_cells(cell_list)
 
 
     def pong(self):
