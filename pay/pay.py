@@ -56,13 +56,13 @@ class PayAPI:
             col_list = ws.col_values(1)
             for user in data:
                 if user.userid not in col_list:
-                    vals = [user.userid, self.bot.get_user_info(user.userid).name, user.solde]
+                    vals = [user.userid, self.bot.get_user_info(user.userid)["name"], user.solde]
                     ws.append_row(vals)
                 else:
                     cell = ws.find(user.userid)
                     rangestr = "A" + str(cell.row) + ":C" + str(cell.row)
                     cell_list = ws.range(rangestr)
-                    cell_list[1].value = self.bot.get_user_info(user.userid).name
+                    cell_list[1].value = self.bot.get_user_info(user.userid)["name"]
                     cell_list[2].value = user.solde
                     ws.update_cells(cell_list)
             self.sheets.get_worksheet(0).update_acell("A2", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
