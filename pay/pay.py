@@ -52,7 +52,6 @@ class PayAPI:
         try:
             if server.id not in [i.title for i in self.sheets.worksheets()]:
                 self.sheets.add_worksheet(server.id, 1, 3)
-                self.sheets.worksheet(server.id).update_acell("A1", "MAJ - {}".format(datetime.now().strftime("%d/%m/%Y %H/%M")))
             ws = self.sheets.worksheet(server.id)
             col_list = ws.col_values(1)
             for user in data:
@@ -66,7 +65,7 @@ class PayAPI:
                     cell_list[1].value = server.get_member(user.userid)
                     cell_list[2].value = user.solde
                     ws.update_cells(cell_list)
-            ws.update_acell("A1", "MAJ - {}".format(datetime.now().strftime("%d/%m/%Y %H/%M")))
+            self.sheets.get_worksheet(0).update_acell("A2", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             return True
         except Exception as e:
             print(e)
@@ -1039,12 +1038,18 @@ class Pay:
             await send_cmd_help(ctx)
 
     @_modpay.command(pass_context=True)
-    async def updategs(self, ctx):
+    async def updategs(self, ctx, mode: str = "only"):
         """Force la mise à jour du Google Sheet lié au serveur"""
-        if self.pay.update_sheet(ctx.message.server):
-            await self.bot.say("**Mise à jour réalisée**")
+        if mode is "only":
+            if self.pay.update_sheet(ctx.message.server):
+                await self.bot.say("**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
+            else:
+                await self.bot.say("**Echec de la mise à jour**")
         else:
-            await self.bot.say("**Echec de la mise à jour**")
+            if self.pay.update_all_sheets():
+                await self.bot.say("**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
+            else:
+                await self.bot.say("**Echec de la mise à jour**")
 
     @_modpay.command(pass_context=True)
     async def forcenew(self, ctx, user: discord.Member):
