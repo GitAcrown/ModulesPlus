@@ -64,6 +64,7 @@ class PayAPI:
         ws.resize(maxrow, 3)
         try:
             self.convert_sheet(ws, data_list)
+            self.sheets.get_worksheet(0).update_acell("A2", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             return True
         except:
             return False
@@ -162,6 +163,7 @@ class PayAPI:
 
         # update in batch
         ws.update_cells(cell_list)
+
 
 
     def pong(self):
