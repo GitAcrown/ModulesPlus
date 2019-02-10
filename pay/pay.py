@@ -98,6 +98,7 @@ class PayAPI:
                                 continue
                         i.append("")
                 total = inforow + wslist
+                print(total)
                 try:
                     self.convert_sheet(ws, total)
                     self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
