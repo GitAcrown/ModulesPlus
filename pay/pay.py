@@ -61,7 +61,7 @@ class PayAPI:
 
     def update_sheet(self, server: discord.Server):
         data = self.get_all_accounts(server)
-        date = datetime.now().strftime("%d/%m/%Y %H:%M") # POURLETEST
+        date = datetime.now().strftime("%d/%m/%Y") # POURLETEST
         if server.id not in [i.title for i in self.sheets.worksheets()]:
             ws = self.sheets.add_worksheet(server.id, 2, 3)
             ws.update_acell("A1", "ID"); ws.update_acell("B1", "Pseudo"); ws.update_acell("C1", date)
