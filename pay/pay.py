@@ -64,7 +64,7 @@ class PayAPI:
         ws.resize(maxrow, 3)
         try:
             self.convert_sheet(ws, data_list)
-            self.sheets.worksheet("Infos").update_acell("A2", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+            self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             return True
         except Exception as e:
             print(e)
