@@ -87,17 +87,16 @@ class PayAPI:
                         newlist = [user.userid, username] + [""] * longrow
                         wslist.append(newlist)
                 for i in wslist:
-                    try:
-                        user = server.get_member(i[0])
-                        i[1] = user.name
-                        i.append(self.get_account(user).solde)
-                    except:
-                        for u in data:
-                            if u.userid == i[0]:
-                                i.append(u.solde)
-                                continue
-                        i.append("")
-                total = inforow + wslist
+                    for u in data:
+                        if u.userid == i[0]:
+                            i.append(u.solde)
+                            try:
+                                user = server.get_member(u.userid)
+                                i[1] = user.name
+                            except:
+                                pass
+                            break
+                total = [inforow] + wslist
                 print(total)
                 try:
                     self.convert_sheet(ws, total)
