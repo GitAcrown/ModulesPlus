@@ -72,7 +72,7 @@ class PayAPI:
                 return False
         else:
             ws = self.sheets.worksheet(server.id)
-            if ws.cell(1, ws.col_count) != date:
+            if ws.cell(1, ws.col_count).value != date:
                 wslist = ws.get_all_values()
                 inforow = wslist.pop(0)
                 longrow = len(inforow) - 2
