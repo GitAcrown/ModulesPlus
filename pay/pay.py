@@ -41,7 +41,6 @@ class PayAPI:
         self.sheets = gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
         self.schedule()
 
-
     def save(self, force: bool = False):
         if force:
             fileIO("data/pay/data.json", "save", self.data)
