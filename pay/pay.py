@@ -49,25 +49,62 @@ class PayAPI:
 
     def update_sheet(self, server: discord.Server):
         data = self.get_all_accounts(server)
+        date = datetime.now().strftime("%d/%m/%Y %H:%M") # POURLETEST
         if server.id not in [i.title for i in self.sheets.worksheets()]:
-            self.sheets.add_worksheet(server.id, 1, 3)
-        ws = self.sheets.worksheet(server.id)
-        data_list = []
-        for user in data:
+            ws = self.sheets.add_worksheet(server.id, 2, 3)
+            ws.update_acell("A1", "ID"); ws.update_acell("B1", "Pseudo"); ws.update_acell("C1", date)
+            data_list = []
+            for user in data:
+                try:
+                    username = server.get_member(user.userid).name
+                except:
+                    username = "Absent"
+                if [user.userid, username, user.solde] not in data_list:
+                    data_list.append([user.userid, username, user.solde])
+            maxrow = len(data_list)
+            ws.resize(maxrow, 3)
             try:
-                username = server.get_member(user.userid).name
-            except:
-                username = "Absent"
-            if [user.userid, username, user.solde] not in data_list:
-                data_list.append([user.userid, username, user.solde])
-        maxrow = len(data_list)
-        ws.resize(maxrow, 3)
-        try:
-            self.convert_sheet(ws, data_list)
-            self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-            return True
-        except Exception as e:
-            print(e)
+                self.convert_sheet(ws, data_list, top=2)
+                self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                return True
+            except Exception as e:
+                print(e)
+                return False
+        else:
+            ws = self.sheets.worksheet(server.id)
+            if ws.cell(1, ws.col_count) != date:
+                wslist = ws.get_all_values()
+                inforow = wslist.pop(0)
+                inforow.append(date)
+                longrow = len(inforow) - 2
+                allids = [i[0] for i in wslist]
+                for user in data:
+                    try:
+                        username = server.get_member(user.userid).name
+                    except:
+                        username = "Absent"
+                    if user.userid not in allids:
+                        newlist = [user.userid, username] + [""] * longrow
+                        wslist.append(newlist)
+                for i in wslist:
+                    try:
+                        user = server.get_member(i[0])
+                        i[1] = user.name
+                        i.append(self.get_account(user).solde)
+                    except:
+                        for u in data:
+                            if u.userid == i[0]:
+                                i.append(u.solde)
+                                continue
+                        i.append("")
+                total = inforow + wslist
+                try:
+                    self.convert_sheet(ws, total)
+                    self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                    return True
+                except Exception as e:
+                    print(e)
+                    return False
             return False
 
     """try:
