@@ -52,7 +52,7 @@ class PayAPI:
         try:
             if server.id not in [i.title for i in self.sheets.worksheets()]:
                 self.sheets.add_worksheet(server.id, 1, 3)
-                self.sheets.worksheet(server.id).update_acell("A1", "MAJ - {}".format(datetime.strftime("%d/%m/%Y %H/%M")))
+                self.sheets.worksheet(server.id).update_acell("A1", "MAJ - {}".format(datetime.now().strftime("%d/%m/%Y %H/%M")))
             ws = self.sheets.worksheet(server.id)
             col_list = ws.col_values(1)
             for user in data:
@@ -66,7 +66,7 @@ class PayAPI:
                     cell_list[1].value = server.get_member(user.userid)
                     cell_list[2].value = user.solde
                     ws.update_cells(cell_list)
-            ws.update_acell("A1", "MAJ - {}".format(datetime.strftime("%d/%m/%Y %H/%M")))
+            ws.update_acell("A1", "MAJ - {}".format(datetime.now().strftime("%d/%m/%Y %H/%M")))
             return True
         except Exception as e:
             print(e)
