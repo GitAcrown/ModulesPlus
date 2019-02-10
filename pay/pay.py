@@ -50,7 +50,7 @@ class PayAPI:
 
     def schedule(self):
         # schedule.every().day.at("06:00").do(self.update_all_sheets())
-        schedule.every(1).minutes.do(self.update_all_sheets())
+        schedule.every(1).minutes.do(self.update_all_sheets)
         while True:
             schedule.run_pending()
             time.sleep(60)
