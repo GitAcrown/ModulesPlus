@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 import discord
 import gspread
+import schedule
 from __main__ import send_cmd_help
 from discord.ext import commands
 from oauth2client.service_account import ServiceAccountCredentials
@@ -34,11 +35,12 @@ class PayAPI:
         self.data = dataIO.load_json(path)
         self.meta = {"last_save": 0, "script": {}}
         self.cooldown = {}
-
+        self.schedule()
         scope = ['https://spreadsheets.google.com/feeds']
         creds = ServiceAccountCredentials.from_json_keyfile_name('data/client/client_secret.json', scope)
         gs = gspread.authorize(creds)
         self.sheets = gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
+
 
     def save(self, force: bool = False):
         if force:
@@ -46,6 +48,13 @@ class PayAPI:
         elif (time.time() - self.meta["last_save"]) > 30: # 30 secondes
             fileIO("data/pay/data.json", "save", self.data)
             self.meta["last_save"] = time.time()
+
+    def schedule(self):
+        # schedule.every().day.at("06:00").do(self.update_all_sheets())
+        schedule.every(1).minutes.do(self.update_all_sheets())
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
 
     def update_sheet(self, server: discord.Server):
         data = self.get_all_accounts(server)
@@ -97,7 +106,6 @@ class PayAPI:
                                 pass
                             break
                 total = [inforow] + wslist
-                print(total)
                 try:
                     self.convert_sheet(ws, total)
                     self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
@@ -105,6 +113,7 @@ class PayAPI:
                 except Exception as e:
                     print(e)
                     return False
+            print("MAJ trop rapide")
             return False
 
     """try:
@@ -159,6 +168,7 @@ class PayAPI:
                 pass
             else:
                 return False
+        print("MAJ Google Sheet Pay")
         return True
 
     def numberToLetters(self, q):
