@@ -49,10 +49,39 @@ class PayAPI:
 
     def update_sheet(self, server: discord.Server):
         data = self.get_all_accounts(server)
-        try:
+        if server.id not in [i.title for i in self.sheets.worksheets()]:
+            self.sheets.add_worksheet(server.id, 1, 3)
+        ws = self.sheets.worksheet(server.id)
+        data_list = []
+        for user in data:
+            try:
+                username = server.get_member(user.userid).name
+            except:
+                username = "Absent"
+            data_list.append(user.userid, username, user.solde)
+        maxrow = len(data_list)
+        ws.resize(maxrow, 3)
+        self.convert_sheet(ws, data_list)
+
+        """try:
             if server.id not in [i.title for i in self.sheets.worksheets()]:
                 self.sheets.add_worksheet(server.id, 1, 3)
             ws = self.sheets.worksheet(server.id)
+            data_list = []
+            for user in data:
+                try:
+                    username = server.get_member(user.userid).name
+                except:
+                    username = "Absent"
+                data_list.append(user.userid, username, user.solde)
+            maxrow = len(data_list)
+            ws.resize(maxrow, 3)
+            edited_row = []
+            cell_list = ws.range(1, 1, maxrow, 3) #inverser les deux derniers en cas de pb
+            for cell in cell_list:
+                if cell.col == 2:
+                    cell.value = data_list
+
             col_list = ws.col_values(1)
             for user in data:
                 if user.userid not in col_list:
@@ -77,7 +106,7 @@ class PayAPI:
             return True
         except Exception as e:
             print(e)
-            return False
+            return False"""
 
     def update_all_sheets(self):
         for serv in self.data:
@@ -87,6 +116,48 @@ class PayAPI:
             else:
                 return False
         return True
+
+    def numberToLetters(self, q):
+        """
+        Helper function to convert number of column to its index, like 10 -> 'A'
+        """
+        q = q - 1
+        result = ''
+        while q >= 0:
+            remain = q % 26
+            result = chr(remain + 65) + result;
+            q = q // 26 - 1
+        return result
+
+    def colrow_to_A1(self, col, row):
+        return self.numberToLetters(col) + str(row)
+
+    def convert_sheet(self, ws, rows, left=1, top=1):
+        """
+        updates the google spreadsheet with given table
+        - ws is gspread.models.Worksheet object
+        - rows is a table (list of lists)
+        - left is the number of the first column in the target document (beginning with 1)
+        - top is the number of first row in the target document (beginning with 1)
+        """
+
+        # number of rows and columns
+        num_lines, num_columns = len(rows), len(rows[0])
+
+        # selection of the range that will be updated
+        cell_list = ws.range(
+            self.colrow_to_A1(left, top) + ':' + self.colrow_to_A1(left + num_columns - 1, top + num_lines - 1)
+        )
+
+        # modifying the values in the range
+
+        for cell in cell_list:
+            val = rows[cell.row - top][cell.col - left]
+            cell.value = val
+
+        # update in batch
+        ws.update_cells(cell_list)
+
 
     def pong(self):
         """Envoie un PONG permettant de vérifier si l'API est connectée à un autre module"""
