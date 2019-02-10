@@ -75,8 +75,8 @@ class PayAPI:
             if ws.cell(1, ws.col_count) != date:
                 wslist = ws.get_all_values()
                 inforow = wslist.pop(0)
-                inforow.append(date)
                 longrow = len(inforow) - 2
+                inforow.append(date)
                 allids = [i[0] for i in wslist]
                 for user in data:
                     try:
