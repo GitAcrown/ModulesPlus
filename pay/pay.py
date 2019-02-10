@@ -8,8 +8,10 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 
 import discord
+import gspread
 from __main__ import send_cmd_help
 from discord.ext import commands
+from oauth2client.service_account import ServiceAccountCredentials
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
@@ -33,12 +35,50 @@ class PayAPI:
         self.meta = {"last_save": 0, "script": {}}
         self.cooldown = {}
 
+        scope = ['https://spreadsheets.google.com/feeds']
+        creds = ServiceAccountCredentials.from_json_keyfile_name('data/client/client_secret.json', scope)
+        gs = gspread.authorize(creds)
+        self.sheets = gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
+
     def save(self, force: bool = False):
         if force:
             fileIO("data/pay/data.json", "save", self.data)
         elif (time.time() - self.meta["last_save"]) > 30: # 30 secondes
             fileIO("data/pay/data.json", "save", self.data)
             self.meta["last_save"] = time.time()
+
+    def update_sheet(self, server: discord.Server):
+        data = self.get_all_accounts(server)
+        try:
+            if server.id not in [i.title for i in self.sheets.worksheets()]:
+                self.sheets.add_worksheet(server.id, 1, 3)
+                self.sheets.worksheet(server.id).update_acell("A1", "MAJ - {}".format(datetime.strftime("%d/%m/%Y %H/%M")))
+            ws = self.sheets.worksheet(server.id)
+            col_list = ws.col_values(1)
+            for user in data:
+                if user.userid not in col_list:
+                    vals = [user.userid, server.get_member(user.userid).name, user.solde]
+                    ws.append_row(vals)
+                else:
+                    cell = ws.find(user.userid)
+                    rangestr = "A" + str(cell.row) + ":C" + str(cell.row)
+                    cell_list = ws.range(rangestr)
+                    cell_list[1].value = server.get_member(user.userid)
+                    cell_list[2].value = user.solde
+                    ws.update_cells(cell_list)
+            ws.update_acell("A1", "MAJ - {}".format(datetime.strftime("%d/%m/%Y %H/%M")))
+            return True
+        except:
+            return False
+
+    def update_all_sheets(self):
+        for serv in self.data:
+            server = self.bot.get_server(serv)
+            if self.update_sheet(server):
+                pass
+            else:
+                return False
+        return True
 
     def pong(self):
         """Envoie un PONG permettant de vérifier si l'API est connectée à un autre module"""
@@ -659,11 +699,6 @@ class Pay:
         else:
             await self.bot.say("**Erreur** ─ L'identifiant est normalement composé de 5 caractères (chiffres et lettres)")
 
-    @pay_account.command(pass_context=True)
-    async def unlock(self, ctx, code: str):
-        """Débloque un item"""
-
-
 
     @commands.command(pass_context=True, no_pm=True, aliases=["don"])
     async def give(self, ctx, receveur: discord.Member, somme: int, *raison):
@@ -1001,6 +1036,14 @@ class Pay:
         """Gestion de la banque pay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @_modpay.command(pass_context=True)
+    async def updategs(self, ctx):
+        """Force la mise à jour du Google Sheet lié au serveur"""
+        if self.pay.update_sheet(ctx.message.server):
+            await self.bot.say("**Mise à jour réalisée**")
+        else:
+            await self.bot.say("**Echec de la mise à jour**")
 
     @_modpay.command(pass_context=True)
     async def forcenew(self, ctx, user: discord.Member):
