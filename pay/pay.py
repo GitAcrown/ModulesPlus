@@ -58,7 +58,7 @@ class PayAPI:
                 username = server.get_member(user.userid).name
             except:
                 username = "Absent"
-            data_list.append(user.userid, username, user.solde)
+            data_list.append([user.userid, username, user.solde])
         maxrow = len(data_list)
         ws.resize(maxrow, 3)
         self.convert_sheet(ws, data_list)
