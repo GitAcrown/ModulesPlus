@@ -68,7 +68,8 @@ class PayAPI:
                     ws.update_cells(cell_list)
             ws.update_acell("A1", "MAJ - {}".format(datetime.strftime("%d/%m/%Y %H/%M")))
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def update_all_sheets(self):
