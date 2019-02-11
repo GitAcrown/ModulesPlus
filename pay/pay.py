@@ -49,7 +49,6 @@ class PayAPI:
             selfid = random.randint(0, 99)
             self.meta["security"].append(selfid)
             while True:
-                self.gs.login()
                 if len(self.meta["security"]) > 1:
                     if self.meta["security"][-1] != selfid:
                         print("Extinction ancien loop")
@@ -177,6 +176,7 @@ class PayAPI:
         return False"""
 
     def update_all_sheets(self):
+        self.gs.login()
         for serv in self.data:
             server = self.bot.get_server(serv)
             if self.update_sheet(server):
