@@ -713,11 +713,6 @@ class PayAPI:
             self.save(True)
             return True
 
-    def __unload(self):
-        self.pay.save(True)
-        self.bot.loop.stop()
-        print("Sauvegarde de Pay avant redémarrage effectuée & loop fermé")
-
 
 class Pay:
     """Système monétaire virtuel et systèmes divers exploitant celle-ci"""
@@ -730,6 +725,11 @@ class Pay:
 
     def check(self, reaction, user):
         return not user.bot
+
+    def __unload(self):
+        self.pay.save(True)
+        self.bot.loop.stop()
+        print("Sauvegarde de Pay avant redémarrage effectuée & loop fermé")
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def pay_account(self, ctx, membre: discord.Member = None):
@@ -1191,7 +1191,7 @@ class Pay:
     async def syncinfo(self, ctx):
         """Affiche les infos sur la synchronisation avec le Google Sheet"""
         infos = self.pay.get_update_status()
-        em = discord.Embed(title="Synchronisation Pay <-> Google Sheet",description="**Dernière tentative :** {}\n"
+        em = discord.Embed(title="Synchronisation Auto. Pay <-> Google Sheet",description="**Dernière tentative :** {}\n"
                                        "**Dernière synchronisation :** {}".format(infos[0], infos[1]), url="https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing")
         await self.bot.say(embed=em)
 
