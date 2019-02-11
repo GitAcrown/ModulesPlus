@@ -728,7 +728,7 @@ class Pay:
 
     def __unload(self):
         self.pay.save(True)
-        self.bot.loop.stop()
+        self.bot.loop.close()
         print("Sauvegarde de Pay avant redémarrage effectuée & loop fermé")
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
