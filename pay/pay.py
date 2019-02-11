@@ -708,6 +708,11 @@ class PayAPI:
             self.save(True)
             return True
 
+    def __unload(self):
+        self.pay.save(True)
+        self.bot.loop.stop()
+        print("Sauvegarde de Pay avant redémarrage effectuée & loop fermé")
+
 
 class Pay:
     """Système monétaire virtuel et systèmes divers exploitant celle-ci"""
@@ -1302,6 +1307,7 @@ class Pay:
         solde = (base_solde + 500) * 1.5
         self.pay.set_credits(user, int(solde), "Importation du compte v2")
         await self.bot.say("**Importé** ─ Le solde de {} a été rétabli".format(user.name))
+
 
 def check_folders():
     if not os.path.exists("data/pay"):
