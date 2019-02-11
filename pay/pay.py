@@ -45,8 +45,8 @@ class PayAPI:
     async def auto_update(self):
         await self.bot.wait_until_ready()
         try:
-            await asyncio.sleep(5)
-            selfid = random.randint(0, 999)
+            await asyncio.sleep(10)
+            selfid = random.randint(0, 99)
             self.meta["security"].append(selfid)
             while True:
                 if len(self.meta["security"]) > 1:
