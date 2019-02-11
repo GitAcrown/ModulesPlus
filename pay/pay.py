@@ -46,10 +46,10 @@ class PayAPI:
         await self.bot.wait_until_ready()
         try:
             await asyncio.sleep(10)
-            self.gs.login()
             selfid = random.randint(0, 99)
             self.meta["security"].append(selfid)
             while True:
+                self.gs.login()
                 if len(self.meta["security"]) > 1:
                     if self.meta["security"][-1] != selfid:
                         print("Extinction ancien loop")
