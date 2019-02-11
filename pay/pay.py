@@ -32,7 +32,8 @@ class PayAPI:
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.meta = {"last_save": 0, "script": {}}
+        self.meta = {"last_save": 0, "script": {}, "last_try": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                     "last_update": None}
         self.cooldown = {}
 
         scope = ['https://spreadsheets.google.com/feeds']
@@ -46,11 +47,16 @@ class PayAPI:
         try:
             await asyncio.sleep(5)
             while True:
-                self.update_all_sheets()
-                print("MAJ Sheets réalisée")
-                await asyncio.sleep(120)
+                self.meta["last_try"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                if self.update_all_sheets():
+                    print("MAJ Sheets réalisée")
+                    self.meta["last_update"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                await asyncio.sleep(21600)
         except asyncio.CancelledError:
             pass
+
+    def get_update_status(self):
+        return (self.meta["last_try"], self.meta["last_update"])
 
     def save(self, force: bool = False):
         if force:
@@ -116,7 +122,6 @@ class PayAPI:
                 except Exception as e:
                     print(e)
                     return False
-            print("MAJ trop rapide")
             return False
 
     """try:
@@ -1170,6 +1175,25 @@ class Pay:
         else:
             await self.bot.say("Un compte Pay est nécessaire pour jouer à la machine à sous.")
 
+    @commands.command(pass_context=True, hidden=True)
+    async def sheetmaj(self, ctx):
+        """Force la MAJ des stats Pay sur le Google Sheets"""
+        if ctx.message.author.id == "168378684497985536":
+            if self.pay.update_all_sheets():
+                await self.bot.say(
+                    "**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
+            else:
+                await self.bot.say("**Echec de la mise à jour** ─ Elle a probablement déjà été réalisée aujourd'hui")
+        else:
+            pass
+
+    @commands.command(pass_context=True)
+    async def syncinfo(self, ctx):
+        """Affiche les infos sur la synchronisation avec le Google Sheet"""
+        infos = self.pay.get_update_status()
+        em = discord.Embed(title="Synchronisation Pay <-> Google Sheet",description="**Dernière tentative :** {}\n"
+                                       "**Dernière synchronisation :** {}".format(infos[0], infos[1]), url="https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing")
+        await self.bot.say(embed=em)
 
     @commands.group(name="modpay", aliases=["modbank", "mb"], pass_context=True, no_pm=True)
     @checks.admin_or_permissions(ban_members=True)
