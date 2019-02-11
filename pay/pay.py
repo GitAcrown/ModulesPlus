@@ -33,7 +33,7 @@ class PayAPI:
         self.bot = bot
         self.data = dataIO.load_json(path)
         self.meta = {"last_save": 0, "script": {}, "last_try": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                     "last_update": None}
+                     "last_update": None, "security": []}
         self.cooldown = {}
 
         scope = ['https://spreadsheets.google.com/feeds']
@@ -46,7 +46,13 @@ class PayAPI:
         await self.bot.wait_until_ready()
         try:
             await asyncio.sleep(5)
+            selfid = random.randint(0, 999)
+            self.meta["security"].append(selfid)
             while True:
+                if len(self.meta["security"]) > 1:
+                    if self.meta["security"][-1] != selfid:
+                        print("Extinction ancien loop")
+                        return
                 self.meta["last_try"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 if self.update_all_sheets():
                     print("MAJ Sheets réalisée")
@@ -728,7 +734,6 @@ class Pay:
 
     def __unload(self):
         self.pay.save(True)
-        self.bot.loop.close()
         print("Sauvegarde de Pay avant redémarrage effectuée & loop fermé")
 
     @commands.group(name="bank", aliases=["b", "pay"], pass_context=True, invoke_without_command=True, no_pm=True)
