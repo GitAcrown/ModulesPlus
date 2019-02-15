@@ -903,7 +903,7 @@ class Pay:
                 try:
                     username = server.get_member(l.userid).name
                 except:
-                    username = self.bot.get_user(l.userid).name
+                    username = self.bot.get_user_info(l.userid).name
                 if l.userid == ctx.message.author.id:
                     txt += "**{}.** __**{}**__ ─ **{}**g\n".format(n, username, l[0])
                     found = True
