@@ -1,21 +1,20 @@
+import asyncio
 import os
 import random
 import re
-from copy import deepcopy
-
-import asyncio
-from urllib.parse import unquote
 import time
+from urllib.parse import unquote
+
 import aiohttp
 import discord
 import wikipedia
 import wikipediaapi
 from __main__ import send_cmd_help
 from discord.ext import commands
-from sympy import sympify
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
+
 
 class SwiftAPI:
     """API de Swift - Assistant personnel fourni par Turing"""
@@ -46,7 +45,7 @@ class Swift:
         self.bot = bot
         self.swf = SwiftAPI(bot, "data/swift/data.json")
         self.sys = dataIO.load_json("data/swift/sys.json")
-        self.context = {"last_save": 0, "servers": {}}
+        self.context = {"last_save": 0, "servers": {}, "vuemoji": None}
         self.session = aiohttp.ClientSession()
         self.rgpd = "Turing exploite par le biais de différents modules vos données dans le but de vous offrir " \
                     "divers services. Ces données proviennent d'une part de Discord et d'autre part de l'analyse de " \
@@ -418,13 +417,17 @@ class Swift:
     async def onmessage(self, message):
         author = message.author
         if message.server:
+            if message.author.id == "284202680761581569":
+                if not self.context["vuemoji"]:
+                    emovu = [s for s in message.server.emojis if s.name == "vu"]
+                    self.context["vuemoji"] = emovu
+                await self.bot.add_reaction(message, self.context["vuemoji"])
             if not self.swf.get_member(author)["IGNORE"]:
                 server, channel, content = message.server, message.channel, message.content
                 sys = self.get_server(server)
                 opts, cache = sys["SERVICES"], sys["CACHE"]
                 session = self.get_context(server)
                 if not author.bot:
-                    
                     if opts["spoil"]:
                         if content.startswith("§") or content.lower().startswith("spoil:"):
                             await self.bot.delete_message(message)
