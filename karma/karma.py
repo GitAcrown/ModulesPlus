@@ -663,6 +663,245 @@ class Karma:
                 del cache[user.id]
                 self.save_cache(True)
 
+    @commands.command(aliases=["gp"], pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def prisonlist(self, ctx):
+        """Interface de gestion de la prison"""
+        server = ctx.message.server
+        meta = self.karma.get_server(server, "META")
+        menu = None
+        try:
+            role = discord.utils.get(server.roles, name=meta["prison_role"])
+        except Exception as e:
+            await self.bot.say("🚩 **Erreur** ─ Le rôle *{}* n'est pas accessible.\n"
+                               "Vérifiez que vous n'ayez pas changé son nom, si c'est le cas corrigez-le avec `.pset role`.\n"
+                               "`{}`".format(meta["prison_role"], e))
+            return
+        while True:
+            today = time.strftime("%d/%m", time.localtime())
+            cache = self.get_cache(server, "PRISON")
+            if cache:
+                txt = ""
+                plist = []
+                n = 1
+                for uid in cache:
+                    if cache[uid]["sortie"] >= time.time():
+                        try:
+                            user = server.get_member(uid)
+                        except:
+                            continue
+                        estim = time.strftime("%H:%M", time.localtime(cache[uid]["sortie"]))
+                        estimdate = time.strftime("%d/%m/%Y", time.localtime(cache[uid]["sortie"]))
+                        if estimdate == today:
+                            estimtxt = "{}".format(estim)
+                        else:
+                            estimtxt = "{} {}".format(estimdate, estim)
+                        msgused = ""
+                        if not cache[uid]["notif"]:
+                            msgused = " \📭"
+                        txt += "• {} ─ `{}`{}\n".format(user.mention, estimtxt, msgused)
+                        plist.append([n, user, estimtxt])
+                        n += 1
+                for member in server.members:
+                    if role in member.roles:
+                        if member not in [i[1] for i in plist]:
+                            txt += "◦ {} ─ `{}`\n".format(member.mention, "Manuel")
+                if txt == "":
+                    await self.bot.say("**Vide** Aucune membre n'est emprisonné en ce moment même.")
+                    return
+                em = discord.Embed(title="Gestionnaire de prison", description=txt, timestamp=datetime.utcnow(),
+                                  color=0xf96916)
+                em.set_footer(text="➕/Ajouter ─ ✍/Modifier membre ─ 🏳/Vider prison ─ ❎/Quitter (30s)")
+                if not menu:
+                    menu = await self.bot.say(embed=em)
+                else:
+                    menu = await self.bot.edit_message(menu, embed=em)
+                    await self.bot.clear_reactions(menu)
+                await self.bot.add_reaction(menu, "➕")
+                await self.bot.add_reaction(menu, "✍")
+                await self.bot.add_reaction(menu, "🏳")
+                await self.bot.add_reaction(menu, "❎")
+                await asyncio.sleep(0.2)
+                act = await self.bot.wait_for_reaction(["➕", "✍", "🏳", "❎"], message=menu, timeout=30,
+                                                       check=self.check)
+                if act is None or act.reaction.emoji == "❎":
+                    await self.bot.delete_message(menu)
+                    return
+                elif act.reaction.emoji == "✍":
+                    await self.bot.clear_reactions(menu)
+                    if plist:
+                        loopsup = True
+                        while loopsup:
+                            try:
+                                await self.bot.delete_message(menu)
+                            except:
+                                pass
+                            txt = ""
+                            namelist = []
+                            for i in plist:
+                                user = i[1]
+                                namelist.append(user.name.lower())
+                                msgused = ""
+                                if not cache[user.id]["notif"]:
+                                    msgused = " \📭"
+                                txt += "**{}**. {} ─ `{}`{}\n".format(i[0], user.mention, i[2], msgused)
+                            em = discord.Embed(title="Gestionnaire de prison ─ Modifier", description=txt, timestamp=datetime.utcnow(),
+                                      color=0xf96916)
+                            em.set_footer(text="Entrez le chiffre ou le nom du membre à modifier [ou 'retour']")
+                            menu = await self.bot.say(embed=em)
+                            rep = await self.bot.wait_for_message(author=ctx.message.author, channel=menu.channel,
+                                                                  timeout=30)
+                            if rep is None:
+                                await self.bot.delete_message(menu)
+                                loopsup = False
+                                continue
+                            elif rep.content.lower() in namelist or rep.content in [i[0] for i in plist]:
+                                await self.bot.delete_message(menu)
+                                cible = None
+                                if rep.content.isdigit():
+                                    for i in plist:
+                                        if rep.content == i[0]:
+                                            cible = i[1]
+                                            break
+                                else:
+                                    for i in plist:
+                                        if rep.content.lower == i[1].name.lower():
+                                            cible = i[1]
+                                            break
+                                if cible:
+                                    txt = "📨 ─ Donner/retirer un droit de message de prison\n" \
+                                          "⌛ ─ Ajuster le temps\n" \
+                                          "🔓 ─ Libérer le membre\n" \
+                                          "↩ ─ Retour au menu"
+                                    em = discord.Embed(title="Gestionnaire de prison ─ Modifier {}".format(cible.name), description=txt,
+                                                       timestamp=datetime.utcnow(),
+                                                       color=0xf96916)
+                                    em.set_footer(text="Cliquez sur la réaction correspondante à l'action voulue")
+                                    await self.bot.add_reaction(menu, "📨")
+                                    await self.bot.add_reaction(menu, "⌛")
+                                    await self.bot.add_reaction(menu, "🔓")
+                                    await self.bot.add_reaction(menu, "↩")
+                                    await asyncio.sleep(0.2)
+                                    act = await self.bot.wait_for_reaction(["📨", "⌛", "🔓", "↩"], message=menu, timeout=20,
+                                                                           check=self.check)
+                                    if act is None or act.reaction.emoji == "↩":
+                                        await self.bot.delete_message(menu)
+                                        continue
+                                    elif act.reaction.emoji == "📨":
+                                        await self.bot.delete_message(menu)
+                                        if not cache[cible.id]["notif"]:
+                                            cache[cible.id]["notif"] = True
+                                            await self.bot.say("**Modifié** ─ Vous avez attribué un droit de message au membre visé.")
+                                        else:
+                                            cache[cible.id]["notif"] = False
+                                            await self.bot.say(
+                                                "**Modifié** ─ Vous avez retiré le droit de message du membre visé.")
+                                        continue
+                                    elif act.reaction.emoji == "⌛":
+                                        await self.bot.delete_message(menu)
+                                        loop = True
+                                        while loop:
+                                            txt = "Entrez l'heure de sortie du membre\n" \
+                                                  "Aide ─ ||Format: `JJ/MM/AAAA HH:MM`||"
+                                            em = discord.Embed(title="Gestionnaire de prison ─ Modifier {}".format(cible.name),
+                                                               description=txt,
+                                                               timestamp=datetime.utcnow(),
+                                                               color=0xf96916)
+                                            menu = await self.bot.say(embed=em)
+                                            rep = await self.bot.wait_for_message(author=ctx.message.author,
+                                                                                  channel=menu.channel,
+                                                                                  timeout=45)
+                                            if rep is None:
+                                                loop = False
+                                                await self.bot.delete_message(menu)
+                                                continue
+                                            elif len(rep.content) == 16:
+                                                await self.bot.delete_message(menu)
+                                                try:
+                                                    newts = datetime.strptime(rep.content, "%d/%m/%Y %H:%M")
+                                                    cache[cible.id]["sortie"] = newts
+                                                    await self.bot.say("**Modifié** ─ Le membre sortira à l'heure indiquée.")
+                                                except Exception as e:
+                                                    await self.bot.say("**Erreur** ─ Impossible de modifier la sortie du membre.\n"
+                                                                       "`" + e + "`")
+                                                loop = False
+                                            else:
+                                                await self.bot.say("**Incorrect** ─ Réessayez...")
+                                    elif act.reaction.emoji == "🔓":
+                                        await self.bot.delete_message(menu)
+                                        cache[cible.id]["sortie"] = 0
+                                        await self.bot.say("**Libération** ─ Le membre devrait sortir d'une seconde à l'autre...")
+                                    else:
+                                        await self.bot.delete_message(menu)
+                                        continue
+                            elif rep.content.lower() in ["retour", "stop", "quit", "quitter"]:
+                                await self.bot.delete_message(menu)
+                                loopsup = False
+                                continue
+                            else:
+                                menu = await self.bot.say("**Incorrect** ─ Vous pouvez aussi quitter en tapant `retour`")
+                elif act.reaction.emoji == "➕":
+                    await self.bot.clear_reactions(menu)
+                    txt = "Mentionnez les membres que vous voulez ajouter à la prison (10m)"
+                    em = discord.Embed(title="Gestionnaire de prison ─ Ajouter", description=txt, timestamp=datetime.utcnow(),
+                                                               color=0xf96916)
+                    menu = await self.bot.edit_message(menu, embed=em)
+                    rep = await self.bot.wait_for_message(author=ctx.message.author,
+                                                          channel=menu.channel,
+                                                          timeout=45)
+                    if rep is None:
+                        await self.bot.delete_message(menu)
+                        continue
+                    elif rep.mentions:
+                        await self.bot.delete_message(menu)
+                        success = ""
+                        for user in rep.mentions:
+                            new_message = deepcopy(ctx.message)
+                            new_message.content = ".p " + user.mention
+                            await self.bot.process_commands(new_message)
+                            success += "• " + user.mention + "\n"
+                        await self.bot.say("__**Membres mis en prison**__\n\n" + success)
+                        continue
+                    else:
+                        await self.bot.delete_message(menu)
+                        await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, retour au menu.")
+                        continue
+                elif act.reaction.emoji == "🏳":
+                    await self.bot.clear_reactions(menu)
+                    for user in cache:
+                        cache[user]["sortie"] = 0
+                    await self.bot.edit_message(menu, "**Succès** ─ Les membres devraient sortir d'une seconde à l'autre...")
+                else:
+                    return
+            else:
+                txt = "Mentionnez les membres que vous voulez ajouter à la prison (10m)\n" \
+                      "Pour quitter, tapez `quit`."
+                em = discord.Embed(title="Gestionnaire de prison ─ Ajouter des membres", description=txt,
+                                   timestamp=datetime.utcnow(),
+                                   color=0xf96916)
+                menu = await self.bot.say(embed=em)
+                rep = await self.bot.wait_for_message(author=ctx.message.author,
+                                                      channel=menu.channel,
+                                                      timeout=45)
+                if rep is None or rep.content.lower() in ["stop", "quit", "quitter", "retour"]:
+                    await self.bot.delete_message(menu)
+                    return
+                elif rep.mentions:
+                    await self.bot.delete_message(menu)
+                    success = ""
+                    for user in rep.mentions:
+                        new_message = deepcopy(ctx.message)
+                        new_message.content = ".p " + user.mention
+                        await self.bot.process_commands(new_message)
+                        success += "• " + user.mention + "\n"
+                    await self.bot.say("__**Membres mis en prison**__\n\n" + success)
+                    continue
+                else:
+                    await self.bot.delete_message(menu)
+                    await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, bye 👋")
+                    return
+
+
     @commands.command(aliases=["pmsg", "appel"], pass_context=True)
     async def prisonmsg(self, ctx, *message: str):
         author = ctx.message.author
