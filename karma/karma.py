@@ -855,7 +855,7 @@ class Karma:
                         continue
                     elif rep.mentions:
                         success = ""
-                        for user in rep.mentions:
+                        async for user in rep.mentions:
                             new_message = deepcopy(ctx.message)
                             new_message.content = ".p " + user.mention
                             await self.bot.process_commands(new_message)
