@@ -712,11 +712,9 @@ class Karma:
                 em = discord.Embed(title="Gestionnaire de prison", description=txt,
                                   color=0xf96916)
                 em.set_footer(text="➕/Ajouter ─ ✍/Modifier membre ─ 🏳/Vider prison ─ ❎/Quitter (30s)")
-                if not menu:
-                    menu = await self.bot.say(embed=em)
-                else:
-                    menu = await self.bot.edit_message(menu, embed=em)
-                    await self.bot.clear_reactions(menu)
+                if menu:
+                    await self.bot.delete_message(menu)
+                menu = await self.bot.say(embed=em)
                 await self.bot.add_reaction(menu, "➕")
                 await self.bot.add_reaction(menu, "✍")
                 await self.bot.add_reaction(menu, "🏳")
@@ -728,14 +726,9 @@ class Karma:
                     await self.bot.delete_message(menu)
                     return
                 elif act.reaction.emoji == "✍":
-                    await self.bot.clear_reactions(menu)
                     if plist:
                         loopsup = True
                         while loopsup:
-                            try:
-                                await self.bot.delete_message(menu)
-                            except:
-                                pass
                             txt = ""
                             namelist = []
                             for i in plist:
@@ -748,15 +741,15 @@ class Karma:
                             em = discord.Embed(title="Gestionnaire de prison ─ Modifier", description=txt, timestamp=datetime.utcnow(),
                                       color=0xf96916)
                             em.set_footer(text="Entrez le chiffre ou le nom du membre à modifier [ou 'retour']")
-                            menu = await self.bot.say(embed=em)
-                            rep = await self.bot.wait_for_message(author=ctx.message.author, channel=menu.channel,
+                            msg = await self.bot.say(embed=em)
+                            rep = await self.bot.wait_for_message(author=ctx.message.author, channel=msg.channel,
                                                                   timeout=30)
                             if rep is None:
-                                await self.bot.delete_message(menu)
+                                await self.bot.delete_message(msg)
                                 loopsup = False
                                 continue
                             elif rep.content.lower() in namelist or rep.content in [i[0] for i in plist]:
-                                await self.bot.delete_message(menu)
+                                await self.bot.delete_message(msg)
                                 cible = None
                                 if rep.content.isdigit():
                                     for i in plist:
@@ -777,18 +770,19 @@ class Karma:
                                                        timestamp=datetime.utcnow(),
                                                        color=0xf96916)
                                     em.set_footer(text="Cliquez sur la réaction correspondante à l'action voulue")
-                                    await self.bot.add_reaction(menu, "📨")
-                                    await self.bot.add_reaction(menu, "⌛")
-                                    await self.bot.add_reaction(menu, "🔓")
-                                    await self.bot.add_reaction(menu, "↩")
+                                    msg = await self.bot.say(embed=em)
+                                    await self.bot.add_reaction(msg, "📨")
+                                    await self.bot.add_reaction(msg, "⌛")
+                                    await self.bot.add_reaction(msg, "🔓")
+                                    await self.bot.add_reaction(msg, "↩")
                                     await asyncio.sleep(0.2)
-                                    act = await self.bot.wait_for_reaction(["📨", "⌛", "🔓", "↩"], message=menu, timeout=20,
+                                    act = await self.bot.wait_for_reaction(["📨", "⌛", "🔓", "↩"], message=msg, timeout=20,
                                                                            check=self.check)
                                     if act is None or act.reaction.emoji == "↩":
-                                        await self.bot.delete_message(menu)
+                                        await self.bot.delete_message(msg)
                                         continue
                                     elif act.reaction.emoji == "📨":
-                                        await self.bot.delete_message(menu)
+                                        await self.bot.delete_message(msg)
                                         if not cache[cible.id]["notif"]:
                                             cache[cible.id]["notif"] = True
                                             await self.bot.say("**Modifié** ─ Vous avez attribué un droit de message au membre visé.")
@@ -798,7 +792,7 @@ class Karma:
                                                 "**Modifié** ─ Vous avez retiré le droit de message du membre visé.")
                                         continue
                                     elif act.reaction.emoji == "⌛":
-                                        await self.bot.delete_message(menu)
+                                        await self.bot.delete_message(msg)
                                         loop = True
                                         while loop:
                                             txt = "Entrez l'heure de sortie du membre\n" \
@@ -807,16 +801,16 @@ class Karma:
                                                                description=txt,
                                                                timestamp=datetime.utcnow(),
                                                                color=0xf96916)
-                                            menu = await self.bot.say(embed=em)
+                                            msg = await self.bot.say(embed=em)
                                             rep = await self.bot.wait_for_message(author=ctx.message.author,
-                                                                                  channel=menu.channel,
+                                                                                  channel=msg.channel,
                                                                                   timeout=45)
                                             if rep is None:
                                                 loop = False
-                                                await self.bot.delete_message(menu)
+                                                await self.bot.delete_message(msg)
                                                 continue
                                             elif len(rep.content) == 16:
-                                                await self.bot.delete_message(menu)
+                                                await self.bot.delete_message(msg)
                                                 try:
                                                     newts = datetime.strptime(rep.content, "%d/%m/%Y %H:%M")
                                                     cache[cible.id]["sortie"] = newts
@@ -828,20 +822,21 @@ class Karma:
                                             else:
                                                 await self.bot.say("**Incorrect** ─ Réessayez...")
                                     elif act.reaction.emoji == "🔓":
-                                        await self.bot.delete_message(menu)
+                                        await self.bot.delete_message(msg)
                                         cache[cible.id]["sortie"] = 0
                                         await self.bot.say("**Libération** ─ Le membre devrait sortir d'une seconde à l'autre...")
                                     else:
-                                        await self.bot.delete_message(menu)
+                                        await self.bot.delete_message(msg)
                                         continue
                             elif rep.content.lower() in ["retour", "stop", "quit", "quitter"]:
-                                await self.bot.delete_message(menu)
+                                await self.bot.delete_message(msg)
                                 loopsup = False
                                 continue
                             else:
-                                menu = await self.bot.say("**Incorrect** ─ Vous pouvez aussi quitter en tapant `retour`")
+                                notif = await self.bot.say("**Incorrect** ─ Vous pouvez aussi quitter en tapant `retour`")
+                                await asyncio.sleep(4)
+                                await self.bot.delete_message(notif)
                 elif act.reaction.emoji == "➕":
-                    await self.bot.clear_reactions(menu)
                     txt = "Mentionnez les membres que vous voulez ajouter à la prison (10m)"
                     em = discord.Embed(title="Gestionnaire de prison ─ Ajouter", description=txt, timestamp=datetime.utcnow(),
                                                                color=0xf96916)
@@ -850,10 +845,8 @@ class Karma:
                                                           channel=menu.channel,
                                                           timeout=45)
                     if rep is None:
-                        await self.bot.delete_message(menu)
                         continue
                     elif rep.mentions:
-                        await self.bot.delete_message(menu)
                         success = ""
                         for user in rep.mentions:
                             new_message = deepcopy(ctx.message)
@@ -863,14 +856,13 @@ class Karma:
                         await self.bot.say("__**Membres mis en prison**__\n\n" + success)
                         continue
                     else:
-                        await self.bot.delete_message(menu)
                         await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, retour au menu.")
                         continue
                 elif act.reaction.emoji == "🏳":
-                    await self.bot.clear_reactions(menu)
                     for user in cache:
                         cache[user]["sortie"] = 0
                     await self.bot.edit_message(menu, "**Succès** ─ Les membres devraient sortir d'une seconde à l'autre...")
+                    await asyncio.sleep(5)
                 else:
                     return
             else:
@@ -879,15 +871,15 @@ class Karma:
                 em = discord.Embed(title="Gestionnaire de prison ─ Ajouter des membres", description=txt,
                                    timestamp=datetime.utcnow(),
                                    color=0xf96916)
-                menu = await self.bot.say(embed=em)
+                msg = await self.bot.say(embed=em)
                 rep = await self.bot.wait_for_message(author=ctx.message.author,
-                                                      channel=menu.channel,
+                                                      channel=msg.channel,
                                                       timeout=45)
                 if rep is None or rep.content.lower() in ["stop", "quit", "quitter", "retour"]:
-                    await self.bot.delete_message(menu)
+                    await self.bot.delete_message(msg)
                     return
                 elif rep.mentions:
-                    await self.bot.delete_message(menu)
+                    await self.bot.delete_message(msg)
                     success = ""
                     for user in rep.mentions:
                         new_message = deepcopy(ctx.message)
@@ -897,7 +889,7 @@ class Karma:
                     await self.bot.say("__**Membres mis en prison**__\n\n" + success)
                     continue
                 else:
-                    await self.bot.delete_message(menu)
+                    await self.bot.delete_message(msg)
                     await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, bye 👋")
                     return
 
