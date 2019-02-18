@@ -709,7 +709,7 @@ class Karma:
                 if txt == "":
                     await self.bot.say("**Vide** Aucune membre n'est emprisonné en ce moment même.")
                     return
-                em = discord.Embed(title="Gestionnaire de prison", description=txt, timestamp=datetime.utcnow(),
+                em = discord.Embed(title="Gestionnaire de prison", description=txt,
                                   color=0xf96916)
                 em.set_footer(text="➕/Ajouter ─ ✍/Modifier membre ─ 🏳/Vider prison ─ ❎/Quitter (30s)")
                 if not menu:
