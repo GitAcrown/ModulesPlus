@@ -675,6 +675,7 @@ class Karma:
     async def prisonlist(self, ctx):
         """Interface de gestion de la prison"""
         server = ctx.message.server
+        meta = self.karma.get_server(server, "META")
         menu = None
         try:
             role = discord.utils.get(server.roles, name=meta["prison_role"])
