@@ -663,12 +663,18 @@ class Karma:
                 del cache[user.id]
                 self.save_cache(True)
 
+    def anyone_in_jail(self, server: discord.Server):
+        cache = self.get_cache(server, "PRISON")
+        for user in cache:
+            if cache[user]["sortie"] >= time.time():
+                return True
+        return False
+
     @commands.command(aliases=["gp"], pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def prisonlist(self, ctx):
         """Interface de gestion de la prison"""
         server = ctx.message.server
-        meta = self.karma.get_server(server, "META")
         menu = None
         try:
             role = discord.utils.get(server.roles, name=meta["prison_role"])
@@ -680,7 +686,7 @@ class Karma:
         while True:
             today = time.strftime("%d/%m", time.localtime())
             cache = self.get_cache(server, "PRISON")
-            if cache:
+            if cache or self.anyone_in_jail(server):
                 txt = ""
                 plist = []
                 n = 1
@@ -707,7 +713,7 @@ class Karma:
                         if member not in [i[1] for i in plist]:
                             txt += "◦ {} ─ `{}`\n".format(member.mention, "Manuel")
                 if txt == "":
-                    await self.bot.say("**Vide** Aucune membre n'est emprisonné en ce moment même.")
+                    await self.bot.say("**Vide** ─ Aucune membre n'est emprisonné en ce moment même.")
                     return
                 em = discord.Embed(title="Gestionnaire de prison", description=txt,
                                   color=0xf96916)
