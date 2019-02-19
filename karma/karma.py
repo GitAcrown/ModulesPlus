@@ -738,6 +738,26 @@ class Karma:
                         while loopsup:
                             txt = ""
                             namelist = []
+                            plist = []
+                            n = 1
+                            for uid in cache:
+                                if cache[uid]["sortie"] >= time.time():
+                                    try:
+                                        user = server.get_member(uid)
+                                    except:
+                                        continue
+                                    estim = time.strftime("%H:%M", time.localtime(cache[uid]["sortie"]))
+                                    estimdate = time.strftime("%d/%m/%Y", time.localtime(cache[uid]["sortie"]))
+                                    if estimdate == today:
+                                        estimtxt = "{}".format(estim)
+                                    else:
+                                        estimtxt = "{} {}".format(estimdate, estim)
+                                    msgused = ""
+                                    if not cache[uid]["notif"]:
+                                        msgused = " \📭"
+                                    txt += "• {} ─ `{}`{}\n".format(user.mention, estimtxt, msgused)
+                                    plist.append([n, user, estimtxt])
+                                    n += 1
                             for i in plist:
                                 user = i[1]
                                 namelist.append(user.name.lower())
@@ -822,9 +842,27 @@ class Karma:
                                                     newts = datetime.strptime(rep.content, "%d/%m/%Y %H:%M")
                                                     cache[cible.id]["sortie"] = newts.timestamp()
                                                     await self.bot.say("**Modifié** ─ Le membre sortira à l'heure indiquée.")
+                                                    em = discord.Embed(
+                                                        description="⌛ **Peine alourdie** ─ **+{}{}** par *{}*".format(
+                                                            valeur, form, ctx.message.author.name), color=role.color)
+                                                    estim = time.strftime("%H:%M",
+                                                                          time.localtime(cache[cible.id]["sortie"]))
+                                                    estimdate = time.strftime("%d/%m/%Y",
+                                                                              time.localtime(cache[cible.id]["sortie"]))
+                                                    if estimdate == today:
+                                                        estimtxt = "Sortie prévue à {}".format(estim)
+                                                    else:
+                                                        estimtxt = "Sortie prévue le {} à {}".format(estimdate, estim)
+                                                    em.set_footer(text=estimtxt)
+                                                    try:
+                                                        await self.bot.send_message(cible, embed=em)
+                                                    except:
+                                                        print(
+                                                            "{} ({}) m'a bloqué, impossible de lui envoyer une estimation de peine".format(
+                                                                cible.name, cible.id))
                                                 except Exception as e:
                                                     await self.bot.say("**Erreur** ─ Impossible de modifier la sortie du membre.\n"
-                                                                       "`" + e + "`")
+                                                                       "`" + str(e) + "`")
                                                 loop = False
                                             else:
                                                 await self.bot.say("**Incorrect** ─ Réessayez...")
@@ -870,7 +908,7 @@ class Karma:
                         await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, retour au menu.")
                         continue
                 elif act.reaction.emoji == "🏳":
-                    cache = self.get_cache(server, "PRISON")[cible.id]["sortie"]
+                    cache = self.get_cache(server, "PRISON")
                     for user in cache:
                         cache[user]["sortie"] = 0
                     await self.bot.edit_message(menu, "**Succès** ─ Les membres devraient sortir d'une seconde à l'autre...")
