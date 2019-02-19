@@ -760,12 +760,12 @@ class Karma:
                                 cible = None
                                 if rep.content.isdigit():
                                     for i in plist:
-                                        if rep.content == i[0]:
+                                        if rep.content == str(i[0]):
                                             cible = i[1]
                                             break
                                 else:
                                     for i in plist:
-                                        if rep.content.lower == i[1].name.lower():
+                                        if rep.content.lower() == i[1].name.lower():
                                             cible = i[1]
                                             break
                                 if cible:
@@ -835,6 +835,8 @@ class Karma:
                                     else:
                                         await self.bot.delete_message(msg)
                                         continue
+                                else:
+                                    await self.bot.say("**Erreur** ─ Hum, je ne peux pas atteindre ce membre...")
                             elif rep.content.lower() in ["retour", "stop", "quit", "quitter"]:
                                 await self.bot.delete_message(msg)
                                 loopsup = False
