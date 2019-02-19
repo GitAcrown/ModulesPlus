@@ -752,10 +752,6 @@ class Karma:
                                         estimtxt = "{}".format(estim)
                                     else:
                                         estimtxt = "{} {}".format(estimdate, estim)
-                                    msgused = ""
-                                    if not cache[uid]["notif"]:
-                                        msgused = " \📭"
-                                    txt += "• {} ─ `{}`{}\n".format(user.mention, estimtxt, msgused)
                                     plist.append([n, user, estimtxt])
                                     n += 1
                             for i in plist:
