@@ -839,8 +839,7 @@ class Karma:
                                                     cache[cible.id]["sortie"] = newts.timestamp()
                                                     await self.bot.say("**Modifié** ─ Le membre sortira à l'heure indiquée.")
                                                     em = discord.Embed(
-                                                        description="⌛ **Peine alourdie** ─ **+{}{}** par *{}*".format(
-                                                            valeur, form, ctx.message.author.name), color=role.color)
+                                                        description="⌛ **Peine modifiée** par *{}*".format(ctx.message.author.name), color=role.color)
                                                     estim = time.strftime("%H:%M",
                                                                           time.localtime(cache[cible.id]["sortie"]))
                                                     estimdate = time.strftime("%d/%m/%Y",
