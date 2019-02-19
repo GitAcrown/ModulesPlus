@@ -830,7 +830,7 @@ class Karma:
                                                 await self.bot.say("**Incorrect** ─ Réessayez...")
                                     elif act.reaction.emoji == "🔓":
                                         await self.bot.delete_message(msg)
-                                        cache[cible.id]["sortie"] = 0
+                                        self.get_cache(server, "PRISON")[cible.id]["sortie"] = 0
                                         await self.bot.say("**Libération** ─ Le membre devrait sortir d'une seconde à l'autre...")
                                     else:
                                         await self.bot.delete_message(msg)
@@ -870,6 +870,7 @@ class Karma:
                         await self.bot.say("**Erreur** ─ Vous n'avez mentionné personne, retour au menu.")
                         continue
                 elif act.reaction.emoji == "🏳":
+                    cache = self.get_cache(server, "PRISON")[cible.id]["sortie"]
                     for user in cache:
                         cache[user]["sortie"] = 0
                     await self.bot.edit_message(menu, "**Succès** ─ Les membres devraient sortir d'une seconde à l'autre...")
