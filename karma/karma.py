@@ -755,7 +755,7 @@ class Karma:
                                 await self.bot.delete_message(msg)
                                 loopsup = False
                                 continue
-                            elif rep.content.lower() in namelist or rep.content in [i[0] for i in plist]:
+                            elif rep.content.lower() in namelist or rep.content in [str(i[0]) for i in plist]:
                                 await self.bot.delete_message(msg)
                                 cible = None
                                 if rep.content.isdigit():
