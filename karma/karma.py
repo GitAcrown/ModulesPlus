@@ -820,7 +820,7 @@ class Karma:
                                                 await self.bot.delete_message(msg)
                                                 try:
                                                     newts = datetime.strptime(rep.content, "%d/%m/%Y %H:%M")
-                                                    cache[cible.id]["sortie"] = newts
+                                                    cache[cible.id]["sortie"] = newts.timestamp()
                                                     await self.bot.say("**Modifié** ─ Le membre sortira à l'heure indiquée.")
                                                 except Exception as e:
                                                     await self.bot.say("**Erreur** ─ Impossible de modifier la sortie du membre.\n"
