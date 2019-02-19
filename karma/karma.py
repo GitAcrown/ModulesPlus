@@ -844,6 +844,8 @@ class Karma:
                                 await asyncio.sleep(4)
                                 await self.bot.delete_message(notif)
                 elif act.reaction.emoji == "➕":
+                    await self.bot.say("**Non dispo.** ─ Cette partie est encore en développement !")
+                    continue
                     txt = "Mentionnez les membres que vous voulez ajouter à la prison (10m)"
                     em = discord.Embed(title="Gestionnaire de prison ─ Ajouter", description=txt, timestamp=datetime.utcnow(),
                                                                color=0xf96916)
@@ -855,7 +857,7 @@ class Karma:
                         continue
                     elif rep.mentions:
                         success = ""
-                        async for user in rep.mentions:
+                        for user in rep.mentions:
                             new_message = deepcopy(ctx.message)
                             new_message.content = ".p " + user.mention
                             await self.bot.process_commands(new_message)
