@@ -417,11 +417,7 @@ class Swift:
     async def onmessage(self, message):
         author = message.author
         if message.server:
-            if message.author.id == "284202680761581569":
-                if not self.context["vuemoji"]:
-                    emovu = [s for s in message.server.emojis if s.name == "vu"][0]
-                    self.context["vuemoji"] = emovu
-                await self.bot.add_reaction(message, self.context["vuemoji"])
+
             if not self.swf.get_member(author)["IGNORE"]:
                 server, channel, content = message.server, message.channel, message.content
                 sys = self.get_server(server)
