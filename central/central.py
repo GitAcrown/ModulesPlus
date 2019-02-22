@@ -68,9 +68,9 @@ class Central:
         service = self.get_service(nom)
         if service:
             if nom not in sys:
-                sys[nom] = True
+                self.get_sys(server)["SERVICES"][nom] = True
                 if service[1] != False:
-                    cache[nom] = service[1]
+                    self.get_sys(server)["CACHE"][nom] = service[1]
                 self.save_sys()
             return True
         return ()
@@ -154,6 +154,7 @@ class Central:
                                         notif = await self.bot.send_message(message.channel, "{} ─ Vous avez bloqué mes MP, vous ne pouvez pas voir les reposts.".format(user.mention))
                                         await asyncio.sleep(5)
                                         await self.bot.delete_message(notif)
+                                return
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
@@ -186,7 +187,7 @@ class Central:
             elif rep.content.lower() in [i[0] for i in services]:
                 srv = self.get_service(rep.content.lower())
                 self.get_sys(server)["SERVICES"][srv[0]] = not self.get_sys(server)["SERVICES"][srv[0]]
-                self.save_sys()
+                self.save_sys(True)
                 em = discord.Embed(title="Services du Central", description=srv[2], color=0xfff952)
                 em.set_footer(text="Service modifié avec succès ─ Patientez S.V.P.")
                 await self.bot.edit_message(msg, embed=em)
