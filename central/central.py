@@ -49,6 +49,11 @@ class Central:
             fileIO("data/central/sys.json", "save", self.sys)
             self.metasys["ls"] = time.time()
 
+    def reset_sys(self):
+        self.sys = {}
+        self.save_sys(True)
+        return True
+
     def get_sys(self, server: discord.Server):
         """Renvoie les paramètres du serveur"""
         if server.id not in self.sys:
@@ -94,6 +99,8 @@ class Central:
                     url = op[0]
                     if url in cache["repost"]:
                         cache["repost"][url].append((message.id, message.channel.id, message.author.id, time.time()))
+                        if len(cache["repost"]) >= 200:
+                            cache["repost"].remove(cache["repost"][0])
                         await self.bot.add_reaction(message, "♻")
                     else:
                         cache["repost"][url] = []
@@ -190,6 +197,11 @@ class Central:
                 em.set_footer(text="Service inconnu ─ Réessayez")
                 await self.bot.edit_message(msg, embed=em)
                 await asyncio.sleep(2)
+
+    @commands.command(pass_context=True, hidden=True)
+    async def resetservices(self, ctx):
+        self.reset_sys()
+        await self.bot.say("**Succès**")
 
 
 def check_folders():
