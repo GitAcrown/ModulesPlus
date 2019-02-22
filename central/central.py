@@ -72,9 +72,7 @@ class Central:
                 if service[1] != False:
                     cache[nom] = service[1]
                 self.save_sys()
-            if service[1] != False:
-                return (sys[nom], cache[nom])
-            return (sys[nom], False)
+            return True
         return ()
 
     def get_service(self, nom: str = None):
@@ -94,7 +92,7 @@ class Central:
             cache = self.get_sys(server)["CACHE"]
             content = message.content
             if "http" in content:
-                op = re.compile(r'(https?:+\/\/[^:\/\s]+.*(?=\?))', re.DOTALL | re.IGNORECASE).findall(content)
+                op = re.compile(r'(https?:+\/\/[^:\/\s]+[^?]*)', re.DOTALL | re.IGNORECASE).findall(content)
                 if op:
                     url = op[0]
                     if url in cache["repost"]:
