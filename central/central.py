@@ -52,8 +52,8 @@ class Central:
     def get_sys(self, server: discord.Server):
         """Renvoie les paramètres du serveur"""
         if server.id not in self.sys:
-            self.sys[server.id] = {"SERVICES": sl,
-                                   "CACHE": cl}
+            self.sys[server.id] = {"SERVICES": {},
+                                   "CACHE": {}}
             self.save_sys(True)
         return self.sys[server.id]
 
