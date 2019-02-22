@@ -134,17 +134,20 @@ class Central:
                 server = message.server
                 if self.check_service(server, "repost"):
                     if reaction.emoji == "♻":
+                        print("Emoji détecté")
                         r_cache = self.get_sys(server)["CACHE"]["repost"]
                         for i in r_cache:
                             if message.id == r_cache[i][0]:
+                                print("Message trouve")
                                 txt = ""
                                 for u in r_cache:
                                     try:
                                         txt += "**{}** ─ par {} sur {}\n".format(datetime.fromtimestamp(
                                             r_cache[u][3]).strftime("%d/%m/%Y %H:%M"),
                                                                                  server.get_member(r_cache[u][2]),
-                                                                                 self.bot.get_channel(r_cache[u][1]))
+                                                                                self.bot.get_channel(r_cache[u][1]))
                                     except:
+                                        print("Impossible de récuperer un ancien repost")
                                         pass
                                 if txt:
                                     em = discord.Embed(title="Repost ─ {}".format(i), description=txt, color=user.color)
