@@ -69,10 +69,10 @@ class Central:
         if service:
             if nom not in sys:
                 sys[nom] = True
-                if service[1]:
+                if service[1] != False:
                     cache[nom] = service[1]
                 self.save_sys()
-            if service[1]:
+            if service[1] != False:
                 return (sys[nom], cache[nom])
             return (sys[nom], False)
         return ()
@@ -187,12 +187,12 @@ class Central:
                 return
             elif rep.content.lower() in [i[0] for i in services]:
                 srv = self.get_service(rep.content.lower())
-                sys[srv[0]] = not sys[srv[0]]
+                self.get_sys(server)["SERVICES"][srv[0]] = not self.get_sys(server)["SERVICES"][srv[0]]
                 self.save_sys()
                 em = discord.Embed(title="Services du Central", description=srv[2], color=0xfff952)
                 em.set_footer(text="Service modifié avec succès ─ Patientez S.V.P.")
                 await self.bot.edit_message(msg, embed=em)
-                await asyncio.sleep(4)
+                await asyncio.sleep(3.5)
             else:
                 em.set_footer(text="Service inconnu ─ Réessayez")
                 await self.bot.edit_message(msg, embed=em)
