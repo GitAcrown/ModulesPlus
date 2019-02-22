@@ -72,7 +72,7 @@ class Central:
                 if service[1] != False:
                     self.get_sys(server)["CACHE"][nom] = service[1]
                 self.save_sys()
-            return True
+            return sys[nom]
         return ()
 
     def get_service(self, nom: str = None):
