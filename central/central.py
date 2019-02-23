@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 
 import discord
+import praw
 from discord.ext import commands
 
 from .utils import checks
@@ -41,6 +42,9 @@ class Central:
         self.sys = dataIO.load_json("data/central/sys.json")
         self.metasys = {"ls": 0}
         self.context = {}
+        self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w',
+                     client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
+                     user_agent='discordbot:Stay.:1.0 (by /u/Nordsko)')
 
     def save_sys(self, force: bool = False):
         if force:
@@ -78,13 +82,50 @@ class Central:
     def get_service(self, nom: str = None):
         """Renvoie les infos sur un service"""
         serv_list = [("repost", {}, "Détecte les reposts de liens web"),
-                     ("msg_chrono", False, "Permet de créer des messages chronométrés avec !Xs")]
+                     ("msg_chrono", False, "Permet de créer des messages chronométrés avec !Xs"),
+                     ("reddit", False, "Détecte les ")]
         if nom:
             for s in serv_list:
                 if s[0] == nom.lower():
                     return s
             return ()
         return serv_list
+
+    async def _reddit_embed(self, message: discord.Message):
+        server = message.server
+        if self.check_service(server, "reddit"):
+            content = message.content
+            if "r/" in content:
+                op = re.compile(r'(?<!\/|\w|[.-:;])r\/(\w*)(?!\/|\w|[.-:;])', re.IGNORECASE | re.DOTALL).findall(
+                    content)
+                if op:
+                    for r in op:
+                        try:
+                            reddit = self.reddit.subreddits.search_by_name(r, exact=True)[0]
+                            if reddit.over18:
+                                txt = ""
+                                for submit in reddit.hot(limit=3):
+                                    txt += "· ||[**{0}**]({1})|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                        submit.title, submit.permalink, submit.author.name)
+                                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                                                   title="r/" + reddit.display_name.title() + " [NSFW]",
+                                                   description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
+                                em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
+                                await self.bot.send_message(message.author, embed=em)
+                            else:
+                                txt = ""
+                                for submit in reddit.hot(limit=3):
+                                    txt += "· [**{0}**]({1}) (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                        submit.title, submit.permalink, submit.author.name)
+                                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                                                   title="r/" + reddit.display_name.title(),
+                                                   description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
+                                if reddit.banner_img:
+                                    em.set_image(url=reddit.banner_img)
+                                await self.bot.send_message(message.author, embed=em)
+                        except:
+                            pass
+        return False
 
     async def _repost_detect(self, message: discord.Message):
         server = message.server
@@ -108,10 +149,11 @@ class Central:
 
     async def on_msg(self, message):
         if message.server:
-            author = message.author
             server = message.server
             if self.check_service(server, "repost"):
                 await self._repost_detect(message)
+            if self.check_service(server, "reddit"):
+                await self._reddit_embed(message)
             if self.check_service(server, "msg_chrono"):
                 op = re.compile(r"!(\d+)s", re.IGNORECASE | re.DOTALL).findall(message.content)
                 if op:
@@ -165,7 +207,6 @@ class Central:
     async def services(self, ctx):
         """Gestion des services du Central"""
         server = ctx.message.server
-        sys = self.get_sys(server)["SERVICES"]
         services = self.get_service()
         msg = None
         while True:
