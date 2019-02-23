@@ -106,7 +106,7 @@ class Central:
                                 txt = ""
                                 for submit in reddit.hot(limit=3):
                                     txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
-                                        submit.title, submit.permalink, submit.author.name)
+                                        submit.title, submit.permalink, submit.author.name if submit.author else "???")
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
                                                    title="r/" + reddit.display_name.title() + " ─ Hot",
                                                    description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
