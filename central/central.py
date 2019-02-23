@@ -137,27 +137,28 @@ class Central:
                         print("Emoji détecté")
                         r_cache = self.get_sys(server)["CACHE"]["repost"]
                         for i in r_cache:
-                            if message.id == r_cache[i][0]:
-                                print("Message trouve")
-                                txt = ""
-                                for u in r_cache:
-                                    try:
-                                        txt += "**{}** ─ par {} sur {}\n".format(datetime.fromtimestamp(
-                                            r_cache[u][3]).strftime("%d/%m/%Y %H:%M"),
-                                                                                 server.get_member(r_cache[u][2]),
-                                                                                self.bot.get_channel(r_cache[u][1]))
-                                    except:
-                                        print("Impossible de récuperer un ancien repost")
-                                        pass
-                                if txt:
-                                    em = discord.Embed(title="Repost ─ {}".format(i), description=txt, color=user.color)
-                                    try:
-                                        await self.bot.send_message(user, embed=em)
-                                    except:
-                                        notif = await self.bot.send_message(message.channel, "{} ─ Vous avez bloqué mes MP, vous ne pouvez pas voir les reposts.".format(user.mention))
-                                        await asyncio.sleep(5)
-                                        await self.bot.delete_message(notif)
-                                return
+                            for log in r_cache[i]:
+                                if message.id == log[0]:
+                                    print("Message trouvé")
+                                    txt = ""
+                                    for u in r_cache[i]:
+                                        try:
+                                            txt += "**{}** ─ par {} sur {}\n".format(datetime.fromtimestamp(
+                                                u[3]).strftime("%d/%m/%Y %H:%M"),
+                                                                                     server.get_member(u[2]),
+                                                                                    self.bot.get_channel(u[1]))
+                                        except:
+                                            print("Impossible de récuperer un ancien repost")
+                                            pass
+                                    if txt:
+                                        em = discord.Embed(title="Repost ─ {}".format(i), description=txt, color=user.color)
+                                        try:
+                                            await self.bot.send_message(user, embed=em)
+                                        except:
+                                            notif = await self.bot.send_message(message.channel, "{} ─ Vous avez bloqué mes MP, vous ne pouvez pas voir les reposts.".format(user.mention))
+                                            await asyncio.sleep(5)
+                                            await self.bot.delete_message(notif)
+                                    return
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
