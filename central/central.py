@@ -104,24 +104,26 @@ class Central:
                             reddit = self.reddit.subreddits.search_by_name(r, exact=True)[0]
                             if reddit.over18:
                                 txt = ""
+                                color = int('0x{}'.format(reddit.key_color[1:]), 16) if reddit.key_color else 0xfd4300
                                 for submit in reddit.hot(limit=3):
                                     txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name if submit.author else "???")
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
                                                    title="r/" + reddit.display_name.title() + " ─ Hot",
-                                                   description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
+                                                   description=txt, color=color)
                                 em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
                                 notif = await self.bot.send_message(message.channel, embed=em)
                                 await asyncio.sleep(30)
                                 await self.bot.delete_message(notif)
                             else:
                                 txt = ""
+                                color = int('0x{}'.format(reddit.key_color[1:]), 16) if reddit.key_color else 0xfd4300
                                 for submit in reddit.hot(limit=3):
                                     txt += "· **[{0}](https://www.reddit.com{1})** (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name if submit.author else "???")
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
                                                    title="r/" + reddit.display_name.title() + " ─ Hot",
-                                                   description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
+                                                   description=txt, color=color)
                                 if reddit.banner_img:
                                     em.set_image(url=reddit.banner_img)
                                 notif = await self.bot.send_message(message.channel, embed=em)
