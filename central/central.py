@@ -92,7 +92,7 @@ class Central:
             cache = self.get_sys(server)["CACHE"]
             content = message.content
             if "http" in content:
-                op = re.compile(r'(https?:+\/\/[^:\/\s]+[^?]*)', re.DOTALL | re.IGNORECASE).findall(content)
+                op = re.compile(r'(https?:+\/\/[^:\/\s]+(?:[^?]|\?v)*)', re.DOTALL | re.IGNORECASE).findall(content)
                 if op:
                     url = op[0]
                     if url in cache["repost"]:
