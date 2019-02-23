@@ -145,8 +145,8 @@ class Central:
                                         try:
                                             txt += "**{}** ─ par {} sur {}\n".format(datetime.fromtimestamp(
                                                 u[3]).strftime("%d/%m/%Y %H:%M"),
-                                                                                     server.get_member(u[2]),
-                                                                                    self.bot.get_channel(u[1]))
+                                                                                     server.get_member(u[2]).name,
+                                                                                    self.bot.get_channel(u[1]).mention)
                                         except:
                                             print("Impossible de récuperer un ancien repost")
                                             pass
