@@ -105,20 +105,20 @@ class Central:
                             if reddit.over18:
                                 txt = ""
                                 for submit in reddit.hot(limit=3):
-                                    txt += "· ||[**{0}**]({1})|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                    txt += "· ||**[{0}]({1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name)
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
-                                                   title="r/" + reddit.display_name.title() + " [NSFW]",
+                                                   title="r/" + reddit.display_name.title() + " [NSFW]" + " ─ Hot",
                                                    description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
                                 em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
                                 await self.bot.send_message(message.author, embed=em)
                             else:
                                 txt = ""
                                 for submit in reddit.hot(limit=3):
-                                    txt += "· [**{0}**]({1}) (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                    txt += "· **[{0}]({1})** (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name)
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
-                                                   title="r/" + reddit.display_name.title(),
+                                                   title="r/" + reddit.display_name.title() + " ─ Hot",
                                                    description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
                                 if reddit.banner_img:
                                     em.set_image(url=reddit.banner_img)
