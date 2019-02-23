@@ -108,7 +108,7 @@ class Central:
                                     txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name)
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
-                                                   title="r/" + reddit.display_name.title() + " [NSFW]" + " ─ Hot",
+                                                   title="r/" + reddit.display_name.title() + " ─ Hot",
                                                    description=txt, color=int('0x{}'.format(reddit.key_color[1:]), 16))
                                 em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
                                 notif = await self.bot.send_message(message.channel, embed=em)
@@ -127,7 +127,8 @@ class Central:
                                 notif = await self.bot.send_message(message.channel, embed=em)
                                 await asyncio.sleep(30)
                                 await self.bot.delete_message(notif)
-                        except:
+                        except Exception as e:
+                            print(e)
                             pass
         return False
 
