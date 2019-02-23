@@ -105,7 +105,7 @@ class Central:
                             if reddit.over18:
                                 txt = ""
                                 for submit in reddit.hot(limit=3):
-                                    txt += "· ||[{0}]({1})|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                    txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name)
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
                                                    title="r/" + reddit.display_name.title() + " [NSFW]" + " ─ Hot",
@@ -117,7 +117,7 @@ class Central:
                             else:
                                 txt = ""
                                 for submit in reddit.hot(limit=3):
-                                    txt += "· [{0}]({1}) (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                                    txt += "· **[{0}](https://www.reddit.com{1})** (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                                         submit.title, submit.permalink, submit.author.name)
                                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
                                                    title="r/" + reddit.display_name.title() + " ─ Hot",
