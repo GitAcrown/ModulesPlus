@@ -72,8 +72,8 @@ class Arcade:
             rep = await self.bot.wait_for_reaction(["⚔"], message=notif, timeout=120, check=check)
             if rep is None or rep.reaction.emoji == "⚔":
                 await self.bot.delete_message(notif)
-                if not rep.author.bot and self.pay.get_account(rep.author):
-                    opposant = rep.author
+                if not rep.user.bot and self.pay.get_account(rep.user):
+                    opposant = rep.user
                 else:
                     await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
                     return
