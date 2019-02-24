@@ -365,7 +365,7 @@ class Arcade:
                 await self.bot.say("───── **QUE LE COMBAT COMMENCE** ─────")
                 await asyncio.sleep(3)
 
-            if first["stats"]["pv"] > 0 and second["stats"]["pv"] <= 0 and not dead:
+            if first["stats"]["pv"] > 0 and second["stats"]["pv"] > 0:
                 # Attaque de First sur Second
                 f_atkcrit = True if random.randint(0, 8) == 0 else False
                 s_defcrit = True if random.randint(0, 3) == 0 else False
@@ -388,7 +388,7 @@ class Arcade:
                 dn = await self.bot.say("**{}** est KO !".format(first_user.name))
                 dead = True
 
-            if second["stats"]["pv"] > 0 and first["stats"]["pv"] <= 0 and not dead:
+            if second["stats"]["pv"] > 0 and first["stats"]["pv"] > 0:
                 # Attaque de Second sur First
                 action += 1
                 s_atkcrit = True if random.randint(0, 8) == 0 else False
