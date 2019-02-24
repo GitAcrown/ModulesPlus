@@ -371,7 +371,7 @@ class Arcade:
                 # Attaque de First sur Second
                 f_atkcrit = True if random.randint(0, 6) == 0 else False
                 s_defcrit = True if random.randint(0, 2) == 0 else False
-                deg_fs = random.randint(0, 2)
+                deg_fs = random.randint(5, 8)
                 if f_atkcrit:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
                     deg_fs += int(first["stats"]["atk"] * 1.5)
@@ -383,7 +383,7 @@ class Arcade:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr).format(first_user.name, second_user.name))
                     deg_fs += first["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                second["stats"]["pv"] -= deg_fs
+                second["stats"]["pv"] -= (deg_fs - second["stats"]["def"])
                 if second["stats"]["pv"] < 0:
                     second["stats"]["pv"] = 0
                 await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
@@ -397,7 +397,7 @@ class Arcade:
                 action += 1
                 s_atkcrit = True if random.randint(0, 6) == 0 else False
                 f_defcrit = True if random.randint(0, 2) == 0 else False
-                deg_sf = random.randint(0, 2)
+                deg_sf = random.randint(5, 8)
                 if s_atkcrit:
                     await self.bot.say(
                         "{} · ".format(action) + random.choice(atkstr_crit).format(second_user.name, first_user.name))
@@ -412,7 +412,7 @@ class Arcade:
                         "{} · ".format(action) + random.choice(atkstr).format(second_user.name, first_user.name))
                     deg_sf += second["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                first["stats"]["pv"] -= deg_sf
+                first["stats"]["pv"] -= (deg_sf - first["stats"]["def"])
                 if first["stats"]["pv"] < 0:
                     first["stats"]["pv"] = 0
                 await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
