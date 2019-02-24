@@ -37,8 +37,11 @@ class Arcade:
         def check(reaction, user):
             return not user.bot
 
-        if channel.id in self.meta["on_channel"]:
-            await self.bot.say("**Impossible** ─ Il ne peut pas y avoir plus d'un combat par salon, attendez votre tour !")
+        if channel.id not in self.meta["on_channel"]:
+            self.meta["on_channel"].append(channel.id)
+        else:
+            await self.bot.say(
+                "**Impossible** ─ Il ne peut pas y avoir plus d'un combat par salon, attendez votre tour !")
             return
 
         if opposant:
@@ -54,11 +57,13 @@ class Arcade:
                 if rep is None or rep.reaction.emoji == "🏳":
                     await self.bot.clear_reactions(notif)
                     await self.bot.edit_message(notif, "{} · **Loot Brawl** ─ Combat refusé".format(opposant.mention))
+                    self.meta["on_channel"].remove(channel.id)
                     return
                 elif rep.reaction.emoji == "⚔":
                     await self.bot.delete_message(notif)
             else:
                 await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
+                self.meta["on_channel"].remove(channel.id)
                 return
         else:
             txt = "Qui sera l'adversaire de {} ?".format(author.mention)
@@ -75,9 +80,11 @@ class Arcade:
                         opposant = rep.user
                     else:
                         await self.bot.say("**Impossible** ─ Vous ne pouvez pas vous battre avec vous-même !")
+                        self.meta["on_channel"].remove(channel.id)
                         return
                 else:
                     await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
+                    self.meta["on_channel"].remove(channel.id)
                     return
 
         emots = "⚔ 🛡 💊 💎 ⚖"
@@ -103,15 +110,6 @@ class Arcade:
                  ("Claquette oppressante", 3, 0, 0, 2, "⚔")]
         # 0.Nom 1.Atk 2.Def 3.PV 4.Priorité 5.Spé
         totalmoney = 50
-
-        if channel.id not in self.meta["on_channel"]:
-            self.meta["on_channel"].append(channel.id)
-        else:
-            await self.bot.say(
-                "**Impossible** ─ Il ne peut pas y avoir plus d'un combat par salon, attendez votre tour !")
-            return
-        self.meta["on_channel"].append(channel.id)
-
         # Opposant -------------------------------------------------------------------------
         txt = random.choice(["Ci-dessous votre Starter gratuit. Voulez-vous acheter une nouvelle lootbox et tenter d'avoir mieux ? (**{}**g)",
                             "Voici votre Starter, il est offert. Vous pouvez acheter une nouvelle lootbox pour peut-être avoir mieux, vous voulez tester ? (**{}**g)",
@@ -134,7 +132,7 @@ class Arcade:
                             "**Défense** ─ +{}\n" \
                             "**Bonus PV** ─ +{}\n" \
                             "**Priorité** ─ #{}".format(item[1], item[2], item[3], item[4])
-                    em.add_field(name="{} ({})".format(item[0], item[5]), value=stats)
+                    em.add_field(name="{} (\{})".format(item[0], item[5]), value=stats)
                 if not notif:
                     notif = await self.bot.say(embed=em)
                 else:
@@ -166,6 +164,7 @@ class Arcade:
                         await self.bot.edit_message(notif, embed=em)
                         choisi = True
                 else:
+                    self.meta["on_channel"].remove(channel.id)
                     return
             else:
                 await self.bot.clear_reactions(notif)
@@ -178,7 +177,7 @@ class Arcade:
                             "**Défense** ─ +{}\n" \
                             "**Bonus PV** ─ +{}\n" \
                             "**Priorité** ─ #{}".format(item[1], item[2], item[3], item[4])
-                    em.add_field(name="{} ({})".format(item[0], item[5]), value=stats)
+                    em.add_field(name="{} (\{})".format(item[0], item[5]), value=stats)
                 await self.bot.edit_message(notif, embed=em)
                 choisi = True
         stats_opposant = {"items": lootbox,
@@ -210,7 +209,7 @@ class Arcade:
                             "**Défense** ─ +{}\n" \
                             "**Bonus PV** ─ +{}\n" \
                             "**Priorité** ─ #{}".format(item[1], item[2], item[3], item[4])
-                    em.add_field(name="{} ({})".format(item[0], item[5]), value=stats)
+                    em.add_field(name="{} (\{})".format(item[0], item[5]), value=stats)
                 if not notif:
                     notif = await self.bot.say(embed=em)
                 else:
@@ -244,6 +243,7 @@ class Arcade:
                         await self.bot.edit_message(notif, embed=em)
                         choisi = True
                 else:
+                    self.meta["on_channel"].remove(channel.id)
                     return
             else:
                 await self.bot.clear_reactions(notif)
@@ -256,7 +256,7 @@ class Arcade:
                             "**Défense** ─ +{}\n" \
                             "**Bonus PV** ─ +{}\n" \
                             "**Priorité** ─ #{}".format(item[1], item[2], item[3], item[4])
-                    em.add_field(name="{} ({})".format(item[0], item[5]), value=stats)
+                    em.add_field(name="{} (\{})".format(item[0], item[5]), value=stats)
                 await self.bot.edit_message(notif, embed=em)
                 choisi = True
         stats_author = {"items": lootbox,
@@ -286,8 +286,8 @@ class Arcade:
                 stats_author["stats"]["atk"] += item[1]
                 stats_author["stats"]["def"] += item[2]
                 stats_author["stats"]["pv"] += 5 * item[3]
-                txt += "**{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
-            txt += "**Total** ─ {}/{}/{}".format(stats_author["stats"]["atk"], stats_author["stats"]["def"],
+                txt += "• **{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
+            txt += "**Total** ─ **{}**/**{}**/**{}**".format(stats_author["stats"]["atk"], stats_author["stats"]["def"],
                                                  stats_author["stats"]["pv"])
             em.add_field(name="1 · "+ author.name, value=txt)
 
@@ -296,8 +296,8 @@ class Arcade:
                 stats_opposant["stats"]["atk"] += item[1]
                 stats_opposant["stats"]["def"] += item[2]
                 stats_opposant["stats"]["pv"] += 5 * item[3]
-                txt += "**{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
-            txt += "**Total** ─ {}/{}/{}".format(stats_opposant["stats"]["atk"], stats_opposant["stats"]["def"],
+                txt += "• **{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
+            txt += "**Total** ─ **{}**/**{}**/**{}**".format(stats_opposant["stats"]["atk"], stats_opposant["stats"]["def"],
                                                  stats_opposant["stats"]["pv"])
             em.add_field(name="2 · " + opposant.name, value=txt)
             em.set_footer(text="Que le combat COMMENCE !")
@@ -359,7 +359,9 @@ class Arcade:
                                    "Pardonnez-moi pour la gêne occasionnée...")
                 await asyncio.sleep(1)
                 self.meta["reset"] = False
+                self.meta["on_channel"].remove(channel.id)
                 return
+
 
             if cycle == 1:
                 await self.bot.say("───── **QUE LE COMBAT COMMENCE** ─────")
