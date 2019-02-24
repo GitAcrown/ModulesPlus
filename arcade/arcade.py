@@ -107,7 +107,8 @@ class Arcade:
                  ("Pâtes au pesto'", 0, 2, 3, 1, "⚖"),
                  ("Verre de pesse", 0, 1, 5, 0, "💊"),
                  ("Platane centenaire", 2, 4, 0, 2, "🛡"),
-                 ("Claquette oppressante", 3, 0, 0, 2, "⚔")]
+                 ("Claquette oppressante", 3, 0, 0, 2, "⚔"),
+                 ("Handspinner", 4, 1, 0, 1, "⚔")]
         # 0.Nom 1.Atk 2.Def 3.PV 4.Priorité 5.Spé
         totalmoney = 50
         # Opposant -------------------------------------------------------------------------
