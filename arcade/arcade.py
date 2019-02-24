@@ -37,9 +37,7 @@ class Arcade:
         def check(reaction, user):
             return not user.bot
 
-        if channel.id not in self.meta["on_channel"]:
-            self.meta["on_channel"].append(channel.id)
-        else:
+        if channel.id in self.meta["on_channel"]:
             await self.bot.say("**Impossible** ─ Il ne peut pas y avoir plus d'un combat par salon, attendez votre tour !")
             return
 
@@ -105,6 +103,14 @@ class Arcade:
                  ("Claquette oppressante", 3, 0, 0, 2, "⚔")]
         # 0.Nom 1.Atk 2.Def 3.PV 4.Priorité 5.Spé
         totalmoney = 50
+
+        if channel.id not in self.meta["on_channel"]:
+            self.meta["on_channel"].append(channel.id)
+        else:
+            await self.bot.say(
+                "**Impossible** ─ Il ne peut pas y avoir plus d'un combat par salon, attendez votre tour !")
+            return
+        self.meta["on_channel"].append(channel.id)
 
         # Opposant -------------------------------------------------------------------------
         txt = random.choice(["Ci-dessous votre Starter gratuit. Voulez-vous acheter une nouvelle lootbox et tenter d'avoir mieux ? (**{}**g)",
