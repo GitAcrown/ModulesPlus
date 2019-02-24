@@ -343,10 +343,11 @@ class Arcade:
                        "**{1}** se prend une ATTAQUE CRITIQUE de la part de **{0}** !"]
         defstr_parf = ["Mais **{1}** réalise une DEFENSE PARFAITE contre l'attaque de **{0}** !",
                        "Mais **{1}** parvient à se dégager de **{0}** et fait une DEFENSE PARFAITE !"]
-        cycle = 1
+        cycle = 0
         action = 1
         dn = None
         while stats_author["stats"]["pv"] > 0 and stats_opposant["stats"]["pv"] > 0:
+            cycle += 1
             if self.meta["reset"]:
                 self.meta["on_channel"].remove(channel.id)
                 if stats_author["offre"]:
@@ -379,7 +380,7 @@ class Arcade:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr).format(first_user.name, second_user.name))
                     deg_fs += first["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                await self.bot.say("{} · Résultat {} ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
+                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
                 second["stats"]["pv"] -= deg_fs
                 await asyncio.sleep(2)
             else:
@@ -405,7 +406,7 @@ class Arcade:
                         "{} · ".format(action) + random.choice(atkstr).format(second_user.name, first_user.name))
                     deg_sf += second["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                await self.bot.say("{} · Résultat {} ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
+                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
                 first["stats"]["pv"] -= deg_sf
                 r = random.randint(1, 4)
                 await asyncio.sleep(r)
