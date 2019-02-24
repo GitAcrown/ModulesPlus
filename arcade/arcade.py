@@ -371,7 +371,7 @@ class Arcade:
                 # Attaque de First sur Second
                 f_atkcrit = True if random.randint(0, 8) == 0 else False
                 s_defcrit = True if random.randint(0, 3) == 0 else False
-                deg_fs = 0
+                deg_fs = random.randint(0, 2)
                 if f_atkcrit:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
                     deg_fs += int(first["stats"]["atk"] * 1.5)
@@ -397,7 +397,7 @@ class Arcade:
                 action += 1
                 s_atkcrit = True if random.randint(0, 8) == 0 else False
                 f_defcrit = True if random.randint(0, 3) == 0 else False
-                deg_sf = 0
+                deg_sf = random.randint(0, 2)
                 if s_atkcrit:
                     await self.bot.say(
                         "{} · ".format(action) + random.choice(atkstr_crit).format(second_user.name, first_user.name))
