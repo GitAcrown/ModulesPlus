@@ -346,6 +346,7 @@ class Arcade:
         cycle = 0
         action = 1
         dn = None
+        dead = False
         while stats_author["stats"]["pv"] > 0 and stats_opposant["stats"]["pv"] > 0:
             cycle += 1
             if self.meta["reset"]:
@@ -364,7 +365,7 @@ class Arcade:
                 await self.bot.say("───── **QUE LE COMBAT COMMENCE** ─────")
                 await asyncio.sleep(3)
 
-            if first["stats"]["pv"] > 0:
+            if first["stats"]["pv"] > 0 and second["stats"]["pv"] <= 0 and not dead:
                 # Attaque de First sur Second
                 f_atkcrit = True if random.randint(0, 8) == 0 else False
                 s_defcrit = True if random.randint(0, 3) == 0 else False
@@ -385,8 +386,9 @@ class Arcade:
                 await asyncio.sleep(2)
             else:
                 dn = await self.bot.say("**{}** est KO !".format(first_user.name))
+                dead = True
 
-            if second["stats"]["pv"] > 0:
+            if second["stats"]["pv"] > 0 and first["stats"]["pv"] <= 0 and not dead:
                 # Attaque de Second sur First
                 action += 1
                 s_atkcrit = True if random.randint(0, 8) == 0 else False
@@ -412,10 +414,11 @@ class Arcade:
                 await asyncio.sleep(r)
             else:
                 dn = await self.bot.say("**{}** est KO !".format(second_user.name))
+                dead = True
             action += 1
 
         gagnant = first_user if first["stats"]["pv"] > 0 else second_user
-        perdant = first_user if first["stats"]["pv"] == 0 else second_user
+        perdant = first_user if first["stats"]["pv"] <= 0 else second_user
         if dn is None:
             await self.bot.say("**{}** est KO !".format(perdant.name))
             await asyncio.sleep(2.5)
