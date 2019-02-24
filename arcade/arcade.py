@@ -369,8 +369,8 @@ class Arcade:
 
             if first["stats"]["pv"] > 0 and second["stats"]["pv"] > 0:
                 # Attaque de First sur Second
-                f_atkcrit = True if random.randint(0, 8) == 0 else False
-                s_defcrit = True if random.randint(0, 3) == 0 else False
+                f_atkcrit = True if random.randint(0, 6) == 0 else False
+                s_defcrit = True if random.randint(0, 2) == 0 else False
                 deg_fs = random.randint(0, 2)
                 if f_atkcrit:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
@@ -395,8 +395,8 @@ class Arcade:
             if second["stats"]["pv"] > 0 and first["stats"]["pv"] > 0:
                 # Attaque de Second sur First
                 action += 1
-                s_atkcrit = True if random.randint(0, 8) == 0 else False
-                f_defcrit = True if random.randint(0, 3) == 0 else False
+                s_atkcrit = True if random.randint(0, 6) == 0 else False
+                f_defcrit = True if random.randint(0, 2) == 0 else False
                 deg_sf = random.randint(0, 2)
                 if s_atkcrit:
                     await self.bot.say(
