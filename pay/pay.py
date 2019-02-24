@@ -130,51 +130,6 @@ class PayAPI:
                     return False
             return False
 
-    """try:
-        if server.id not in [i.title for i in self.sheets.worksheets()]:
-            self.sheets.add_worksheet(server.id, 1, 3)
-        ws = self.sheets.worksheet(server.id)
-        data_list = []
-        for user in data:
-            try:
-                username = server.get_member(user.userid).name
-            except:
-                username = "Absent"
-            data_list.append(user.userid, username, user.solde)
-        maxrow = len(data_list)
-        ws.resize(maxrow, 3)
-        edited_row = []
-        cell_list = ws.range(1, 1, maxrow, 3) #inverser les deux derniers en cas de pb
-        for cell in cell_list:
-            if cell.col == 2:
-                cell.value = data_list
-
-        col_list = ws.col_values(1)
-        for user in data:
-            if user.userid not in col_list:
-                try:
-                    username = server.get_member(user.userid).name
-                except:
-                    username = "Absent"
-                vals = [user.userid, username, user.solde]
-                ws.append_row(vals)
-            else:
-                try:
-                    username = server.get_member(user.userid).name
-                except:
-                    username = "Absent"
-                cell = ws.find(user.userid)
-                rangestr = "A" + str(cell.row) + ":C" + str(cell.row)
-                cell_list = ws.range(rangestr)
-                cell_list[1].value = username
-                cell_list[2].value = user.solde
-                ws.update_cells(cell_list)
-        self.sheets.get_worksheet(0).update_acell("A2", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-        return True
-    except Exception as e:
-        print(e)
-        return False"""
-
     def update_all_sheets(self):
         self.gs.login()
         for serv in self.data:
