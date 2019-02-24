@@ -381,8 +381,10 @@ class Arcade:
                     await self.bot.say("{} · ".format(action) + random.choice(atkstr).format(first_user.name, second_user.name))
                     deg_fs += first["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
                 second["stats"]["pv"] -= deg_fs
+                if second["stats"]["pv"] < 0:
+                    second["stats"]["pv"] = 0
+                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
                 await asyncio.sleep(2)
             else:
                 dn = await self.bot.say("**{}** est KO !".format(first_user.name))
@@ -408,8 +410,10 @@ class Arcade:
                         "{} · ".format(action) + random.choice(atkstr).format(second_user.name, first_user.name))
                     deg_sf += second["stats"]["atk"]
                 await asyncio.sleep(0.75)
-                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
                 first["stats"]["pv"] -= deg_sf
+                if first["stats"]["pv"] < 0:
+                    first["stats"]["pv"] = 0
+                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
                 r = random.randint(1, 4)
                 await asyncio.sleep(r)
             else:
