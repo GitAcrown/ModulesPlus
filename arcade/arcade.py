@@ -262,8 +262,8 @@ class Arcade:
                 choisi = True
         stats_author = {"items": lootbox,
                         "prior": max([i[4] for i in lootbox]),
-                        "stats": {"atk": 12,
-                                  "def": 2,
+                        "stats": {"atk": 16,
+                                  "def": 3,
                                   "pv": 100},
                         "offre": offre}
 
@@ -286,7 +286,7 @@ class Arcade:
             for item in stats_author["items"]:
                 stats_author["stats"]["atk"] += item[1]
                 stats_author["stats"]["def"] += item[2]
-                stats_author["stats"]["pv"] += 5 * item[3]
+                stats_author["stats"]["pv"] += 8 * item[3]
                 txt += "• **{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
             txt += "**Total** ─ **{}**/**{}**/**{}**".format(stats_author["stats"]["atk"], stats_author["stats"]["def"],
                                                  stats_author["stats"]["pv"])
@@ -296,7 +296,7 @@ class Arcade:
             for item in stats_opposant["items"]:
                 stats_opposant["stats"]["atk"] += item[1]
                 stats_opposant["stats"]["def"] += item[2]
-                stats_opposant["stats"]["pv"] += 5 * item[3]
+                stats_opposant["stats"]["pv"] += 8 * item[3]
                 txt += "• **{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
             txt += "**Total** ─ **{}**/**{}**/**{}**".format(stats_opposant["stats"]["atk"], stats_opposant["stats"]["def"],
                                                  stats_opposant["stats"]["pv"])
@@ -314,7 +314,7 @@ class Arcade:
             for item in stats_opposant["items"]:
                 stats_opposant["stats"]["atk"] += item[1]
                 stats_opposant["stats"]["def"] += item[2]
-                stats_opposant["stats"]["pv"] += 5 * item[3]
+                stats_opposant["stats"]["pv"] += 8 * item[3]
                 txt += "**{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
             txt += "**Total** ─ {}/{}/{}".format(stats_opposant["stats"]["atk"], stats_opposant["stats"]["def"],
                                                  stats_opposant["stats"]["pv"])
@@ -324,7 +324,7 @@ class Arcade:
             for item in stats_author["items"]:
                 stats_author["stats"]["atk"] += item[1]
                 stats_author["stats"]["def"] += item[2]
-                stats_author["stats"]["pv"] += 5 * item[3]
+                stats_author["stats"]["pv"] += 8 * item[3]
                 txt += "**{}** ─ {}/{}/{}\n".format(item[0], item[1], item[2], item[3])
             txt += "**Total** ─ {}/{}/{}".format(stats_author["stats"]["atk"], stats_author["stats"]["def"],
                                                  stats_author["stats"]["pv"])
