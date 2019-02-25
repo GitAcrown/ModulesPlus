@@ -358,7 +358,7 @@ class Arcade:
                   "Le coup de **{0}** ricoche sur **{2}** de **{1}** !"]
         soinspe = ["**{0}** décide de ne pas attaquer et se soigne de quelques PV avec **{2}**...",
                    "**{0}** se soigne un peu avec **{2}** !"]
-        chance_spe = ["⚔", "🛡", "💊", "", "", "", "", "", "", "", "", ""]
+        chance_spe = ["⚔", "🛡", "💊", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
         cycle = 0
         action = 1
         dn = None
@@ -433,8 +433,8 @@ class Arcade:
                         pass
 
                 if not usedspe:
-                    f_atkcrit = True if random.randint(0, 6) == 0 else False
-                    s_defcrit = True if random.randint(0, 2) == 0 else False
+                    f_atkcrit = True if random.randint(0, 7) == 0 else False
+                    s_defcrit = True if random.randint(0, 3) == 0 else False
                     deg_fs = random.randint(0, 3)
                     if f_atkcrit:
                         await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
@@ -460,7 +460,7 @@ class Arcade:
                 # Attaque de Second sur First
                 action += 1
                 spe = random.choice(chance_spe)
-                deg_sf = random.randint(0, 3)
+                deg_sf = random.randint(2, 5)
                 usedspe = displayspe = False
                 if spe:
                     if spe in [i[5] for i in second["items"]] and spe != "🛡":
@@ -507,9 +507,9 @@ class Arcade:
                         pass
 
                 if not usedspe:
-                    s_atkcrit = True if random.randint(0, 6) == 0 else False
-                    f_defcrit = True if random.randint(0, 2) == 0 else False
-                    deg_sf = random.randint(0, 3)
+                    s_atkcrit = True if random.randint(0, 7) == 0 else False
+                    f_defcrit = True if random.randint(0, 3) == 0 else False
+                    deg_sf = random.randint(2, 5)
                     if s_atkcrit:
                         await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(second_user.name,
                                                                                                       first_user.name))
