@@ -45,24 +45,29 @@ class Arcade:
             return
 
         if opposant:
-            if self.pay.get_account(opposant):
-                txt = "{} · **Loot Brawl** ─ **{}** vous a défié, acceptez-vous ?".format(opposant.mention, author.name)
-                notif = await self.bot.say(txt)
-                await self.bot.add_reaction(notif, "⚔")
-                await self.bot.add_reaction(notif, "🏳")
-                await asyncio.sleep(0.1)
+            if await self.pay.account_dial(author):
+                if self.pay.get_account(opposant):
+                    txt = "{} · **Loot Brawl** ─ **{}** vous a défié, acceptez-vous ?".format(opposant.mention, author.name)
+                    notif = await self.bot.say(txt)
+                    await self.bot.add_reaction(notif, "⚔")
+                    await self.bot.add_reaction(notif, "🏳")
+                    await asyncio.sleep(0.1)
 
-                rep = await self.bot.wait_for_reaction(["⚔", "🏳"], message=notif, timeout=60, check=check,
-                                                       user=opposant)
-                if rep is None or rep.reaction.emoji == "🏳":
-                    await self.bot.clear_reactions(notif)
-                    await self.bot.edit_message(notif, "{} · **Loot Brawl** ─ Combat refusé".format(opposant.mention))
+                    rep = await self.bot.wait_for_reaction(["⚔", "🏳"], message=notif, timeout=60, check=check,
+                                                           user=opposant)
+                    if rep is None or rep.reaction.emoji == "🏳":
+                        await self.bot.clear_reactions(notif)
+                        await self.bot.edit_message(notif, "{} · **Loot Brawl** ─ Combat refusé".format(opposant.mention))
+                        self.meta["on_channel"].remove(channel.id)
+                        return
+                    elif rep.reaction.emoji == "⚔":
+                        await self.bot.delete_message(notif)
+                else:
+                    await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
                     self.meta["on_channel"].remove(channel.id)
                     return
-                elif rep.reaction.emoji == "⚔":
-                    await self.bot.delete_message(notif)
             else:
-                await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
+                await self.bot.say("**Impossible** ─ Tu n'as pas de compte **Pay**")
                 self.meta["on_channel"].remove(channel.id)
                 return
         else:
@@ -75,7 +80,7 @@ class Arcade:
             rep = await self.bot.wait_for_reaction(["⚔"], message=notif, timeout=120, check=check)
             if rep is None or rep.reaction.emoji == "⚔":
                 await self.bot.delete_message(notif)
-                if not rep.user.bot and self.pay.get_account(rep.user):
+                if not rep.user.bot and await self.pay.account_dial(rep.user):
                     if rep.user != ctx.message.author:
                         opposant = rep.user
                     else:
@@ -83,32 +88,35 @@ class Arcade:
                         self.meta["on_channel"].remove(channel.id)
                         return
                 else:
-                    await self.bot.say("**Impossible** ─ Cette personne doit d'abord créer un compte bancaire **Pay**")
+                    await self.bot.say("**Impossible** ─ L'adversaire ne possède pas de compte **Pay**")
                     self.meta["on_channel"].remove(channel.id)
                     return
 
-        emots = "⚔ 🛡 💊 💎 ⚖"
-        items = [("Rascasse", 6, 0, 0, 0, "⚔"),
-                 ("Lance-Belvita™", 4, 0, 1, 1, "⚔"),
+        emots = "⚔ 🛡 💊"
+        items = [("Rascasse", 7, 0, 0, 0, "⚔"),
+                 ("Lance-Belvita™", 4, 0, 1, 2, "⚔"),
                  ("Elixir de MSTs", 1, 0, 4, 1, "💊"),
-                 ("Bilboquet", 2, 2, 0, 2, "⚖"),
-                 ("Benalla", 2, 4, 0, 2, "🛡"),
-                 ("Kro' périmée", 0, 1, 4, 1, "💊"),
+                 ("Bilboquet", 2, 3, 0, 2, "🛡"),
+                 ("Benalla", 2, 5, 0, 2, "🛡"),
+                 ("Kro' périmée", 0, 1, 5, 1, "💊"),
                  ("Fléau Cactus", 4, 1, 0, 0, "⚔"),
                  ("Dague enchiassée", 3, 1, 0, 2, "⚔"),
                  ("Bombedanu", 5, 0, 0, 3, "⚔"),
-                 ("Fronde à barres Feed™", 3, 0, 1, 0, "⚔"),
+                 ("Fronde à barres Feed™", 4, 0, 1, 0, "⚔"),
                  ("Ecu Sodebo™", 0, 4, 0, 2, "🛡"),
-                 ("Rosebud purificateur", 0, 2, 2, 4, "💎"),
+                 ("Rosebud purificateur", 0, 2, 3, 4, "💊"),
                  ("Casquette Daunat™", 0, 4, 1, 0, "🛡"),
                  ("Porte blindée d'Yllys'", 0, 6, 0, 0, "🛡"),
                  ("Doc Martens™ underground", 0, 3, 0, 2, "🛡"),
                  ("Vieux Papes™ millénaire", 1, 1, 4, 0, "💊"),
-                 ("Pâtes au pesto'", 0, 2, 3, 1, "⚖"),
+                 ("Pâtes au pesto'", 0, 2, 3, 1, "💊"),
                  ("Verre de pesse", 0, 1, 5, 0, "💊"),
                  ("Platane centenaire", 2, 4, 0, 2, "🛡"),
-                 ("Claquette oppressante", 3, 0, 0, 2, "⚔"),
-                 ("Handspinner", 4, 1, 0, 1, "⚔")]
+                 ("Claquette oppressante", 4, 0, 0, 2, "⚔"),
+                 ("Handspinner", 4, 1, 0, 1, "⚔"),
+                 ("Paperboard usé", 0, 3, 0, 0, "🛡"),
+                 ("Ban abusif", 5, 0, 0, 4, "⚔"),
+                 ("Uptempo endiablé", 0, 0, 6, 2, "💊")]
         # 0.Nom 1.Atk 2.Def 3.PV 4.Priorité 5.Spé
         totalmoney = 50
         # Opposant -------------------------------------------------------------------------
@@ -183,8 +191,8 @@ class Arcade:
                 choisi = True
         stats_opposant = {"items": lootbox,
                           "prior": max([i[4] for i in lootbox]),
-                          "stats": {"atk": 12,
-                                  "def": 2,
+                          "stats": {"atk": 15,
+                                  "def": 3,
                                   "pv": 100},
                           "offre": offre}
 
@@ -262,7 +270,7 @@ class Arcade:
                 choisi = True
         stats_author = {"items": lootbox,
                         "prior": max([i[4] for i in lootbox]),
-                        "stats": {"atk": 16,
+                        "stats": {"atk": 15,
                                   "def": 3,
                                   "pv": 100},
                         "offre": offre}
@@ -344,10 +352,17 @@ class Arcade:
                        "**{1}** se prend une ATTAQUE CRITIQUE de la part de **{0}** !"]
         defstr_parf = ["Mais **{1}** réalise une DEFENSE PARFAITE contre l'attaque de **{0}** !",
                        "Mais **{1}** parvient à se dégager de **{0}** et fait une DEFENSE PARFAITE !"]
+        atkspe = ["**{0}** lance une ATTAQUE SPECIALE avec **{2}** sur **{1}** !",
+                  "Une ATTAQUE SPECIALE est lancée par **{0}** sur **{1}** à l'aide de **{2}** !"]
+        defspe = ["**{1}** utilise **{2}** et renvoie le coup à **{0}** !",
+                  "Le coup de **{0}** ricoche sur **{2}** de **{1}** !"]
+        soinspe = ["**{0}** décide de ne pas attaquer et se soigne de quelques PV avec **{2}**...",
+                   "**{0}** se soigne un peu avec **{2}** !"]
+        chance_spe = ["⚔", "🛡", "💊", "", "", "", "", "", "", "", "", ""]
         cycle = 0
         action = 1
         dn = None
-        dead = False
+
         while stats_author["stats"]["pv"] > 0 and stats_opposant["stats"]["pv"] > 0:
             cycle += 1
             if self.meta["reset"]:
@@ -366,62 +381,159 @@ class Arcade:
 
             if cycle == 1:
                 await self.bot.say("───── **QUE LE COMBAT COMMENCE** ─────")
-                await asyncio.sleep(3)
+                await asyncio.sleep(2)
 
             if first["stats"]["pv"] > 0 and second["stats"]["pv"] > 0:
                 # Attaque de First sur Second
-                f_atkcrit = True if random.randint(0, 6) == 0 else False
-                s_defcrit = True if random.randint(0, 2) == 0 else False
-                deg_fs = random.randint(5, 8)
-                if f_atkcrit:
-                    await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
-                    deg_fs += int(first["stats"]["atk"] * 1.5)
-                    await asyncio.sleep(1)
-                    if s_defcrit:
-                        await self.bot.say("{} · ".format(action) + random.choice(defstr_parf).format(first_user.name, second_user.name))
-                        deg_fs = 1
-                else:
-                    await self.bot.say("{} · ".format(action) + random.choice(atkstr).format(first_user.name, second_user.name))
-                    deg_fs += first["stats"]["atk"]
-                await asyncio.sleep(0.75)
-                second["stats"]["pv"] -= (deg_fs - second["stats"]["def"])
-                if second["stats"]["pv"] < 0:
-                    second["stats"]["pv"] = 0
-                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
-                await asyncio.sleep(2)
+                spe = random.choice(chance_spe)
+                deg_fs = random.randint(0, 3)
+                usedspe = displayspe = False
+                if spe:
+                    if spe in [i[5] for i in first["items"]] and spe != "🛡":
+                        if spe == "⚔":
+                            item = random.choice([i for i in first["items"] if i[5] == "⚔"])
+                            deg_fs += random.randint(5, 10) + second["stats"]["def"]
+                            await self.bot.say("{} · ".format(action) + random.choice(atkspe).format(first_user.name,
+                                                                                                     second_user.name,
+                                                                                                     item[0]))
+                            deg_fs += first["stats"]["atk"]
+                            usedspe = True
+                        elif spe == "💊":
+                            item = random.choice([i for i in first["items"] if i[5] == "💊"])
+                            displayspe = True
+                            usedspe = True
+                            await self.bot.say("{} · ".format(action) + random.choice(soinspe).format(first_user.name,
+                                                                                                     second_user.name,
+                                                                                                     item[0]))
+                            deg_fs += first["stats"]["atk"]
+                            soins = int(deg_fs / 1.5)
+                            first["stats"]["pv"] += soins
+                            await asyncio.sleep(0.75)
+                            await self.bot.say("{} · **{}** ─ **+{}** PV ({})".format(action, first_user.name, soins,
+                                                                                      first["stats"]["pv"]))
+                            await asyncio.sleep(2)
+                        else:
+                            pass
+                    elif spe in [i[5] for i in second["items"]] and spe == "🛡":
+                        item = random.choice([i for i in second["items"] if i[5] == "🛡"])
+                        deg_fs += first["stats"]["atk"]
+                        displayspe = True
+                        usedspe = True
+                        await self.bot.say("{} · ".format(action) + random.choice(defspe).format(first_user.name,
+                                                                                                  second_user.name,
+                                                                                                  item[0]))
+                        await asyncio.sleep(0.75)
+                        first["stats"]["pv"] -= (deg_fs - first["stats"]["def"])
+                        if first["stats"]["pv"] < 0:
+                            first["stats"]["pv"] = 0
+                        await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_fs,
+                                                                                  first["stats"]["pv"]))
+                        await asyncio.sleep(2)
+                    else:
+                        pass
+
+                if not usedspe:
+                    f_atkcrit = True if random.randint(0, 6) == 0 else False
+                    s_defcrit = True if random.randint(0, 2) == 0 else False
+                    deg_fs = random.randint(0, 3)
+                    if f_atkcrit:
+                        await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(first_user.name, second_user.name))
+                        deg_fs += int(first["stats"]["atk"] * 1.5)
+                        await asyncio.sleep(1)
+                        if s_defcrit:
+                            await self.bot.say("{} · ".format(action) + random.choice(defstr_parf).format(first_user.name, second_user.name))
+                            deg_fs = 1
+                    else:
+                        await self.bot.say("{} · ".format(action) + random.choice(atkstr).format(first_user.name, second_user.name))
+                        deg_fs += first["stats"]["atk"]
+                if not displayspe:
+                    await asyncio.sleep(0.75)
+                    second["stats"]["pv"] -= (deg_fs - second["stats"]["def"])
+                    if second["stats"]["pv"] < 0:
+                        second["stats"]["pv"] = 0
+                    await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_fs, second["stats"]["pv"]))
+                    await asyncio.sleep(2)
             else:
                 dn = await self.bot.say("**{}** est KO !".format(first_user.name))
-                dead = True
 
             if second["stats"]["pv"] > 0 and first["stats"]["pv"] > 0:
                 # Attaque de Second sur First
                 action += 1
-                s_atkcrit = True if random.randint(0, 6) == 0 else False
-                f_defcrit = True if random.randint(0, 2) == 0 else False
-                deg_sf = random.randint(5, 8)
-                if s_atkcrit:
-                    await self.bot.say(
-                        "{} · ".format(action) + random.choice(atkstr_crit).format(second_user.name, first_user.name))
-                    deg_sf += int(second["stats"]["atk"] * 1.5)
-                    await asyncio.sleep(1)
-                    if f_defcrit:
+                spe = random.choice(chance_spe)
+                deg_sf = random.randint(0, 3)
+                usedspe = displayspe = False
+                if spe:
+                    if spe in [i[5] for i in second["items"]] and spe != "🛡":
+                        if spe == "⚔":
+                            item = random.choice([i for i in second["items"] if i[5] == "⚔"])
+                            deg_sf += random.randint(5, 10) + first["stats"]["def"]
+                            await self.bot.say("{} · ".format(action) + random.choice(atkspe).format(second_user.name,
+                                                                                                     first_user.name,
+                                                                                                     item[0]))
+                            deg_sf += second["stats"]["atk"]
+                            usedspe = True
+                        elif spe == "💊":
+                            item = random.choice([i for i in second["items"] if i[5] == "💊"])
+                            displayspe = True
+                            usedspe = True
+                            await self.bot.say("{} · ".format(action) + random.choice(soinspe).format(second_user.name,
+                                                                                                      first_user.name,
+                                                                                                      item[0]))
+                            deg_sf += second["stats"]["atk"]
+                            soins = int(deg_sf / 1.5)
+                            second["stats"]["pv"] += soins
+                            await asyncio.sleep(0.75)
+                            await self.bot.say("{} · **{}** ─ **+{}** PV ({})".format(action, second_user.name, soins,
+                                                                                      second["stats"]["pv"]))
+                            await asyncio.sleep(2)
+                        else:
+                            pass
+                    elif spe in [i[5] for i in first["items"]] and spe == "🛡":
+                        item = random.choice([i for i in first["items"] if i[5] == "🛡"])
+                        deg_sf += second["stats"]["atk"]
+                        displayspe = True
+                        usedspe = True
+                        await self.bot.say("{} · ".format(action) + random.choice(defspe).format(second_user.name,
+                                                                                                 first_user.name,
+                                                                                                 item[0]))
+                        await asyncio.sleep(0.75)
+                        second["stats"]["pv"] -= (deg_sf - second["stats"]["def"])
+                        if second["stats"]["pv"] < 0:
+                            second["stats"]["pv"] = 0
+                        await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, second_user.name, deg_sf,
+                                                                                  second["stats"]["pv"]))
+                        await asyncio.sleep(2)
+                    else:
+                        pass
+
+                if not usedspe:
+                    s_atkcrit = True if random.randint(0, 6) == 0 else False
+                    f_defcrit = True if random.randint(0, 2) == 0 else False
+                    deg_sf = random.randint(0, 3)
+                    if s_atkcrit:
+                        await self.bot.say("{} · ".format(action) + random.choice(atkstr_crit).format(second_user.name,
+                                                                                                      first_user.name))
+                        deg_sf += int(second["stats"]["atk"] * 1.5)
+                        await asyncio.sleep(1)
+                        if f_defcrit:
+                            await self.bot.say(
+                                "{} · ".format(action) + random.choice(defstr_parf).format(second_user.name,
+                                                                                           first_user.name))
+                            deg_sf = 1
+                    else:
                         await self.bot.say(
-                            "{} · ".format(action) + random.choice(defstr_parf).format(second_user.name, first_user.name))
-                        deg_sf = 1
-                else:
+                            "{} · ".format(action) + random.choice(atkstr).format(second_user.name, first_user.name))
+                        deg_sf += second["stats"]["atk"]
+                if not displayspe:
+                    await asyncio.sleep(0.75)
+                    first["stats"]["pv"] -= (deg_sf - first["stats"]["def"])
+                    if first["stats"]["pv"] < 0:
+                        first["stats"]["pv"] = 0
                     await self.bot.say(
-                        "{} · ".format(action) + random.choice(atkstr).format(second_user.name, first_user.name))
-                    deg_sf += second["stats"]["atk"]
-                await asyncio.sleep(0.75)
-                first["stats"]["pv"] -= (deg_sf - first["stats"]["def"])
-                if first["stats"]["pv"] < 0:
-                    first["stats"]["pv"] = 0
-                await self.bot.say("{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
-                r = random.randint(1, 4)
-                await asyncio.sleep(r)
+                        "{} · **{}** ─ **-{}** PV ({})".format(action, first_user.name, deg_sf, first["stats"]["pv"]))
+                    await asyncio.sleep(2)
             else:
                 dn = await self.bot.say("**{}** est KO !".format(second_user.name))
-                dead = True
             action += 1
 
         gagnant = first_user if first["stats"]["pv"] > 0 else second_user
