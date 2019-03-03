@@ -134,7 +134,7 @@ class Awsm:
                     complete = not reponse["result"]["actionIncomplete"]
                     finish_after = True if "endConversation" in reponse["result"] else False
                     if complete:
-                        print("demande complete")
+                        print("demande complete, recherche de categorie : {}".format(type))
                         if type is "search-general":
                             print("categorie reconnue")
                             obj = reponse["result"]["parameters"]["obj"]
