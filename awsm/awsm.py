@@ -43,6 +43,7 @@ class Awsm:
         """Permet de discuter avec Awsm (TEST)"""
         content = ctx.message.content
         self.request = self.dialog.text_request()
+        self.request.session_id = str(ctx.message.author.id)
         self.request.query = content
         try:
             rep = json.load(self.request.getresponse())["result"]["fulfillment"]["speech"]
