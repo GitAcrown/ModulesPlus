@@ -181,12 +181,6 @@ class Awsm:
                                         finish_after = True
                                     except:
                                         textrep = "Désolé, je n'ai rien trouvé..."
-                                else:
-                                    try:
-                                        em = self.google(obj)
-                                        finish_after = True
-                                    except:
-                                        textrep = "Désolé, je n'ai rien trouvé..."
 
                     await self.bot.send_message(message.channel, textrep, embed=em)
                 else:
