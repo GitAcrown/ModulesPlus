@@ -130,18 +130,19 @@ class Awsm:
                     self.request.query = content
                     reponse = json.load(self.request.getresponse())
                     textrep = reponse["result"]["fulfillment"]["speech"]
-                    type = str(reponse["result"]["metadata"]["intentName"])
-                    complete = not reponse["result"]["actionIncomplete"]
-                    finish_after = True if "endConversation" in reponse["result"] else False
-                    if complete:
-                        print("demande complete, recherche de categorie : {}".format(type))
-                        if type == "search-general":
-                            print("categorie reconnue")
-                            obj = reponse["result"]["parameters"]["obj"]
-                            search_type = reponse["result"]["parameters"]["search_type"]
-                            if search_type == "wikipedia":
-                                print("page imprimée")
-                                em = self.wikipedia(obj)
+                    type = str(reponse["result"]["metadata"]["intentName"]) if "intentName" in reponse["result"]["metadata"] else False
+                    if type:
+                        complete = not reponse["result"]["actionIncomplete"]
+                        finish_after = True if "endConversation" in reponse["result"] else False
+                        if complete:
+                            if type == "search-general":
+                                obj = reponse["result"]["parameters"]["obj"]
+                                search_type = reponse["result"]["parameters"]["search_type"]
+                                if search_type == "wikipedia":
+                                    em = self.wikipedia(obj)
+                                if search_type == "reddit":
+                                    pass
+
                     await self.bot.send_message(message.channel, textrep, embed=em)
                 else:
                     deb = ["Que puis-je faire pour vous {} ?", "Que voulez-vous {} ?", "Puis-je vous servir {} ?"]
