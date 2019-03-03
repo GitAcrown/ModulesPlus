@@ -1,8 +1,8 @@
+import json
 import os
 import time
 
 import apiai
-import json
 import praw
 from discord.ext import commands
 
@@ -72,6 +72,4 @@ def setup(bot):
     check_folders()
     check_files()
     n = Flow(bot)
-    bot.add_listener(n.on_msg, "on_message")
-    bot.add_listener(n.on_reaction, "on_reaction_add")
     bot.add_cog(n)
