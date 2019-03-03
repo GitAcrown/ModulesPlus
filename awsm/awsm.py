@@ -116,7 +116,7 @@ class Awsm:
                 em = discord.Embed(url="https://www.reddit.com/r/{}/".format(search),
                                    title="r/" + reddit.display_name.title() + " ─ Hot",
                                    description=txt, color=color)
-                em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
+                em.set_footer(text="Classé NSFW ─ Les titres sont cachés", icon_url="https://www.redditstatic.com/new-icon.png")
                 return em
             else:
                 txt = ""
