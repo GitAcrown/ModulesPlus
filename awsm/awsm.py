@@ -122,6 +122,7 @@ class Awsm:
             while True:
                 content = message.content.replace(self.bot_mention, "")
                 em = notif = None
+                finish_after = False
                 await self.bot.send_typing(message.channel)
                 if content:
                     self.request = self.dialog.text_request()
@@ -141,7 +142,7 @@ class Awsm:
                     await self.bot.send_message(message.channel, textrep, embed=em)
                 else:
                     deb = ["Que puis-je faire pour vous {} ?", "Que voulez-vous {} ?", "Puis-je vous servir {} ?"]
-                    notif = await self.bot.say(random.choice(deb).format(author.name))
+                    notif = await self.bot.send_message(message.channel, random.choice(deb).format(author.name))
                 if not finish_after:
                     message = await self.bot.wait_for_message(channel=message.channel, author=message.author, timeout=10)
                     if not message:
