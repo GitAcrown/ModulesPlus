@@ -130,7 +130,7 @@ class Awsm:
                     self.request.query = content
                     reponse = json.load(self.request.getresponse())
                     textrep = reponse["result"]["fulfillment"]["speech"]
-                    type = reponse["result"]["metadata"]["intentName"]
+                    type = str(reponse["result"]["metadata"]["intentName"])
                     complete = not reponse["result"]["actionIncomplete"]
                     finish_after = True if "endConversation" in reponse["result"] else False
                     if complete:
