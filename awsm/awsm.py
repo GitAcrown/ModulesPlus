@@ -48,12 +48,13 @@ class Awsm:
             n -= 1
         return separateur.join(string.split(separateur)[:n]) + separateur
 
-    def wikipedia(self, search: str):
+    async def wikipedia(self, search: str, message: discord.Message):
         """Traite la demande de recherche Wikipedia"""
         langue = 'fr'
         wikipedia.set_lang(langue)
         wiki = wikipediaapi.Wikipedia(langue)
         while True:
+            await self.bot.send_typing(message.channel)
             page = wiki.page(search)
             if page.exists():
                 simil = wikipedia.search(search, 6, True)
@@ -68,7 +69,10 @@ class Awsm:
                 em.set_footer(text=txtsimil,
                               icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-"
                                        "logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-                return em
+                msg = random.choice(["Voici ce que j'ai trouvé :", "Voilà :", "Voilà pour vous :", "Tout de suite :",
+                                     "J'ai trouvé ça :"])
+                await self.bot.send_message(message.channel, msg, embed=em)
+                return True
             elif langue == 'en':
                 wikipedia.set_lang('fr')
                 search = wikipedia.search(search, 8, True)[0]
@@ -82,7 +86,43 @@ class Awsm:
                     for _ in liste:
                         ltxt += "**{}** • {}\n".format(_[0], _[1].capitalize())
                     em = discord.Embed(title="Pages suggérées", description=ltxt, color=0xeeeeee)
-                    return em
+                    msg = random.choice(["Je n'ai rien trouvé en particulier...",
+                                         "Désolé mais je n'ai rien trouvé avec ce nom...",
+                                         "Je ne peux que vous proposer des pages similaires.",
+                                         "Je suis désolé mais je n'ai trouvé que ça :"])
+                    rdfot = random.choice(
+                        ["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
+                         "Quel sujet est le bon ?", "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                    em.set_footer(text=rdfot)
+                    msg = await self.bot.send_message(message.channel, msg, embed=em)
+                    rep = await self.bot.wait_for_message(channel=message.channel,
+                                                          author=message.author,
+                                                          timeout=10)
+                    if rep is None:
+                        await self.bot.delete_message(msg)
+                        return True
+                    elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                 "ca sera tout", "ça sera tout", "non merci"]:
+                        poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
+                        await self.bot.send_message(message.channel, poli)
+                        await self.bot.delete_message(msg)
+                        return True
+                    elif rep.content.lower() in [l.lower() for l in search]:
+                        search = rep.content
+                        await self.bot.delete_message(msg)
+                    elif int(rep.content) in [i[0] for i in liste]:
+                        search = False
+                        for i in liste:
+                            if int(rep.content) == i[0]:
+                                search = i[1]
+                                break
+                        await self.bot.delete_message(msg)
+                        if not search:
+                            await self.bot.send_message(message.channel, "Aucun résulat.")
+                            return
+                    else:
+                        await self.bot.delete_message(msg)
+                        return True
                 else:
                     wikipedia.set_lang('en')
                     search = wikipedia.search(search, 8, True)[0]
@@ -96,8 +136,44 @@ class Awsm:
                         for _ in liste:
                             ltxt += "**{}** • {}\n".format(_[0], _[1].capitalize())
                         em = discord.Embed(title="Pages suggérées (en Anglais)", description=ltxt, color=0xeeeeee)
-                        return em
-
+                        msg = random.choice(["Je n'ai rien trouvé en particulier...",
+                                             "Désolé mais je n'ai rien trouvé avec ce nom...",
+                                             "Je ne peux que vous proposer des pages similaires.",
+                                             "Je suis désolé mais je n'ai trouvé que ça :"])
+                        rdfot = random.choice(
+                            ["Que vouliez-vous exactement ?", "Quelle était votre recherche dans cette liste ?",
+                             "Quel sujet est le bon ?",
+                             "Voulez-vous bien m'indiquer la bonne page à charger ?"])
+                        em.set_footer(text=rdfot)
+                        msg = await self.bot.send_message(message.channel, msg, embed=em)
+                        rep = await self.bot.wait_for_message(channel=message.channel,
+                                                              author=message.author,
+                                                              timeout=10)
+                        if rep is None:
+                            await self.bot.delete_message(msg)
+                            return True
+                        elif rep.content.lower() in ["rien", "nvm", "nevermind", "stop", "merci",
+                                                     "ca sera tout", "ça sera tout", "non merci"]:
+                            poli = random.choice(["Bien entendu.", "D'accord, entendu.", "Très bien."])
+                            await self.bot.send_message(message.channel, poli)
+                            await self.bot.delete_message(msg)
+                            return True
+                        elif rep.content.lower() in [l.lower() for l in search]:
+                            search = rep.content
+                            await self.bot.delete_message(msg)
+                        elif int(rep.content) in [i[0] for i in liste]:
+                            search = False
+                            for i in liste:
+                                if int(rep.content) == i[0]:
+                                    search = i[1]
+                                    break
+                            await self.bot.delete_message(msg)
+                            if not search:
+                                await self.bot.send_message(message.channel, "Aucun résulat.")
+                                return
+                        else:
+                            await self.bot.delete_message(msg)
+                            return True
             else:
                 langue = 'en'
 
@@ -171,10 +247,9 @@ class Awsm:
                                 search_type = reponse["result"]["parameters"]["search_type"]
                                 if search_type == "wikipedia":
                                     try:
-                                        em = self.wikipedia(obj)
-                                        finish_after = True
+                                        return await self.wikipedia(obj, message)
                                     except:
-                                        textrep = "Désolé, je n'ai rien trouvé..."
+                                        textrep = "Désolé, je n'ai pas pu faire la recherche..."
                                 elif search_type == "reddit":
                                     try:
                                         em = self.reddit_sub(obj)
