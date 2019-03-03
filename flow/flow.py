@@ -46,7 +46,7 @@ class Flow:
         """Permet de discuter avec Flow (TEST)"""
         self.coreflow()
         content = ctx.message.content
-        self.dialog_request.query(content)
+        self.dialog_request.query = content
         reponse = self.dialog_request.getresponse()
         obj = json.load(reponse)
         rep_dialog = obj["result"]["fulfillment"]["speech"]
