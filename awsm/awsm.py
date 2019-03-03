@@ -42,7 +42,7 @@ class Awsm:
     def awsm_core(self, author = discord.Member):
         self.request = self.dialog.text_request()
         self.request.lang = "de"
-        self.request.session_id = author.id
+        self.request.session_id = str(author.id)
 
     @commands.command(pass_context=True)
     async def fd(self, ctx):
@@ -60,7 +60,7 @@ class Awsm:
 
 def check_folders():
     if not os.path.exists("data/awsm"):
-        print("Creation du fichier central ...")
+        print("Creation du fichier Awsm ...")
         os.makedirs("data/awsm")
 
 
