@@ -134,10 +134,13 @@ class Awsm:
                     complete = not reponse["result"]["actionIncomplete"]
                     finish_after = True if "endConversation" in reponse["result"] else False
                     if complete:
+                        print("demande complete")
                         if type is "search-general":
+                            print("categorie reconnue")
                             obj = reponse["result"]["parameters"]["obj"]
                             search_type = reponse["result"]["parameters"]["search_type"]
                             if search_type is "wikipedia":
+                                print("page imprimée")
                                 em = self.wikipedia(obj)
                     await self.bot.send_message(message.channel, textrep, embed=em)
                 else:
