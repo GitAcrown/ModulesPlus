@@ -137,7 +137,7 @@ class Awsm:
 
     def google(self, search: str):
         try:
-            results = google.search(search, 1, lang='fr')
+            results = google.search(search, 1)
             txt = ""
             for i in results:
                 name = i.name[:i.name.find("http")]
@@ -150,7 +150,6 @@ class Awsm:
         except Exception as e:
             print(e)
             return None
-
 
     async def on_msg(self, message: discord.Message):
         author = message.author
