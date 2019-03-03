@@ -262,7 +262,7 @@ class Awsm:
                     deb = ["Que puis-je faire pour vous {} ?", "Que voulez-vous {} ?", "Puis-je vous servir {} ?"]
                     notif = await self.bot.send_message(message.channel, random.choice(deb).format(author.name))
                 if not finish_after:
-                    message = await self.bot.wait_for_message(channel=message.channel, author=message.author, timeout=5)
+                    message = await self.bot.wait_for_message(channel=message.channel, author=message.author, timeout=7)
                     if not message:
                         if notif:
                             await self.bot.delete_message(notif)
