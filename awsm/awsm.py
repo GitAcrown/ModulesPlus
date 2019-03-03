@@ -139,7 +139,10 @@ class Awsm:
                                 obj = reponse["result"]["parameters"]["obj"]
                                 search_type = reponse["result"]["parameters"]["search_type"]
                                 if search_type == "wikipedia":
-                                    em = self.wikipedia(obj)
+                                    try:
+                                        em = self.wikipedia(obj)
+                                    except:
+                                        textrep = "Désolé, je n'ai rien trouvé..."
                                 if search_type == "reddit":
                                     pass
 
