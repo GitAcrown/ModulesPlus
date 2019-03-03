@@ -35,7 +35,7 @@ class Awsm:
         self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w', client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
                      user_agent='discordbot:Stayawsm.:1.0 (by /u/Nordsko)')
         # DialogFlow
-        self.CLIENT_TOKEN = "524242c7371f471aaf41aa5d306fc49d"
+        self.CLIENT_TOKEN = "448cd1b1db0c4ecfad775756ee521776"
         self.dialog = apiai.ApiAI(self.CLIENT_TOKEN)
 
     @commands.command(pass_context=True)
