@@ -8,7 +8,7 @@ import discord
 import praw
 import wikipedia
 import wikipediaapi
-from discord.ext import commands
+from google import google
 
 from .utils.dataIO import fileIO, dataIO
 
@@ -102,19 +102,55 @@ class Awsm:
             else:
                 langue = 'en'
 
-    @commands.command(pass_context=True)
-    async def fd(self, ctx, *message):
-        """Permet de discuter avec Awsm (TEST)"""
-        content = " ".join(message)
-        self.request = self.dialog.text_request()
-        self.request.session_id = str(ctx.message.author.id)
-        self.request.query = content
+    def reddit_sub(self, search: str):
+        if "r/" in search:
+            search = search.replace("r/", "")
         try:
-            rep = json.load(self.request.getresponse())["result"]["fulfillment"]["speech"]
-            await self.bot.say(rep)
+            reddit = self.reddit.subreddits.search_by_name(search, exact=True)[0]
+            if reddit.over18:
+                txt = ""
+                color = int('0x{}'.format(reddit.key_color[1:]), 16) if reddit.key_color else 0xfd4300
+                for submit in reddit.hot(limit=3):
+                    txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                        submit.title, submit.permalink, submit.author.name if submit.author else "???")
+                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                                   title="r/" + reddit.display_name.title() + " ─ Hot",
+                                   description=txt, color=color)
+                em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
+                return em
+            else:
+                txt = ""
+                color = int('0x{}'.format(reddit.key_color[1:]), 16) if reddit.key_color else 0xfd4300
+                for submit in reddit.hot(limit=3):
+                    txt += "· **[{0}](https://www.reddit.com{1})** (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
+                        submit.title, submit.permalink, submit.author.name if submit.author else "???")
+                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                                   title="r/" + reddit.display_name.title() + " ─ Hot",
+                                   description=txt, color=color)
+                em.set_footer(text="Reddit", icon_url="https://www.redditstatic.com/new-icon.png")
+                if reddit.banner_img:
+                    em.set_image(url=reddit.banner_img)
+                return em
         except Exception as e:
             print(e)
-            await self.bot.say("Désole je suis occupé...")
+            return None
+
+    def google(self, search: str):
+        try:
+            results = google.search(search, 1, lang='fr')
+            txt = ""
+            for i in results:
+                name = i.name[:i.name.find("http")]
+                txt += "· [{}]({})\n".format(name, i.link)
+            if txt:
+                em = discord.Embed(title="Recherche · " + search,color=0xF4B400, description=txt)
+                em.set_footer(text="Google", icon_url="https://image.flaticon.com/teams/slug/google.jpg")
+                return em
+            return None
+        except Exception as e:
+            print(e)
+            return None
+
 
     async def on_msg(self, message: discord.Message):
         author = message.author
@@ -143,8 +179,16 @@ class Awsm:
                                         em = self.wikipedia(obj)
                                     except:
                                         textrep = "Désolé, je n'ai rien trouvé..."
-                                if search_type == "reddit":
-                                    pass
+                                elif search_type == "reddit":
+                                    try:
+                                        em = self.reddit_sub(obj)
+                                    except:
+                                        textrep = "Désolé, je n'ai rien trouvé..."
+                                else:
+                                    try:
+                                        em = self.google(obj)
+                                    except:
+                                        textrep = "Désolé, je n'ai rien trouvé..."
 
                     await self.bot.send_message(message.channel, textrep, embed=em)
                 else:
