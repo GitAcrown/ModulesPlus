@@ -135,7 +135,7 @@ class Awsm:
             print(e)
             return None
 
-    def google(self, search: str):
+    def google(self, search):
         try:
             results = google.search(search, 1)
             txt = ""
@@ -176,16 +176,19 @@ class Awsm:
                                 if search_type == "wikipedia":
                                     try:
                                         em = self.wikipedia(obj)
+                                        finish_after = True
                                     except:
                                         textrep = "Désolé, je n'ai rien trouvé..."
                                 elif search_type == "reddit":
                                     try:
                                         em = self.reddit_sub(obj)
+                                        finish_after = True
                                     except:
                                         textrep = "Désolé, je n'ai rien trouvé..."
                                 else:
                                     try:
                                         em = self.google(obj)
+                                        finish_after = True
                                     except:
                                         textrep = "Désolé, je n'ai rien trouvé..."
 
