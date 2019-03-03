@@ -33,7 +33,6 @@ class Awsm:
         self.bot = bot
         self.ctr = AwsmAPI(bot, "data/awsm/data.json")
         self.sys = dataIO.load_json("data/awsm/sys.json")
-        self.bot_mention = "<@{}>".format(self.bot.user.id)
         self.metasys = {"ls": 0}
         self.context = {}
         # Reddit PRAW
@@ -136,23 +135,20 @@ class Awsm:
             return None
 
     def google(self, search):
-        try:
-            results = google.search(search, 1)
-            txt = ""
-            for i in results:
-                name = i.name[:i.name.find("http")]
-                txt += "· [{}]({})\n".format(name, i.link)
-            if txt:
-                em = discord.Embed(title="Recherche · " + search,color=0xF4B400, description=txt)
-                em.set_footer(text="Google", icon_url="https://image.flaticon.com/teams/slug/google.jpg")
-                return em
-            return None
-        except Exception as e:
-            print(e)
-            return None
+        results = google.search(search, 1)
+        txt = ""
+        for i in results:
+            name = i.name[:i.name.find("http")]
+            txt += "· [{}]({})\n".format(name, i.link)
+        if txt:
+            em = discord.Embed(title="Recherche · " + search,color=0xF4B400, description=txt)
+            em.set_footer(text="Google", icon_url="https://image.flaticon.com/teams/slug/google.jpg")
+            return em
+        return None
 
     async def on_msg(self, message: discord.Message):
         author = message.author
+        self.bot_mention = "<@{}>".format(self.bot.user.id)
         if self.bot_mention in message.content:
             while True:
                 content = message.content.replace(self.bot_mention, "")
