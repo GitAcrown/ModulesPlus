@@ -3,7 +3,6 @@ import os
 import time
 
 import apiai
-import discord
 import praw
 from discord.ext import commands
 
@@ -36,19 +35,14 @@ class Awsm:
         self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w', client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
                      user_agent='discordbot:Stayawsm.:1.0 (by /u/Nordsko)')
         # DialogFlow
-        self.CLIENT_TOKEN = "524242c7371f471aaf41aa5d306fc49d"
         self.dialog = apiai.ApiAI(self.CLIENT_TOKEN)
-
-    def awsm_core(self, author = discord.Member):
-        self.request = self.dialog.text_request()
-        self.request.lang = "de"
-        self.request.session_id = str(author.id)
+        self.CLIENT_TOKEN = "524242c7371f471aaf41aa5d306fc49d"
 
     @commands.command(pass_context=True)
     async def fd(self, ctx):
         """Permet de discuter avec Awsm (TEST)"""
-        self.awsm_core()
         content = ctx.message.content
+        self.request = self.dialog.text_request()
         self.request.query = content
         try:
             rep = json.load(self.request.getresponse())["result"]["fulfillment"]["speech"]
