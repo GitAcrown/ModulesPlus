@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import time
 
 import apiai
@@ -120,26 +121,32 @@ class Awsm:
         if self.bot_mention in message.content:
             while True:
                 content = message.content.replace(self.bot_mention, "")
-                em = None
+                em = notif = None
                 await self.bot.send_typing(message.channel)
-                self.request = self.dialog.text_request()
-                self.request.session_id = str(author.id)
-                self.request.query = content
-                reponse = json.load(self.request.getresponse())
-                textrep = reponse["result"]["fulfillment"]["speech"]
-                type = reponse["result"]["metadata"]["intentName"]
-                complete = not reponse["result"]["actionIncomplete"]
-                finish_after = True if "endConversation" in reponse["result"] else False
-                if complete:
-                    if type is "search-general":
-                        obj = reponse["result"]["parameters"]["obj"]
-                        search_type = reponse["result"]["parameters"]["search_type"]
-                        if search_type is "wikipedia":
-                            em = self.wikipedia(obj)
-                await self.bot.send_message(message.channel, textrep, embed=em)
+                if content:
+                    self.request = self.dialog.text_request()
+                    self.request.session_id = str(author.id)
+                    self.request.query = content
+                    reponse = json.load(self.request.getresponse())
+                    textrep = reponse["result"]["fulfillment"]["speech"]
+                    type = reponse["result"]["metadata"]["intentName"]
+                    complete = not reponse["result"]["actionIncomplete"]
+                    finish_after = True if "endConversation" in reponse["result"] else False
+                    if complete:
+                        if type is "search-general":
+                            obj = reponse["result"]["parameters"]["obj"]
+                            search_type = reponse["result"]["parameters"]["search_type"]
+                            if search_type is "wikipedia":
+                                em = self.wikipedia(obj)
+                    await self.bot.send_message(message.channel, textrep, embed=em)
+                else:
+                    deb = ["Que puis-je faire pour vous {} ?", "Que voulez-vous {} ?", "Puis-je vous servir {} ?"]
+                    notif = await self.bot.say(random.choice(deb).format(author.name))
                 if not finish_after:
                     message = await self.bot.wait_for_message(channel=message.channel, author=message.author, timeout=10)
                     if not message:
+                        if notif:
+                            await self.bot.delete_message(notif)
                         return
                     else:
                         continue
