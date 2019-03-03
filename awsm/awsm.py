@@ -39,9 +39,9 @@ class Awsm:
         self.dialog = apiai.ApiAI(self.CLIENT_TOKEN)
 
     @commands.command(pass_context=True)
-    async def fd(self, ctx):
+    async def fd(self, ctx, *message):
         """Permet de discuter avec Awsm (TEST)"""
-        content = ctx.message.content
+        content = " ".join(message)
         self.request = self.dialog.text_request()
         self.request.session_id = str(ctx.message.author.id)
         self.request.query = content
