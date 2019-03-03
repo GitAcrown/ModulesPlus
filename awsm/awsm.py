@@ -113,7 +113,7 @@ class Awsm:
                 for submit in reddit.hot(limit=3):
                     txt += "· ||**[{0}](https://www.reddit.com{1})**|| (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                         submit.title, submit.permalink, submit.author.name if submit.author else "???")
-                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(search),
                                    title="r/" + reddit.display_name.title() + " ─ Hot",
                                    description=txt, color=color)
                 em.set_footer(text="Classé NSFW ─ Les titres sont cachés")
@@ -124,7 +124,7 @@ class Awsm:
                 for submit in reddit.hot(limit=3):
                     txt += "· **[{0}](https://www.reddit.com{1})** (u/[{2}](https://www.reddit.com/user/{2}))\n".format(
                         submit.title, submit.permalink, submit.author.name if submit.author else "???")
-                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(r),
+                em = discord.Embed(url="https://www.reddit.com/r/{}/".format(search),
                                    title="r/" + reddit.display_name.title() + " ─ Hot",
                                    description=txt, color=color)
                 em.set_footer(text="Reddit", icon_url="https://www.redditstatic.com/new-icon.png")
