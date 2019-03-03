@@ -30,13 +30,14 @@ class Awsm:
         self.bot = bot
         self.ctr = AwsmAPI(bot, "data/awsm/data.json")
         self.sys = dataIO.load_json("data/awsm/sys.json")
-        self.CLIENT_TOKEN = "bf8d293cce304d84835cddeea7d9947d"
-        self.dialog = apiai.ApiAI(self.CLIENT_TOKEN)
         self.metasys = {"ls": 0}
         self.context = {}
-        self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w',
-                     client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
+        # Reddit PRAW
+        self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w', client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
                      user_agent='discordbot:Stayawsm.:1.0 (by /u/Nordsko)')
+        # DialogFlow
+        self.CLIENT_TOKEN = "524242c7371f471aaf41aa5d306fc49d"
+        self.dialog = apiai.ApiAI(self.CLIENT_TOKEN)
 
     def awsm_core(self, author = discord.Member):
         self.request = self.dialog.text_request()
@@ -52,7 +53,8 @@ class Awsm:
         try:
             rep = json.load(self.request.getresponse())["result"]["fulfillment"]["speech"]
             await self.bot.say(rep)
-        except:
+        except Exception as e:
+            print(e)
             await self.bot.say("Désole je suis occupé...")
 
 
