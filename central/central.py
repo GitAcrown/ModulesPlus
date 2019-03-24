@@ -134,6 +134,16 @@ class Central:
                             pass
         return False
 
+    def clean_repost_cache(self, stock):
+        keep = time.time() - 604800
+        for url in stock:
+            for i in stock[url]:
+                if i[3] < keep:
+                    stock[url].remove(i)
+            if url == []:
+                del stock[url]
+        return stock
+
     async def _repost_detect(self, message: discord.Message):
         server = message.server
         if self.check_service(server, "repost"):
@@ -145,8 +155,8 @@ class Central:
                     url = op[0]
                     if url in cache["repost"]:
                         cache["repost"][url].append((message.id, message.channel.id, message.author.id, time.time()))
-                        if len(cache["repost"]) >= 200:
-                            cache["repost"].remove(cache["repost"][0])
+                        if len(cache["repost"]) >= 100:
+                            cache["repost"] = self.clean_repost_cache(cache["repost"])
                         await self.bot.add_reaction(message, "♻")
                     else:
                         cache["repost"][url] = []
