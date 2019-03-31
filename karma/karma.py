@@ -161,6 +161,8 @@ class Karma:
         <cooldown> = Valeur suivie de l'unité (s, m, h, j)"""
         server = ctx.message.server
         data = self.karma.get_server(server, "META")["slow"]
+        if cooldown[-1:] not in ["s", "m", "h", "j"]:
+            cooldown += "s"
         form, val = cooldown[-1:], int(cooldown[:-1])
         law = self.karma.get_server(ctx.message.server, "META")["rules"]
         art = False
@@ -1293,37 +1295,36 @@ class Karma:
 
     async def msg_post(self, message):
         if hasattr(message, "server"):
-            if not message.author.bot:
-                karma = None
-                try:
-                    karma = self.karma.logs_on(message.server, "msg_post")
-                except:
-                    return
-                if karma:
-                    em = discord.Embed(description=message.content, color=0x6fe334, timestamp=message.timestamp)
-                    em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
-                    em.set_footer(text="ID:{}".format(message.author.id))
-                    await self.karma.add_server_logs(message.server, "msg_post", em)
+            if message.server:
+                if not message.author.bot:
+                    karma = None
+                    try:
+                        karma = self.karma.logs_on(message.server, "msg_post")
+                    except:
+                        return
+                    if karma:
+                        em = discord.Embed(description=message.content, color=0x6fe334, timestamp=message.timestamp)
+                        em.set_author(name=str(message.author) + " ─ Message posté", icon_url=message.author.avatar_url)
+                        em.set_footer(text="ID:{}".format(message.author.id))
+                        await self.karma.add_server_logs(message.server, "msg_post", em)
 
-            karma = self.karma.get_server(message.server, "META")["slow"]
-            muted = discord.PermissionOverwrite(send_messages=False)
-            if message.author.id in karma:
-                cache = self.get_cache(message.server, "SLOW")
-                user = message.author
-                await self.bot.edit_channel_permissions(message.channel, message.author, muted)
-                await asyncio.sleep(karma[user.id])
-                await self.bot.delete_channel_permissions(message.channel, message.author)
-                """if user.id not in cache:
-                    cache[user.id] = time.time() + karma[user.id]
-                    self.save_cache()
-                    return
-                if time.time() >= cache[user.id]:
-                    cache[user.id] = time.time() + karma[user.id]
-                    self.save_cache()
-                else:
-                    await self.bot.delete_message(message)"""
-
-
+                karma = self.karma.get_server(message.server, "META")["slow"]
+                muted = discord.PermissionOverwrite(send_messages=False)
+                if message.author.id in karma:
+                    cache = self.get_cache(message.server, "SLOW")
+                    user = message.author
+                    await self.bot.edit_channel_permissions(message.channel, message.author, muted)
+                    await asyncio.sleep(karma[user.id])
+                    await self.bot.delete_channel_permissions(message.channel, message.author)
+                    """if user.id not in cache:
+                        cache[user.id] = time.time() + karma[user.id]
+                        self.save_cache()
+                        return
+                    if time.time() >= cache[user.id]:
+                        cache[user.id] = time.time() + karma[user.id]
+                        self.save_cache()
+                    else:
+                        await self.bot.delete_message(message)"""
 
     async def msg_delete(self, message):
         if hasattr(message, "server"):
