@@ -193,12 +193,10 @@ class Central:
                 server = message.server
                 if self.check_service(server, "repost"):
                     if reaction.emoji == "♻":
-                        print("Emoji détecté")
                         r_cache = self.get_sys(server)["CACHE"]["repost"]
                         for i in r_cache:
                             for log in r_cache[i]:
                                 if message.id == log[0]:
-                                    print("Message trouvé")
                                     txt = ""
                                     for u in r_cache[i]:
                                         try:
@@ -218,6 +216,12 @@ class Central:
                                             await asyncio.sleep(5)
                                             await self.bot.delete_message(notif)
                                     return
+
+    @commands.command(pass_context=True)
+    async def testimg(self, ctx):
+        em = discord.Embed(title="Testimg")
+        em.set_image(url="https://i.imgur.com/iSZF8Dv.gifv")
+        await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
