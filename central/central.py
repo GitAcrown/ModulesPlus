@@ -220,7 +220,7 @@ class Central:
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
         em = discord.Embed(title="Testimg")
-        em.set_image(url="https://i.imgur.com/iSZF8Dv.gifv")
+        em.set_image(url="https://i.imgur.com/Gc5zR4z.gif")
         await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
