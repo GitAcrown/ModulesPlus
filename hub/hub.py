@@ -2,7 +2,9 @@ import os
 from datetime import datetime
 
 import discord
+from discord.ext import commands
 
+from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
 
@@ -30,6 +32,12 @@ class Hub:
             self.cache[user.id] = today
             return True
         return False
+
+    @commands.command(pass_context=True)
+    async def resethub(self, ctx):
+        """Reset le compteur du hub"""
+        await self.bot.say("**Reset effectué**")
+        self.cache = {}
 
     async def on_update(self, before, after):
         if after.id == "172376505354158080":
