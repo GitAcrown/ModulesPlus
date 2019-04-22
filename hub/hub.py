@@ -25,7 +25,7 @@ class Hub:
         self.cache = {}
 
     def can_interact(self, user):
-        today = datetime.strptime(datetime.now(), "%d/%m/%Y")
+        today = datetime.now().strftime("%d/%m/%Y")
         if user.id not in self.cache:
             self.cache[user.id] = ""
         if self.cache[user.id] != today:
