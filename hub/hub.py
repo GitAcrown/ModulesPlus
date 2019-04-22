@@ -35,8 +35,8 @@ class Hub:
         if after.id == "172376505354158080":
             if before.status.offline:
                 if after.status.online or after.status.dnd or after.status.idle:
-                    # if self.can_interact(after):
-                    await self.bot.send_message(after, "Détecté")
+                    if self.can_interact(after):
+                        await self.bot.send_message(after, "Détecté")
 
 
 def check_folders():
