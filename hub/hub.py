@@ -24,7 +24,7 @@ class Hub:
         self.hub = HubAPI(bot, "data/hub/data.json")
         self.cache = {}
 
-    def can_interact(self, user: discord.User):
+    def can_interact(self, user):
         today = datetime.strftime("%d/%m/%Y")
         if user.id not in self.cache:
             self.cache[user.id] = ""
