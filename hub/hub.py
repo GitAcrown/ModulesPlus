@@ -41,8 +41,8 @@ class Hub:
 
     async def on_update(self, before, after):
         if after.id == "172376505354158080":
-            if before.status.offline:
-                if after.status.online or after.status.dnd or after.status.idle:
+            if before.status == discord.Status.online:
+                if after.status in [discord.Status.offline, discord.Status.idle, discord.Status.dnd]:
                     if self.can_interact(after):
                         await self.bot.send_message(after, "Détecté")
 
