@@ -585,16 +585,12 @@ class Cobalt:
                     stop = True
                     continue
                 elif rep.content in [str(i[0]) for i in items]:
+                    await self.bot.delete_message(msg)
                     for i in items:
                         if i[0] == int(rep.content):
                             await self.buy_item(ctx.message.channel, ctx.message.author, i[1])
-                            await self.bot.delete_message(msg)
                             if random.randint(1, 3) == 1:
                                 await self.disp_astuce()
-                            continue
-                    await self.bot.say("**Erreur** — Il semblerait que le nombre soit incorrect.")
-                    await self.bot.delete_message(msg)
-                    stop = True
                     continue
                 else:
                     await self.bot.say("**Erreur** — Il semblerait que le nombre soit incorrect. Réessayez.")
