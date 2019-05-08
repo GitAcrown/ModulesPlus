@@ -127,11 +127,11 @@ class Cobalt:
             item = self.get_item(itemid)
             if item["type"] == "MINERAI":
                 if itemid in data["minerais"]:
-                    if qte > data["minerais"][itemid]["qte"]:
+                    if qte < data["minerais"][itemid]["qte"]:
                         data["minerais"][itemid]["qte"] -= qte
                         self.save()
                         return True
-                    elif qte <= data["minerais"][itemid]["qte"]:
+                    elif qte >= data["minerais"][itemid]["qte"]:
                         del data["minerais"][itemid]
                         self.save()
                         return True
@@ -144,11 +144,11 @@ class Cobalt:
                 return False
             if item["type"] == "ITEM":
                 if itemid in data["items"]:
-                    if qte > data["items"][itemid]["qte"]:
+                    if qte < data["items"][itemid]["qte"]:
                         data["items"][itemid]["qte"] -= qte
                         self.save()
                         return True
-                    elif qte <= data["items"][itemid]["qte"]:
+                    elif qte >= data["items"][itemid]["qte"]:
                         del data["items"][itemid]
                         self.save()
                         return True
@@ -643,7 +643,7 @@ class Cobalt:
                             val = self.get_item(mrep)["value"] * qte
                             self.del_item(ctx.message.author, mrep, qte)
                             self.save()
-                            self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › SellAll")
+                            self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep))
                             em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
                             continue
