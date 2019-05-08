@@ -928,7 +928,8 @@ class Cobalt:
                             else:
                                 hb["ack"] = 0
                                 hb["limit"] = random.randint(50, sys["maxfreq"] / 2)
-                        except:
+                        except Exception as e:
+                            print(e)
                             pass
 
     async def dynamic_react(self, reaction, user):
