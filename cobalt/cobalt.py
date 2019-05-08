@@ -766,7 +766,7 @@ class Cobalt:
                 mequip = ""
                 items = data["items"]
                 for item in items:
-                    mequip += "**{}**. **{}** (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
+                    mequip += "`{}` **{}** (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
                                                            self.get_item(item)["desc"])
                 em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
                 em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
