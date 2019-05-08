@@ -935,12 +935,11 @@ class Cobalt:
                                 hb["item"] = itemid
                             else:
                                 itemid = hb["item"]
+                            hb["ack"] = 0
                             if await self.obtain_item(channel, itemid):
-                                hb["ack"] = 0
                                 hb["limit"] = random.randint(50, sys["maxfreq"])
                                 hb["item"] = None
                             else:
-                                hb["ack"] = 0
                                 hb["limit"] = random.randint(50, sys["maxfreq"] / 2)
                         except Exception as e:
                             print(e)
