@@ -252,7 +252,7 @@ class Cobalt:
                     try:
                         user = server.get_member(u)
                         detem = discord.Embed(description="**Détecteur de minerais** • Un minerai **{}** se trouve sur {} "
-                                                          "et va bientôt apparaître !".format(item["name"], channel.name))
+                                                          "et va bientôt apparaître !".format(item["name"], channel.mention))
                         await self.bot.send_message(user, embed=detem)
                         self.get_user(user)["status"].remove("detector")
                     except:
