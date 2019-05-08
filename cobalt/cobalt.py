@@ -567,8 +567,9 @@ class Cobalt:
                 n = 1
                 items = []
                 for item in self.items["ITEM"]:
-                    txt += "{}. **{}** › **{}**g/{}\n".format(n, item["name"], item["value"],
-                                                              "unité" if item["qte"] == 1 else "lot de " + item["qte"])
+                    obj = self.items["ITEM"][item]
+                    txt += "{}. **{}** › **{}**g/{}\n".format(n, obj["name"], obj["value"],
+                                                              "unité" if obj["qte"] == 1 else "lot de " + obj["qte"])
                     items.append([n, item])
                     n += 1
                 em = discord.Embed(title="Boutique » Achat", description=txt, color=0x0047AB)
