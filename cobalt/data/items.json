@@ -4,6 +4,7 @@
     "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1},
     "argent": {"id": "argent", "name": "Argent", "value": 20, "max": 10, "rare": 2, "energie": 3},
     "or": {"id": "or", "name": "Or", "value": 32, "max": 9, "rare": 2, "energie": 4},
+    "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 10, "rare": 2, "energie": 3},
     "rubis": {"id": "rubis", "name": "Rubis", "value": 68, "max": 7, "rare": 3, "energie": 8},
     "diamant": {"id": "diamant", "name": "Diamant", "value": 95, "max": 5, "rare": 3, "energie": 10}
   },
