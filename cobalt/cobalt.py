@@ -261,7 +261,7 @@ class Cobalt:
                 await asyncio.sleep(10)
 
             def check(reaction, user):
-                if not rep.user.bot:
+                if not user.bot:
                     return True if self.get_user(user) else False
                 return False
 
@@ -307,7 +307,7 @@ class Cobalt:
 
             notif = await self.bot.send_message(channel, embed=em)
             def check(reaction, user):
-                if not rep.user.bot:
+                if not user.bot:
                     return True if self.get_user(user) else False
                 return False
             await self.bot.add_reaction(notif, "🖐")
