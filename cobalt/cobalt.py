@@ -906,6 +906,14 @@ class Cobalt:
 
     # --------------------------------------------------------------------------------------------
 
+    def gen_minerai(self):
+        items = self.items["MINERAI"]
+        rl = []
+        for i in items:
+            for _ in range(items[i]["rare"]):
+                rl.append(i)
+        return random.choice(rl)
+
     async def msg_heartbeat(self, message):
         if message.server:
             if not message.author.bot:
@@ -920,9 +928,8 @@ class Cobalt:
                     if hb["ack"] >= hb["limit"]:
                         try:
                             channel = self.bot.get_channel(random.choice(sys["channels"]))
-                            minerais = self.items["MINERAI"]
                             if not hb["item"]:
-                                itemid = random.choice(list(minerais.keys()))
+                                itemid = self.gen_minerai()
                                 hb["item"] = itemid
                             else:
                                 itemid = hb["item"]
