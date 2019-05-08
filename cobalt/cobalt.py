@@ -935,9 +935,10 @@ class Cobalt:
     async def dynamic_react(self, reaction, user):
         if reaction.message.channel:
             message = reaction.message
-            if message.id in self.glob["buy_queue"]:
-                channel = message.channel
-                await self.buy_item(channel, user, self.glob["buy_queue"][message.id])
+            if not user.bot:
+                if message.id in self.glob["buy_queue"]:
+                    channel = message.channel
+                    await self.buy_item(channel, user, self.glob["buy_queue"][message.id])
 
 # --------------------------------------------------------------------------------------------
 
