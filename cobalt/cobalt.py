@@ -408,10 +408,10 @@ class Cobalt:
                             await self.bot.delete_message(msg)
                             return
                         elif rep.content.isdigit():
-                            qte = int(rep.content)
-                            prix = item["value"] * qte
+                            totalqte = int(rep.content) * item["qte"]
+                            prix = item["value"] * int(rep.content)
                             if self.pay.enough_credits(user, prix):
-                                if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=qte):
+                                if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
                                     self.pay.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]))
                                     em = discord.Embed(title="Achat — {}".format(item["name"]),
                                                        description="**Merci pour votre achat.** Le contenu à été déplacé dans votre inventaire.",
