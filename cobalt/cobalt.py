@@ -908,9 +908,11 @@ class Cobalt:
 
     def gen_minerai(self):
         items = self.items["MINERAI"]
+        maxrare = max([items[i]["rare"] for i in items])
+        maxrare += 1
         rl = []
         for i in items:
-            for _ in range(items[i]["rare"]):
+            for _ in range(maxrare - items[i]["rare"]):
                 rl.append(i)
         return random.choice(rl)
 
