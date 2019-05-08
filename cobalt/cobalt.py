@@ -567,7 +567,7 @@ class Cobalt:
                 items = []
                 for item in self.items["ITEM"]:
                     obj = self.items["ITEM"][item]
-                    txt += "{}. **{}** › **{}**g/{}\n".format(n, obj["name"], obj["value"],
+                    txt += "{} — **{}** › **{}**g/{}\n".format(n, obj["name"], obj["value"],
                                                               "unité" if obj["qte"] == 1 else "lot de " + str(obj["qte"]))
                     items.append([n, item])
                     n += 1
@@ -589,7 +589,7 @@ class Cobalt:
                     for i in items:
                         if i[0] == int(rep.content):
                             await self.buy_item(ctx.message.channel, ctx.message.author, i[1])
-                            if random.randint(1, 3) == 1:
+                            if random.randint(1, 5) == 1:
                                 await self.disp_astuce()
                     continue
                 else:
@@ -641,7 +641,7 @@ class Cobalt:
                             self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep))
                             em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
-                            if random.randint(1, 3) == 1:
+                            if random.randint(1, 5) == 1:
                                 await self.disp_astuce()
                             continue
                         else:
@@ -688,7 +688,7 @@ class Cobalt:
                 em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
-                if random.randint(1, 3) == 1:
+                if random.randint(1, 5) == 1:
                     await self.disp_astuce()
         else:
             await self.bot.say("**Action inconnue**\n*buy* = Acheter des équipements\n*sell* = Vendre des ressources\n*sellall* = Vendre toutes vos ressources (minerais)")
@@ -765,7 +765,7 @@ class Cobalt:
                 mequip = ""
                 items = data["items"]
                 for item in items:
-                    mequip += "`{}` **{}** (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
+                    mequip += "• `{}` **{}** (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
                                                            self.get_item(item)["desc"])
                 em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
                 em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
@@ -805,7 +805,7 @@ class Cobalt:
                             await self.bot.delete_message(msg)
                             await self.bot.say("**Erreur** — Item inconnu.")
                             return
-                        if random.randint(1,3) == 1:
+                        if random.randint(1, 5) == 1:
                             await self.disp_astuce()
                     else:
                         await self.bot.say("**Quantité insufissante** — Vous n'avez pas cet item.")
