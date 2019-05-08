@@ -395,7 +395,7 @@ class Cobalt:
                         em = discord.Embed(title="Achat — {}".format(item["name"]), description=txt, color=0x0047AB)
                         if "imageurl" in item:
                             em.set_thumbnail(url=item["imageurl"])
-                        em.set_footer(text="» Combien en voulez-vous ?")
+                        em.set_footer(text="» Combien en voulez-vous ? | \"Stop\" pour annuler")
                         msg = await self.bot.send_message(channel, embed=em)
                         rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
                         if rep is None or rep.content.lower() in ["stop", "quitter", "q"]:
