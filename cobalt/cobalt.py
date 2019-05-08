@@ -374,13 +374,13 @@ class Cobalt:
         else:
             return True
 
-    async def buy_item(self, user: discord.Member, itemid):
+    async def buy_item(self, channel: discord.Channel, user: discord.Member, itemid):
         item = self.get_item(itemid)
         data = self.get_user(user)
         if item["type"] != "UNIQUE": # On ne peut pas acheter un item unique !
             if data:
                 if not self.pay:
-                    await self.bot.say("**Erreur** — Impossible de contacter le module *Pay*")
+                    await self.bot.send_message(channel, "**Erreur** — Impossible de contacter le module *Pay*")
                     return
                 if await self.pay.account_dial(user):
                     while True:
@@ -396,7 +396,7 @@ class Cobalt:
                         if "imageurl" in item:
                             em.set_thumbnail(url=item["imageurl"])
                         em.set_footer(text="» Combien en voulez-vous ?")
-                        msg = await self.bot.say(embed=em)
+                        msg = await self.bot.send_message(channel, embed=em)
                         rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
                         if rep is None or rep.content.lower() in ["stop", "quitter", "q"]:
                             em = discord.Embed(title="Achat — {}".format(item["name"]),
@@ -438,11 +438,11 @@ class Cobalt:
                             await asyncio.sleep(4)
                             await self.bot.delete_message(msg)
                 else:
-                    await self.bot.say("**Achat impossible** — Vous avez besoin d'un compte *Pay* valide.")
+                    await self.bot.send_message(channel, "**Achat impossible** — Vous avez besoin d'un compte *Pay* valide.")
             else:
-                await self.bot.say("**Banni·e** — Vous ne pouvez pas acheter d'items.")
+                await self.bot.send_message(channel, "**Banni·e** — Vous ne pouvez pas acheter d'items.")
         else:
-            await self.bot.say("**Achat impossible** — L'item visé est unique et ne peut être acheté.")
+            await self.bot.send_message(channel, "**Achat impossible** — L'item visé est unique et ne peut être acheté.")
 
     async def disp_astuce(self, comcontext: str = None, channel: discord.Channel = None):
         comcontext = random.choice(["buy_from_reaction", "fast_use", "partage", "sellall", "use_cumul", "mine_despawn"])
@@ -936,7 +936,8 @@ class Cobalt:
         if reaction.message.channel:
             message = reaction.message
             if message.id in self.glob["buy_queue"]:
-                await self.buy_item(user, self.glob["buy_queue"][message.id])
+                channel = message.channel
+                await self.buy_item(channel, user, self.glob["buy_queue"][message.id])
 
 # --------------------------------------------------------------------------------------------
 
