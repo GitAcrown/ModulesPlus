@@ -453,24 +453,24 @@ class Cobalt:
             desc = "Saviez-vous qu'on peut parfois directement acheter un item en cliquant sur la réaction \🛒 se " \
                    "trouvant en dessous de l'affichage des détails ?"
         elif comcontext == "fast_use":
-            title="Utiliser un item plus rapidement"
+            title +="Utiliser un item plus rapidement"
             desc = "Il est possible de rentrer l'identifiant unique de l'item après `.use` pour utiliser l'item visé " \
                    "directement ! On retrouve cet identifiant entre les caractères `!` et `§` dans le lien de partage."
         elif comcontext == "partage":
-            title="Partager rapidement un item"
+            title +="Partager rapidement un item"
             desc = "Saviez-vous qu'il est possible de partager un item sur n'importe quel salon en utilisant la balise" \
                    " fournie en bas de l'affichage de l'item ? Il se trouve toujours sous cette forme : `!Y$` avec Y l'identifiant de l'item."
         elif comcontext == "sellall":
-            title="Vendre tout ses minerais d'un coup"
+            title +="Vendre tout ses minerais d'un coup"
             desc = "Il est en effet possible de faire `.shop sellall` ! Un écran de confirmation vous affichera la " \
                    "valeur totale de votre stock et vous permettra de tout vendre d'un coup !"
         elif comcontext == "use_cumul":
-            title="Cumul des effets à l'utilisation"
+            title +="Cumul des effets à l'utilisation"
             desc = "Lorsque vous activez plusieurs fois le même item (par exemple, vous activez 3 détecteurs à la " \
                    "suite) ne vous inquiétez pas, ils ne sont pas perdus ! A chaque utilisation vous en utiliserez " \
                    "qu'un seul, même si plusieurs sont activés à la fois !"
         elif comcontext == "mine_despawn":
-            title="Disparition des minerais"
+            title +="Disparition des minerais"
             desc = "Saviez-vous que les minerais, s'ils ne sont pas minés, disparaissent au bout de 120s ? " \
                    "Si c'est le cas, un autre apparaîtra peu de temps après donc restez à l'affut, il risque de revenir vite !"
         em = discord.Embed(title=title, description=desc, color=0xf7f7f7)
@@ -478,8 +478,6 @@ class Cobalt:
             msg = await self.bot.say(embed=em)
         else:
             msg = await self.bot.send_message(channel, embed=em)
-        await asyncio.sleep(5)
-        await self.bot.delete_message(msg)
 
 # -----------------------------------------------------------------------------------------
 
