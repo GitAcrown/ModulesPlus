@@ -5,7 +5,6 @@ from .utils import checks
 from __main__ import send_cmd_help, settings
 import re
 import random
-import logging
 import asyncio
 from copy import deepcopy
 import os
@@ -514,7 +513,7 @@ class Cobalt:
             mequip = ""
             items = data["items"]
             for item in items:
-                mequip += "{}x **{}** — *{}*\n".format(items[item]["qte"], items[item]["name"],
+                mequip += "• {}x **{}** — *{}*\n".format(items[item]["qte"], items[item]["name"],
                                                        self.get_item(item)["desc"])
         em.add_field(name="⚒ Equipement", value=mequip)
 
@@ -522,7 +521,7 @@ class Cobalt:
             mtxt = ""
             minerais = data["minerais"]
             for item in minerais:
-                mtxt += "{}x **{}** — {}g/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
+                mtxt += "• {}x **{}** — {}g/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
                                                      self.get_item(item)["value"])
         em.add_field(name="📦 Minerais", value=mtxt)
 
@@ -530,7 +529,7 @@ class Cobalt:
             utxt = ""
             uniques = data["uniques"]
             for item in uniques:
-                utxt += "{}x **{}**\n".format(uniques[item]["qte"], uniques[item]["name"])
+                utxt += "• {}x **{}**\n".format(uniques[item]["qte"], uniques[item]["name"])
             em.add_field(name="🔑 Objets uniques", value=utxt)
         await self.bot.say(embed=em)
 
@@ -550,7 +549,7 @@ class Cobalt:
         if not self.pay:
             await self.bot.say("**Erreur** — Impossible de contacter le module *Pay*.")
             return
-        if not await self.pay.account_dial(user):
+        if not await self.pay.account_dial(ctx.message.author):
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Pay* valide.")
             return
 
