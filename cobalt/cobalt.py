@@ -587,7 +587,7 @@ class Cobalt:
                 elif rep.content in [str(i[0]) for i in items]:
                     for i in items:
                         if i[0] == int(rep.content):
-                            await self.display_item(ctx.message.channel, i[1], True, True)
+                            await self.buy_item(ctx.message.channel, ctx.message.author, i[1])
                             await self.bot.delete_message(msg)
                             if random.randint(1, 3) == 1:
                                 await self.disp_astuce()
