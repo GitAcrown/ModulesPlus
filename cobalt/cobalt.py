@@ -285,6 +285,7 @@ class Cobalt:
                     em.description = p.format(item["name"], rep.user.mention, qte)
                     em.set_footer(text=foot)
                     await self.bot.edit_message(notif, embed=em)
+                    data["energie"] -= item["energie"]
                     self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
                     return True
                 else:
@@ -646,6 +647,8 @@ class Cobalt:
                             self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep))
                             em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
+                            if random.randint(1, 3) == 1:
+                                await self.disp_astuce()
                             continue
                         else:
                             em.description = "**Impossible** — Vous n'avez pas une telle quantité dans votre inventaire !"
@@ -691,6 +694,8 @@ class Cobalt:
                 em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
+                if random.randint(1, 3) == 1:
+                    await self.disp_astuce()
         else:
             await self.bot.say("**Action inconnue**\n*buy* = Acheter des équipements\n*sell* = Vendre des ressources\n*sellall* = Vendre toutes vos ressources (minerais)")
 
