@@ -588,7 +588,7 @@ class Cobalt:
                 elif rep.content in [str(i[0]) for i in items]:
                     for i in items:
                         if i[0] == int(rep.content):
-                            await self.display_item(ctx.message.channel, i[0], True, True)
+                            await self.display_item(ctx.message.channel, i[1], True, True)
                             await self.bot.delete_message(msg)
                             if random.randint(1, 3) == 1:
                                 await self.disp_astuce()
@@ -904,7 +904,7 @@ class Cobalt:
     async def msg_heartbeat(self, message):
         if message.server:
             if not message.author.bot:
-                regex = re.compile(r"!(\w+)$", re.IGNORECASE | re.DOTALL).findall(message.content)
+                regex = re.compile(r"!(\w+)\$", re.IGNORECASE | re.DOTALL).findall(message.content)
                 if regex:
                     await self.display_item(message.channel, regex[0], True)
 
