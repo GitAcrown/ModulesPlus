@@ -40,7 +40,7 @@ class PayAPI:
         creds = ServiceAccountCredentials.from_json_keyfile_name('data/client/client_secret.json', scope)
         self.gs = gspread.authorize(creds)
         self.sheets = self.gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
-        self.cycle_task = bot.loop.create_task(self.auto_update())
+        # self.cycle_task = bot.loop.create_task(self.auto_update())
 
     async def auto_update(self):
         await self.bot.wait_until_ready()

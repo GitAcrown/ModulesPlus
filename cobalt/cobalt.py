@@ -483,9 +483,16 @@ class Cobalt:
 
 # -----------------------------------------------------------------------------------------
 
-    @commands.command(pass_context=True, aliases=["inv"])
+    @commands.command(pass_context=True, aliases=["inv"], no_pm=True)
     async def sac(self, ctx):
         """Consulter son inventaire Cobalt"""
+        if not self.pay:
+            await self.bot.say("**Erreur** — Impossible de contacter le module *Pay*.")
+            return
+        if not await self.pay.account_dial(ctx.message.author):
+            await self.bot.say("**Impossible** — Vous devez avoir un compte *Pay* valide.")
+            return
+
         mtxt = random.choice(["Il n'y a rien à voir ici.", "Vide.", "RAS mon capitaine.", "C'est vide."])
         mequip = random.choice(["Aucun équipement", "Vous n'avez rien.", "Aucune possession."])
         utxt = random.choice(["Aucun objet unique.", "Vide.", "Pas d'objets uniques", "Rien à afficher."])
@@ -493,6 +500,15 @@ class Cobalt:
         if not data:
             "**Banni·e** — Vous ne pouvez pas consulter votre inventaire."
             return
+
+        val = 0
+        for m in data["minerais"]:
+            unival = self.get_item(m)["value"]
+            totm = unival * data["minerais"][m]["qte"]
+            val += totm
+        desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
+        desc += "**Solde Pay** — {}g\n".format(self.pay.get_account(ctx.message.author, True).solde)
+        desc += "**Valeur estimée du stock** — {} golds".format(val)
         em = discord.Embed(title="Votre inventaire", color=0x0047AB)
         if data["items"]:
             mequip = ""
@@ -516,7 +532,7 @@ class Cobalt:
             for item in uniques:
                 utxt += "{}x **{}**\n".format(uniques[item]["qte"], uniques[item]["name"])
             em.add_field(name="🔑 Objets uniques", value=utxt)
-        await self.bot.send_message(ctx.message.author, embed=em)
+        await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
     async def shop(self, ctx, action: str = None):
@@ -533,8 +549,10 @@ class Cobalt:
 
         if not self.pay:
             await self.bot.say("**Erreur** — Impossible de contacter le module *Pay*.")
+            return
         if not await self.pay.account_dial(user):
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Pay* valide.")
+            return
 
         if not action:
             em = discord.Embed(title="Boutique » Aide", description="__**Actions que vous pouvez réaliser**__\n"
@@ -914,7 +932,7 @@ class Cobalt:
                             pass
 
     async def dynamic_react(self, reaction, user):
-        if reaction.channel:
+        if reaction.message.channel:
             message = reaction.message
             if message.id in self.glob["buy_queue"]:
                 await self.buy_item(user, self.glob["buy_queue"][message.id])
