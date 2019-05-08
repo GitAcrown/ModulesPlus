@@ -785,7 +785,7 @@ class Cobalt:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @commands.command(pass_context=True)
+    @_cobaltset.command(pass_context=True)
     async def channels(self, ctx, *channels):
         """Modifier les channels qui peuvent faire apparaître des items"""
         sys = self.get_server(ctx.message.server)["SYS"]
@@ -812,7 +812,7 @@ class Cobalt:
             self.save()
             await self.bot.say("**Channels modifiés !**")
 
-    @commands.command(pass_context=True)
+    @_cobaltset.command(pass_context=True)
     async def maxfreq(self, ctx, val: int):
         """Modifier la fréquence d'apparition des items
 
@@ -824,7 +824,7 @@ class Cobalt:
         else:
             await self.bot.say("**Erreur** — La fréquence doit être supérieure à 100")
 
-    @commands.command(pass_context=True)
+    @_cobaltset.command(pass_context=True)
     async def resetcobalt(self, ctx):
         """Reset le heartbeat du module (en cas de bug)"""
         hb = self.get_heartbeat(ctx.message.server)
@@ -833,7 +833,7 @@ class Cobalt:
         hb["limit"] = random.randint(50, 300)
         await self.bot.say("**Reset sans redémarrage** — Effectué")
 
-    @commands.command(pass_context=True)
+    @_cobaltset.command(pass_context=True)
     @checks.admin_or_permissions(administrator=True)
     async def ackset(self, ctx, val: int):
         """Modifier le ACK (compteur)
@@ -845,7 +845,7 @@ class Cobalt:
         else:
             await self.bot.say("**Erreur** — La valeur doit être supérieure ou égale à 0")
 
-    @commands.command(pass_context=True)
+    @_cobaltset.command(pass_context=True)
     @checks.admin_or_permissions(administrator=True)
     async def itemset(self, ctx, itemid: str):
         """Modifier le prochain item à apparaître"""
