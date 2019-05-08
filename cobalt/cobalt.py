@@ -509,7 +509,7 @@ class Cobalt:
         desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
         desc += "**Solde Pay** — {}g\n".format(self.pay.get_account(ctx.message.author, True).solde)
         desc += "**Valeur estimée du stock** — {} golds".format(val)
-        em = discord.Embed(title="Votre inventaire", color=0x0047AB)
+        em = discord.Embed(title="Votre inventaire", description= desc, color=0x0047AB)
         if data["items"]:
             mequip = ""
             items = data["items"]
