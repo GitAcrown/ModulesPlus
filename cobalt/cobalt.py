@@ -624,11 +624,11 @@ class Cobalt:
                     mrep = rep.content.lower()
                     mine = minerais[rep.content.lower()]
                     em = discord.Embed(title="Boutique » Vente » {}".format(rep.content.title()),
-                                       description="**Nombre d'unités possédées:** {}\nCombien désirez-vous en vendre ?"
+                                       description="**Nombre d'unités possédées:** {}\n» Combien désirez-vous en vendre ?"
                                                    "".format(mine["qte"]),
                                        color=0x0047AB)
                     msg = await self.bot.say(embed=em)
-                    rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
+                    rep = await self.bot.wait_for_message(channel=msg.channel, author=ctx.message.author, timeout=20)
                     if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour"]:
                         em = discord.Embed(title="Boutique » Vente » {}".format(mrep),
                                            description="**Annulation de la transaction**",
