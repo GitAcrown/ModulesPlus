@@ -388,6 +388,7 @@ class Cobalt:
         else:
             typesymbol = "📦"
             typetxt = "Minerai"
+            can_buy = False
         if "desc" in item:
             txt += "*{}*\n\n".format(item["desc"])
         txt +=  "• **Type**: {}\n".format(typetxt)
