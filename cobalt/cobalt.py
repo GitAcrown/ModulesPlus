@@ -6,6 +6,7 @@ from __main__ import send_cmd_help, settings
 import re
 import random
 import asyncio
+import time
 from copy import deepcopy
 import os
 
@@ -59,8 +60,15 @@ class Cobalt:
         if server.id not in self.heartbeat:
             self.heartbeat[server.id] = {"ack": 0,
                                          "limit": random.randint(50, 300),
-                                         "item": None}
+                                         "item": None,
+                                         "journal": []}
         return self.heartbeat[server.id]
+
+    def add_log(self, server: discord.Server, text: str):
+        """Ajoute un log au serveur"""
+        journal = self.get_heartbeat(server)["journal"]
+        journal.append([time.time(), text])
+        return True
 
     def get_server(self, server: discord.Server):
         if server.id not in self.data:
@@ -748,6 +756,27 @@ class Cobalt:
                     await self.disp_astuce()
         else:
             await self.bot.say("**Action inconnue**\n*buy* = Acheter des équipements\n*sell* = Vendre des ressources\n*sellall* = Vendre toutes vos ressources (minerais)")
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def journal(self, ctx):
+        """Affiche les dernières action sur Cobalt de la session en cours"""
+        journal = self.get_heartbeat(ctx.message.server)["journal"]
+        txt = ""
+        n = 1
+        if journal:
+            for e in journal[::-1]:
+                txt += "• {} — *{}*\n".format(time.strftime("%d/%m/%Y %H:%M", time.localtime(e[0])), e[1])
+                if len(txt) >= 1980 * n:
+                    n += 1
+                    em = discord.Embed(title="Journal d'actions Cobalt", description=txt, color=0xf7f7f7)
+                    em.set_footer(text="Page n°{}".format(n))
+                    await self.bot.say(embed=em)
+                    txt = ""
+            em = discord.Embed(title="Journal d'actions Cobalt", description=txt, color=0xf7f7f7)
+            em.set_footer(text="Page n°{}".format(n))
+            await self.bot.say(embed=em)
+        else:
+            em = discord.Embed(title="Journal d'actions Cobalt", description="Rien à afficher pour cette session.", color=0xf7f7f7)
 
     @commands.command(pass_context=True, no_pm=True, aliases=["dex"])
     async def details(self, ctx, *recherche):
