@@ -885,7 +885,7 @@ class Cobalt:
                     else:
                         await self.bot.say("**Quantité insufissante** — Vous n'avez pas cet item.")
                 else:
-                    await self.bot.say("**Erreur** — Item inconnu.")
+                    await self.bot.say("**Erreur** — Item inconnu ou non possédé.")
                     await self.bot.delete_message(msg)
                     continue
             await self.bot.say("**Vous n'avez plus aucun item à utiliser !** — Fermeture du menu")
