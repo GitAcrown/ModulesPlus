@@ -777,6 +777,7 @@ class Cobalt:
             await self.bot.say(embed=em)
         else:
             em = discord.Embed(title="Journal d'actions Cobalt", description="Rien à afficher pour cette session.", color=0xf7f7f7)
+            await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True, aliases=["dex"])
     async def details(self, ctx, *recherche):
