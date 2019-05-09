@@ -28,10 +28,11 @@ items_list = {
     "gpouvoir": {"id": "gpouvoir", "name": "Gemme du Pouvoir", "qte": 1}
   },
   "ITEM":{
-    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 70, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
-    "booster": {"id": "booster", "name": "Booster de pioche", "value": 100, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors du minage"},
-    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
-    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"}
+    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 120, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
+    "booster": {"id": "booster", "name": "Booster de pioche", "value": 200, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
+    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 300, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
+    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 1500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
+    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
   }
 }
 
@@ -78,23 +79,48 @@ class Cobalt:
                              "items": {},
                              "energie": 30,
                              "max_energie": 30,
+                             "max_capacite": 200,
                              "status": [],
                              "ban": False}
             self.save()
+
+        if "max_capacite" not in data[user.id]:
+            data[user.id]["max_capacite"] = 200
+            self.save()
         return data[user.id] if data[user.id]["ban"] is False else {}
+
+    def ban_user(self, user: discord.Member):
+        data = self.get_server(user.server)["USERS"]
+        if user.id in data:
+            data[user.id]["ban"] = True
+            self.save()
+            return True
+        return False
+
+    def unban_user(self, user: discord.Member):
+        data = self.get_server(user.server)["USERS"]
+        if user.id in data:
+            data[user.id]["ban"] = False
+            self.save()
+            return True
+        return False
 
     def add_item(self, user: discord.Member, **item):
         """Ajoute un item/équipement à un joueur"""
         data = self.get_user(user)
         try:
             if item["type"] == "MINERAI":
-                inv = data["minerais"]
-                if item["id"] in inv:
-                    itemid = item["id"]
-                    inv[itemid]["qte"] += item["qte"]
+                sac = sum([data["minerais"][i]["qte"] for i in data["minerais"]])
+                if sac + item["qte"] <= data["max_capacite"]:
+                    inv = data["minerais"]
+                    if item["id"] in inv:
+                        itemid = item["id"]
+                        inv[itemid]["qte"] += item["qte"]
+                    else:
+                        itemid = item["id"]
+                        inv[itemid] = {"name": item["name"], "qte": item["qte"]}
                 else:
-                    itemid = item["id"]
-                    inv[itemid] = {"name": item["name"], "qte": item["qte"]}
+                    return False
             elif item["type"] == "UNIQUE":
                 inv = data["uniques"]
                 if item["id"] in inv:
@@ -277,8 +303,9 @@ class Cobalt:
                     await self.bot.clear_reactions(notif)
                     foot = ""
                     if self.have_status(rep.user, "booster", True):
-                        qte *= 2
-                        foot = "Boosté = minerai x2"
+                        boost = random.choice([1.25, 1.50, 1.75, 2])
+                        qte *= boost
+                        foot = "Boosté = minerai x{}".format(boost)
                     p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
                                                     "{1} obtient **{0}** (x{2}) !",
                                                     "Bien joué {1} ! Tu obtiens {2} unité(s) de **{0}**"])
@@ -286,7 +313,24 @@ class Cobalt:
                     em.set_footer(text=foot)
                     await self.bot.edit_message(notif, embed=em)
                     data["energie"] -= item["energie"]
-                    self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
+
+                    sac = sum([data["minerais"][i]["qte"] for i in data["minerais"]])
+                    if sac + qte <= data["max_capacite"]:
+                        self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
+                    else:
+                        qte = data["max_capacite"] - sac
+                        if qte != 0:
+                            self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
+                            em = discord.Embed(title="Attention - Seuil maximum de l'inventaire atteint",
+                                               description="Votre inventaire est plein ! Toutes les unités dépassant le seuil ont été jetées !")
+                            await self.bot.send_message(rep.user, embed=em)
+                        else:
+                            em = discord.Embed(title="Attention - Inventaire plein",
+                                               description="Votre inventaire est plein ! Vous n'avez pas pu récupérer les ressources minées !")
+                            await self.bot.send_message(rep.user, embed=em)
+
+                    await asyncio.sleep(30)
+                    await self.bot.delete_message(notif)
                     return True
                 else:
                     await self.bot.clear_reactions(notif)
@@ -294,6 +338,8 @@ class Cobalt:
                                      "Il a détruit le minerai.".format(rep.user, item["name"])
                     em.set_footer(text="")
                     await self.bot.edit_message(notif, embed=em)
+                    await asyncio.sleep(30)
+                    await self.bot.delete_message(notif)
                     return True
             else:
                 print("**Erreur COBALT** 01 - Le mauvais emoji a été utilisé alors qu'il n'est pas censé être détecté.")
@@ -414,7 +460,7 @@ class Cobalt:
                                 if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
                                     self.pay.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]))
                                     em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                                       description="**Merci pour votre achat.** Le contenu à été déplacé dans votre inventaire.",
+                                                       description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
                                                        color=0x00aa5e)
                                     await self.bot.edit_message(msg, embed=em)
                                     return
@@ -455,7 +501,7 @@ class Cobalt:
         elif comcontext == "fast_use":
             title +="Utiliser un item plus rapidement"
             desc = "Il est possible de rentrer l'identifiant unique de l'item après `.use` pour utiliser l'item visé " \
-                   "directement ! On retrouve cet identifiant entre les caractères `!` et `§` dans le lien de partage."
+                   "directement ! On retrouve cet identifiant entre les caractères `!` et `$` dans le lien de partage."
         elif comcontext == "partage":
             title +="Partager rapidement un item"
             desc = "Saviez-vous qu'il est possible de partager un item sur n'importe quel salon en utilisant la balise" \
@@ -472,7 +518,12 @@ class Cobalt:
         elif comcontext == "mine_despawn":
             title +="Disparition des minerais"
             desc = "Saviez-vous que les minerais, s'ils ne sont pas minés, disparaissent au bout de 120s ? " \
-                   "Si c'est le cas, un autre apparaîtra peu de temps après donc restez à l'affut, il risque de revenir vite !"
+                   "Si c'est le cas, un autre apparaîtra peu de temps après donc restez à l'affut, il risque de " \
+                   "revenir vite et parfois même en plus grande quantité !"
+        elif comcontext == "mine_val":
+            title += "Fluctuation de la valeur des minerais"
+            desc = "Attention, la valeur des minerais peuvent fluctuer entre chaque mise à jour ! Restez à l'affût des " \
+                   "changements pour éviter que votre stock perde en valeur après une MAJ !"
         em = discord.Embed(title=title, description=desc, color=0xf7f7f7)
         if not channel:
             msg = await self.bot.say(embed=em)
@@ -505,6 +556,8 @@ class Cobalt:
             totm = unival * data["minerais"][m]["qte"]
             val += totm
         desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
+        if data["status"]:
+            desc += "**Items actifs** — {}\n".format(", ".join([self.get_item(i)["name"] for i in data["status"]]))
         desc += "**Solde Pay** — {}g\n".format(self.pay.get_account(ctx.message.author, True).solde)
         desc += "**Valeur estimée du stock** — {} golds".format(val)
         em = discord.Embed(title="Votre inventaire", description= desc, color=0x0047AB)
@@ -516,13 +569,15 @@ class Cobalt:
                                                        self.get_item(item)["desc"])
         em.add_field(name="⚒ Equipement", value=mequip)
 
+        nb = 0
         if data["minerais"]:
             mtxt = ""
             minerais = data["minerais"]
             for item in minerais:
+                nb += minerais[item]["qte"]
                 mtxt += "• {}x **{}** — {}g/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
                                                      self.get_item(item)["value"])
-        em.add_field(name="📦 Minerais", value=mtxt)
+        em.add_field(name="📦 Minerais ({}/{})".format(nb, data["max_capacite"]), value=mtxt)
 
         if data["uniques"]:
             utxt = ""
@@ -751,7 +806,7 @@ class Cobalt:
             await self.bot.say("**Aucun résultat** — Cette commande sert à rechercher un item parmi ceux disponibles.")
 
     @commands.command(pass_context=True, no_pm=True)
-    async def use(self, ctx, itemid: str = None):
+    async def use(self, ctx, ritem: str = None):
         """Permet d'utiliser un équipement
 
         Entrer l'ID de l'item à utiliser permet de l'utiliser directement"""
@@ -764,43 +819,63 @@ class Cobalt:
             while data["items"]:
                 mequip = ""
                 items = data["items"]
-                for item in items:
-                    mequip += "• *{}* | **{}** (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
-                                                           self.get_item(item)["desc"])
-                em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
-                em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
-                msg = await self.bot.say(embed=em)
-                rep = await self.bot.wait_for_message(channel=ctx.message.channel,
-                                                      author=ctx.message.author,
-                                                      timeout=20)
-                if rep is None or rep.content.lower() in ["q", "stop", "quitter"]:
+                if not ritem:
+                    for item in items:
+                        mequip += "• **{}** 》 *{}* (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
+                                                               self.get_item(item)["desc"])
+                    em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
+                    em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
+                    msg = await self.bot.say(embed=em)
+                    rep = await self.bot.wait_for_message(channel=ctx.message.channel,
+                                                          author=ctx.message.author,
+                                                          timeout=20)
+                    action = rep.content.lower() if rep else None
+                else:
+                    msg = await self.bot.say("**Utiliser directement** 》 *{}*".format(ritem))
+                    action = ritem
+                    ritem = None
+                    await asyncio.sleep(1)
+                if action is None or action in ["q", "stop", "quitter"]:
                     await self.bot.delete_message(msg)
                     return
-                elif rep.content.lower() in items:
-                    cible = items[rep.content.lower()]
+                elif action in items:
+                    cible = items[action]
                     if cible["qte"] >= 1:
-                        if rep.content.lower() == "detector":
+                        if action == "detector":
                             await self.bot.delete_message(msg)
-                            data["status"].append("detector")
-                            self.del_item(ctx.message.author, "detector", 1)
-                            await self.bot.say("**Détecteur activé** — Vous recevrez une notification 10s avant l'apparition du prochain minerai !")
-                        elif rep.content.lower() == "booster":
+                            if len(data["status"]) < 3:
+                                data["status"].append("detector")
+                                self.del_item(ctx.message.author, "detector", 1)
+                                await self.bot.say("**Détecteur activé** — Vous recevrez une notification 10s avant l'apparition du prochain minerai !")
+                            else:
+                                await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
+                        elif action == "booster":
                             await self.bot.delete_message(msg)
-                            data["status"].append("booster")
-                            self.del_item(ctx.message.author, "booster", 1)
-                            await self.bot.say("**Booster activé** — Vous recevrez le double de minerai lors de votre prochain minage !")
-                        elif rep.content.lower() == "barrenrj":
+                            if len(data["status"]) < 3:
+                                data["status"].append("booster")
+                                self.del_item(ctx.message.author, "booster", 1)
+                                await self.bot.say(
+                                    "**Booster activé** — Vous recevrez plus de minerai lors de votre prochain minage !")
+                            else:
+                                await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
+                        elif action == "barrenrj":
                             await self.bot.delete_message(msg)
                             data["energie"] = data["max_energie"]
                             self.del_item(ctx.message.author, "barrenrj", 1)
                             self.save()
                             await self.bot.say("**Energie restaurée** — Vous avez désormais {}\⚡".format(data["energie"]))
-                        elif rep.content.lower() == "coeurnrj":
+                        elif action == "coeurnrj":
                             await self.bot.delete_message(msg)
                             data["max_energie"] += 10
                             self.del_item(ctx.message.author, "coeurnrj", 1)
                             self.save()
                             await self.bot.say("**Coeur consommé** — Vous pouvez désormais avoir jusqu'à {}\⚡".format(data["max_energie"]))
+                        elif action == "poche":
+                            await self.bot.delete_message(msg)
+                            data["max_capacite"] += 20
+                            self.del_item(ctx.message.author, "poche", 1)
+                            self.save()
+                            await self.bot.say("**Poche supplémentaire ajoutée** — Vous pouvez désormais avoir jusqu'à {} items".format(data["max_capacite"]))
                         else:
                             await self.bot.delete_message(msg)
                             await self.bot.say("**Erreur** — Item inconnu.")
@@ -897,6 +972,18 @@ class Cobalt:
                 itemid.lower())["name"]))
         else:
             await self.bot.say("**Erreur** — La valeur doit être supérieure ou égale à 0")
+
+    @_cobaltset.command(pass_context=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def ban(self, ctx, user: discord.Member):
+        """Empêche un membre de jouer au jeu ou rétablir son compte"""
+        data = self.get_user(user)
+        if data:
+            self.ban_user(user)
+            await self.bot.say("**Joueur banni** — {} ne pourra plus jouer à Cobalt.".format(user.mention))
+        else:
+            self.unban_user(user)
+            await self.bot.say("**Joueur débanni** — {} peut de nouveau jouer à Cobalt.".format(user.mention))
 
     # --------------------------------------------------------------------------------------------
 
