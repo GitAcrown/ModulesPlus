@@ -557,7 +557,7 @@ class Cobalt:
             val += totm
         desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
         if data["status"]:
-            desc += "**Items actifs** — {}\n".format(", ".join([self.get_item(i)["name"] for i in data["status"]]))
+            desc += "**Items actifs** — {}\n".format(", ".join([self.get_item(i)["name"].lower() for i in data["status"]]))
         desc += "**Solde Pay** — {}g\n".format(self.pay.get_account(ctx.message.author, True).solde)
         desc += "**Valeur estimée du stock** — {} golds".format(val)
         em = discord.Embed(title="Votre inventaire", description= desc, color=0x0047AB)
