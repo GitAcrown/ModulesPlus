@@ -758,6 +758,7 @@ class Cobalt:
                 em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
+                await self.bot.clear_reactions(msg)
                 if random.randint(1, 5) == 1:
                     await self.disp_astuce()
         else:
