@@ -799,7 +799,7 @@ class Cobalt:
             itemid = item_action.lower()
             item = self.get_item(itemid)
             if item["type"] is "MINERAI":
-                mine = self.get_user(ctx.message.author)["stock"][itemid]
+                mine = self.get_user(ctx.message.author)["minerais"][itemid]
                 if not qte:
                     em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
                                        description="**Nombre d'unités possédées:** {}\n» Combien désirez-vous en vendre ?"
