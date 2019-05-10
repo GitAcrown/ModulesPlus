@@ -276,10 +276,10 @@ class Cobalt:
         hb = self.get_heartbeat(server)
         if item["type"] is "MINERAI":
             qte = random.randint(1, item["max"])
-            phrase = random.choice(["**{0}** (x{1}) est apparu ! Cliquez sur `⛏` pour le miner !",
-                                    "**{0}** (x{1}) vient d'apparaître ! Cliquez sur `⛏` pour le miner !",
-                                    "{1} unité(s) de **{0}** ont été exposés par le vent ! Cliquez sur `⛏` pour le miner !",
-                                    "**{0}** (x{1}) vient d'être découvert ! Minez-le avec `⛏` !"])
+            phrase = random.choice(["**{0}** (x{1}) est apparu !\nCliquez sur `⛏` pour le miner !",
+                                    "**{0}** (x{1}) vient d'apparaître !\nCliquez sur `⛏` pour le miner !",
+                                    "{1} unité(s) de **{0}** ont été exposés par le vent !\nCliquez sur `⛏` pour le miner !",
+                                    "**{0}** (x{1}) vient d'être découvert !\nMinez-le avec `⛏` !"])
             em = discord.Embed(description=phrase.format(item["name"], qte), color=0x0047AB)
             if "imageurl" in item:
                 em.set_thumbnail(url=item["imageurl"])
@@ -324,6 +324,7 @@ class Cobalt:
                                                     "Bien joué {1} ! Tu obtiens {2} unité(s) de **{0}**"])
                     em.description = p.format(item["name"], rep.user.mention, qte)
                     em.set_footer(text=foot)
+                    em.set_thumbnail(url="")
                     await self.bot.edit_message(notif, embed=em)
                     data["energie"] -= item["energie"]
                     self.add_log(channel.server, "{} a obtenu **{}**".format(rep.user, item["name"]))
@@ -359,8 +360,8 @@ class Cobalt:
                 print("**Erreur COBALT** 01 - Le mauvais emoji a été utilisé alors qu'il n'est pas censé être détecté.")
         elif item == "UNIQUE":
             qte = random.randint(1, item["max"])
-            phrase = random.choice(["**{0}** est apparu ! Cliquez sur `🖐` pour le ramasser !",
-                                    "**{0}** vient d'apparaître ! Cliquez sur `🖐` pour ramasser l'item !"])
+            phrase = random.choice(["**{0}** est apparu !\nCliquez sur `🖐` pour le ramasser !",
+                                    "**{0}** vient d'apparaître !\nCliquez sur `🖐` pour ramasser l'item !"])
             em = discord.Embed(description=phrase.format(item["name"], qte), color=0x0047AB)
             if "imageurl" in item:
                 em.set_thumbnail(url=item["imageurl"])
@@ -380,6 +381,7 @@ class Cobalt:
                 await self.bot.clear_reactions(notif)
                 p = random.choice(["{0} a ramassé **{1}** !", "{0} obtient **{1}** !"])
                 em.description = p.format(rep.user.mention, item["name"])
+                em.set_thumbnail(url="")
                 await self.bot.edit_message(notif, embed=em)
                 self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
                 return True
