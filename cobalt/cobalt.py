@@ -662,7 +662,7 @@ class Cobalt:
         for c in self.items:
             if c == ["MINERAI"] or c == ["ITEM"]:
                 for i in self.items[c]:
-                    allitems.append(self.items[c][i]["name"])
+                    allitems.append(i)
 
         if item_action.lower() in ["buy", "achat"]:
             while not stop:
