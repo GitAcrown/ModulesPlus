@@ -633,7 +633,7 @@ class Cobalt:
     async def shop(self, ctx, item_action: str = None, qte: int = None):
         """Vendre ses minerais et acheter de l'équipement
 
-        Pour aller plus vite, vous pouvez taper 'sell' ou 'buy' à la suite de la commande pour y accéder directement"""
+        Pour aller plus vite, vous pouvez taper l'identifiant de l'item à vendre ou acheter"""
         stop = False
         def check(reaction, user):
             return not user.bot
@@ -660,7 +660,7 @@ class Cobalt:
 
         allitems = []
         for c in self.items:
-            if c == ["MINERAI"] or c == ["ITEM"]:
+            if c == "MINERAI" or c == "ITEM":
                 for i in self.items[c]:
                     allitems.append(i)
 
