@@ -864,7 +864,8 @@ class Cobalt:
                 if random.randint(1, 5) == 1:
                     await self.disp_astuce()
         else:
-            await self.bot.say("**Action inconnue**\n*buy* = Acheter des équipements\n*sell* = Vendre des ressources\n*sellall* = Vendre toutes vos ressources (minerais)")
+            await self.bot.say("**Action inconnue**\n*buy* = Acheter des équipements\n*sell* = Vendre des ressources\n"
+                               "*sellall* = Vendre toutes vos ressources (minerais)\n*<itemid> <qte>* = Acheter/Vendre directement l'item possédant cet id")
 
     @commands.command(pass_context=True, no_pm=True)
     async def journal(self, ctx):
