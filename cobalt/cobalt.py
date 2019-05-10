@@ -463,7 +463,7 @@ class Cobalt:
                             em.set_footer(text="» Combien en voulez-vous ? | \"Stop\" pour annuler")
                             msg = await self.bot.send_message(channel, embed=em)
                             rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
-                            if rep is None or rep.content.lower() in ["stop", "quitter", "q"]:
+                            if rep is None or rep.content.lower() in ["stop", "quitter", "q", "0"]:
                                 em = discord.Embed(title="Achat — {} [{}]".format(item["name"], itemid),
                                                    description="**Annulation de la transaction**",
                                                    color=0xa90000)
@@ -534,7 +534,8 @@ class Cobalt:
             await self.bot.send_message(channel, "**Achat impossible** — L'item visé est unique et ne peut être acheté.")
 
     async def disp_astuce(self, comcontext: str = None, channel: discord.Channel = None):
-        comcontext = random.choice(["buy_from_reaction", "fast_use", "partage", "sellall", "use_cumul", "mine_despawn"])
+        comcontext = random.choice(["buy_from_reaction", "fast_use", "partage", "sellall", "use_cumul", "mine_despawn",
+                                    "mine_val", "calc_freq", "fast_buy"])
         title = "Astuces — "
         if comcontext == "buy_from_reaction":
             title += "Acheter depuis l'affichage de l'item"
@@ -543,7 +544,7 @@ class Cobalt:
         elif comcontext == "fast_use":
             title +="Utiliser un item plus rapidement"
             desc = "Il est possible de rentrer l'identifiant unique de l'item après `.use` pour utiliser l'item visé " \
-                   "directement ! On retrouve cet identifiant entre les caractères `!` et `$` dans le lien de partage."
+                   "directement ! On retrouve cet identifiant entre crochets dans le titre de l'affichage de l'item."
         elif comcontext == "partage":
             title +="Partager rapidement un item"
             desc = "Saviez-vous qu'il est possible de partager un item sur n'importe quel salon en utilisant la balise" \
@@ -566,6 +567,14 @@ class Cobalt:
             title += "Fluctuation de la valeur des minerais"
             desc = "Attention, la valeur des minerais peuvent fluctuer entre chaque mise à jour ! Restez à l'affût des " \
                    "changements pour éviter que votre stock perde en valeur après une MAJ !"
+        elif comcontext == "calc_freq":
+            title += "Calcul de la fréquence d'apparition"
+            desc = "Saviez-vous que la fréquence d'apparition est calculée en fonction de l'activité sur le serveur ? " \
+                   "Un serveur mort ne fera probablement jamais apparaître d'item !"
+        elif comcontext == "fast_buy":
+            title += "Acheter/vendre rapidement sur la boutique"
+            desc = "Il est possible, plutôt que rentrer `buy` ou `sell` après la commande `.shop` de rentrer directement " \
+                   "l'identifiant d'un minerai pour le vendre ou l'identifiant d'un équipement pour l'acheter !"
         em = discord.Embed(title=title, description=desc, color=0xf7f7f7)
         if not channel:
             msg = await self.bot.say(embed=em)
@@ -728,7 +737,7 @@ class Cobalt:
                                        color=0x0047AB)
                     msg = await self.bot.say(embed=em)
                     rep = await self.bot.wait_for_message(channel=msg.channel, author=ctx.message.author, timeout=20)
-                    if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour"]:
+                    if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour", "0"]:
                         em = discord.Embed(title="Boutique » Vente » {}".format(mrep),
                                            description="**Annulation de la transaction**",
                                            color=0xa90000)
@@ -799,7 +808,11 @@ class Cobalt:
             itemid = item_action.lower()
             item = self.get_item(itemid)
             if item["type"] is "MINERAI":
-                mine = self.get_user(ctx.message.author)["minerais"][itemid]
+                mine = self.get_user(ctx.message.author)["minerais"]
+                if itemid not in mine:
+                    await self.bot.say("**Impossible** — Vous n'avez pas ce minerai sur vous.")
+                    return
+                mine = mine[itemid]
                 if not qte:
                     em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
                                        description="**Nombre d'unités possédées:** {}\n» Combien désirez-vous en vendre ?"
@@ -807,7 +820,7 @@ class Cobalt:
                                        color=0x0047AB)
                     msg = await self.bot.say(embed=em)
                     rep = await self.bot.wait_for_message(channel=msg.channel, author=ctx.message.author, timeout=20)
-                    if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour"]:
+                    if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour", "0"]:
                         em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
                                            description="**Annulation de la transaction**",
                                            color=0xa90000)
