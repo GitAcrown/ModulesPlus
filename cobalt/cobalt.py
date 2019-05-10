@@ -419,7 +419,7 @@ class Cobalt:
         if "energie" in item:
             txt += "• **Energie nécessaire**: {}\⚡\n".format(item["energie"] if item["energie"] > 0 else "∞")
         em = discord.Embed(title=typesymbol + " " + item["name"], description=txt, color=0x0047AB)
-        foot = "Partager - !{}$".format(itemid)
+        foot = "Partager — !{}$".format(itemid)
         if can_buy:
             foot += " | 🛒 = Acheter"
         em.set_footer(text=foot)
@@ -438,7 +438,7 @@ class Cobalt:
         else:
             return True
 
-    async def buy_item(self, channel: discord.Channel, user: discord.Member, itemid):
+    async def buy_item(self, channel: discord.Channel, user: discord.Member, itemid, qte: int = None):
         item = self.get_item(itemid)
         data = self.get_user(user)
         if item["type"] != "UNIQUE": # On ne peut pas acheter un item unique !
@@ -447,60 +447,85 @@ class Cobalt:
                     await self.bot.send_message(channel, "**Erreur** — Impossible de contacter le module *Pay*")
                     return
                 if await self.pay.account_dial(user):
-                    while True:
-                        txt = ""
-                        if "desc" in item:
-                            txt = "*{}*\n".format(item["desc"])
-                        if "qte" in item:
-                            if item["qte"] > 1:
-                                txt += "Vendu par __lot de {}__, chaque lot coûtant **{}g**".format(item["qte"], item["value"])
-                        else:
-                            txt += "Chaque unité coûte **{}g**".format(item["value"])
-                        em = discord.Embed(title="Achat — {}".format(item["name"]), description=txt, color=0x0047AB)
-                        if "imageurl" in item:
-                            em.set_thumbnail(url=item["imageurl"])
-                        em.set_footer(text="» Combien en voulez-vous ? | \"Stop\" pour annuler")
-                        msg = await self.bot.send_message(channel, embed=em)
-                        rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
-                        if rep is None or rep.content.lower() in ["stop", "quitter", "q"]:
-                            em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                               description="**Annulation de la transaction**",
-                                               color=0xa90000)
-                            await self.bot.edit_message(msg, embed=em)
-                            await asyncio.sleep(4)
-                            await self.bot.delete_message(msg)
-                            return
-                        elif rep.content.isdigit():
-                            totalqte = int(rep.content) * item["qte"]
-                            prix = item["value"] * int(rep.content)
-                            if self.pay.enough_credits(user, prix):
-                                if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
-                                    self.pay.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]))
-                                    em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                                       description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
-                                                       color=0x00aa5e)
-                                    await self.bot.edit_message(msg, embed=em)
-                                    return
+                    if not qte:
+                        while True:
+                            txt = ""
+                            if "desc" in item:
+                                txt = "*{}*\n".format(item["desc"])
+                            if "qte" in item:
+                                if item["qte"] > 1:
+                                    txt += "Vendu par __lot de {}__, chaque lot coûtant **{}g**".format(item["qte"], item["value"])
+                            else:
+                                txt += "Chaque unité coûte **{}g**".format(item["value"])
+                            em = discord.Embed(title="Achat — {} [{}]".format(item["name"], itemid), description=txt, color=0x0047AB)
+                            if "imageurl" in item:
+                                em.set_thumbnail(url=item["imageurl"])
+                            em.set_footer(text="» Combien en voulez-vous ? | \"Stop\" pour annuler")
+                            msg = await self.bot.send_message(channel, embed=em)
+                            rep = await self.bot.wait_for_message(channel=msg.channel, author=user, timeout=20)
+                            if rep is None or rep.content.lower() in ["stop", "quitter", "q"]:
+                                em = discord.Embed(title="Achat — {} [{}]".format(item["name"], itemid),
+                                                   description="**Annulation de la transaction**",
+                                                   color=0xa90000)
+                                await self.bot.edit_message(msg, embed=em)
+                                await asyncio.sleep(4)
+                                await self.bot.delete_message(msg)
+                                return
+                            elif rep.content.isdigit():
+                                totalqte = int(rep.content) * item["qte"]
+                                prix = item["value"] * int(rep.content)
+                                if self.pay.enough_credits(user, prix):
+                                    if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
+                                        self.pay.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]))
+                                        em = discord.Embed(title="Achat — {} [{}]".format(item["name"], itemid),
+                                                           description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
+                                                           color=0x00aa5e)
+                                        await self.bot.edit_message(msg, embed=em)
+                                        return
+                                    else:
+                                        em = discord.Embed(title="Achat — {}".format(item["name"]),
+                                                          description="**Echec de la transaction** — Je n'ai pas pu transférer l'objet dans votre inventaire :(",
+                                                          color=0xa90000)
+                                        await self.bot.edit_message(msg, embed=em)
+                                        return
                                 else:
                                     em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                                      description="**Echec de la transaction** — Je n'ai pas pu transférer l'objet dans votre inventaire :(",
-                                                      color=0xa90000)
+                                                       description="**Solde insuffisant** — Essayez une plus faible quantité ou annulez la transaction en tapant \"stop\".",
+                                                       color=0x0047AB)
                                     await self.bot.edit_message(msg, embed=em)
-                                    return
+                                    await asyncio.sleep(4)
+                                    await self.bot.delete_message(msg)
                             else:
                                 em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                                   description="**Solde insuffisant** — Essayez une plus faible quantité ou annulez la transaction en tapant \"stop\".",
+                                                   description="**Quantité non reconnue** — Entrez la quantité désirée en chiffres ou annulez la transaction en tapant \"stop\".",
                                                    color=0x0047AB)
                                 await self.bot.edit_message(msg, embed=em)
                                 await asyncio.sleep(4)
                                 await self.bot.delete_message(msg)
+                    else:
+                        totalqte = qte * item["qte"]
+                        prix = item["value"] * qte
+                        if self.pay.enough_credits(user, prix):
+                            if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
+                                self.pay.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]))
+                                em = discord.Embed(title="Achat — {} [{}]".format(item["name"], itemid),
+                                                   description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
+                                                   color=0x00aa5e)
+                                await self.bot.send_message(channel, embed=em)
+                                return
+                            else:
+                                em = discord.Embed(title="Achat — {}".format(item["name"]),
+                                                   description="**Echec de la transaction** — Je n'ai pas pu transférer l'objet dans votre inventaire :(",
+                                                   color=0xa90000)
+                                await self.bot.send_message(channel, embed=em)
+                                return
                         else:
                             em = discord.Embed(title="Achat — {}".format(item["name"]),
-                                               description="**Quantité non reconnue** — Entrez la quantité désirée en chiffres ou annulez la transaction en tapant \"stop\".",
+                                               description="**Solde insuffisant** — Essayez une plus faible quantité.",
                                                color=0x0047AB)
-                            await self.bot.edit_message(msg, embed=em)
+                            notif = await self.bot.send_message(channel, embed=em)
                             await asyncio.sleep(4)
-                            await self.bot.delete_message(msg)
+                            await self.bot.delete_message(notif)
                 else:
                     await self.bot.send_message(channel, "**Achat impossible** — Vous avez besoin d'un compte *Pay* valide.")
             else:
@@ -605,7 +630,7 @@ class Cobalt:
         await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
-    async def shop(self, ctx, action: str = None):
+    async def shop(self, ctx, item_action: str = None, qte: int = None):
         """Vendre ses minerais et acheter de l'équipement
 
         Pour aller plus vite, vous pouvez taper 'sell' ou 'buy' à la suite de la commande pour y accéder directement"""
@@ -624,15 +649,22 @@ class Cobalt:
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Pay* valide.")
             return
 
-        if not action:
+        if not item_action:
             em = discord.Embed(title="Boutique » Aide", description="__**Actions que vous pouvez réaliser**__\n"
                                                                     "• Acheter des équipements = `.shop buy` / `.shop achat`\n"
                                                                     "• Vendre des ressources = `.shop sell` / `.shop vendre`\n"
-                                                                    "• Vendre toutes vos ressources = `.shop sellall` / `.shop vendretout`", color=0x0047AB)
+                                                                    "• Vendre toutes vos ressources = `.shop sellall` / `.shop vendretout`\n"
+                                                                    "• Acheter/Vendre directement un item = `.shop <item_id> <qté>`", color=0x0047AB)
             await self.bot.say(embed=em)
             return
 
-        if action.lower() in ["buy", "achat"]:
+        allitems = []
+        for c in self.items:
+            if c == ["MINERAI"] or c == ["ITEM"]:
+                for i in self.items[c]:
+                    allitems.append(self.items[c][i]["name"])
+
+        if item_action.lower() in ["buy", "achat"]:
             while not stop:
                 txt = ""
                 n = 1
@@ -667,7 +699,7 @@ class Cobalt:
                 else:
                     await self.bot.say("**Erreur** — Il semblerait que le nombre soit incorrect. Réessayez.")
                     await self.bot.delete_message(msg)
-        elif action.lower() in ["sell", "vendre"]:
+        elif item_action.lower() in ["sell", "vendre"]:
             while not stop:
                 minerais = user["minerais"]
                 txt = ""
@@ -731,7 +763,7 @@ class Cobalt:
                     await self.bot.say("**Minerai inconnu** — Vous n'avez pas de ce minerai dans votre inventaire.")
                     await self.bot.delete_message(msg)
                     continue
-        elif action.lower() in ["sellall", "vendretout"]:
+        elif item_action.lower() in ["sellall", "vendretout"]:
             minerais = user["minerais"]
             txt = ""
             val = 0
@@ -761,6 +793,74 @@ class Cobalt:
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
                 await self.bot.clear_reactions(msg)
+                if random.randint(1, 5) == 1:
+                    await self.disp_astuce()
+        elif item_action.lower() in allitems:
+            itemid = item_action.lower()
+            item = self.get_item(itemid)
+            if item["type"] is "MINERAI":
+                mine = self.get_user(ctx.message.author)["stock"][itemid]
+                if not qte:
+                    em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
+                                       description="**Nombre d'unités possédées:** {}\n» Combien désirez-vous en vendre ?"
+                                                   "".format(mine["qte"]),
+                                       color=0x0047AB)
+                    msg = await self.bot.say(embed=em)
+                    rep = await self.bot.wait_for_message(channel=msg.channel, author=ctx.message.author, timeout=20)
+                    if rep is None or rep.content.lower() in ["stop", "quitter", "q", "retour"]:
+                        em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
+                                           description="**Annulation de la transaction**",
+                                           color=0xa90000)
+                        await self.bot.edit_message(msg, embed=em)
+                        await asyncio.sleep(4)
+                        await self.bot.delete_message(msg)
+                        return
+                    elif rep.content.isdigit():
+                        qte = int(rep.content)
+                        if qte <= mine["qte"]:
+                            val = self.get_item(itemid)["value"] * qte
+                            self.del_item(ctx.message.author, itemid, qte)
+                            self.save()
+                            self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › {} [{}]".format(item["name"], itemid))
+                            em.description = "Vente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
+                            await self.bot.edit_message(msg, embed=em)
+                            if random.randint(1, 5) == 1:
+                                await self.disp_astuce()
+                            return
+                        else:
+                            em.description = "**Impossible** — Vous n'avez pas une telle quantité dans votre inventaire !"
+                            await self.bot.edit_message(msg, embed=em)
+                            return
+                    else:
+                        em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
+                                           description="**Quantité non reconnue** — Entrez la quantité désirée en chiffres ou annulez la transaction en tapant \"stop\".",
+                                           color=0x0047AB)
+                        await self.bot.edit_message(msg, embed=em)
+                        await asyncio.sleep(4)
+                        await self.bot.delete_message(msg)
+                else:
+                    if qte <= mine["qte"]:
+                        val = self.get_item(itemid)["value"] * qte
+                        self.del_item(ctx.message.author, itemid, qte)
+                        self.save()
+                        self.pay.add_credits(ctx.message.author, val,
+                                             "Vente Cobalt › {}".format(item["name"]))
+                        em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
+                                           description="Vente réalisée ! **{}**g ont été transférés sur votre compte."
+                                                       "".format(val),
+                                           color=0x0047AB)
+                        msg = await self.bot.say(embed=em)
+                        if random.randint(1, 5) == 1:
+                            await self.disp_astuce()
+                        return
+                    else:
+                        em = discord.Embed(title="Boutique » Vente » {} [{}]".format(item["name"], itemid),
+                                           description="Vous n'avez pas cette quantité dans votre inventaire.",
+                                           color=0x0047AB)
+                        msg = await self.bot.say(embed=em)
+                        return
+            else:
+                await self.buy_item(ctx.message.channel, ctx.message.author, itemid, qte)
                 if random.randint(1, 5) == 1:
                     await self.disp_astuce()
         else:
