@@ -12,13 +12,18 @@ import os
 
 items_list = {
   "MINERAI":{
-    "fer": {"id": "fer", "name": "Fer", "value": 5, "max": 13, "rare": 1, "energie": 1},
-    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1},
-    "argent": {"id": "argent", "name": "Argent", "value": 20, "max": 10, "rare": 2, "energie": 3},
-    "or": {"id": "or", "name": "Or", "value": 32, "max": 9, "rare": 2, "energie": 4},
-    "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 10, "rare": 2, "energie": 3},
-    "rubis": {"id": "rubis", "name": "Rubis", "value": 68, "max": 7, "rare": 3, "energie": 8},
-    "diamant": {"id": "diamant", "name": "Diamant", "value": 95, "max": 5, "rare": 3, "energie": 10}
+    "fer": {"id": "fer", "name": "Fer", "value": 3, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/l3vehZd.png"},
+    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 5, "max": 11, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/kCGVGbC.png"},
+    "argent": {"id": "argent", "name": "Argent", "value": 14, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/gmuQJZr.png"},
+    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 20, "max": 8, "rare": 3, "energie": 3, "imageurl": "https://i.imgur.com/KJvBWx4.png"},
+    "or": {"id": "or", "name": "Or", "value": 22, "max": 7, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/p5uSxT3.png"},
+    "platine": {"id": "platine", "name": "Platine", "value": 18, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/RgWFuw8.png"},
+    "rubis": {"id": "rubis", "name": "Rubis", "value": 40, "max": 5, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
+    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 60 "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
+    "diamant": {"id": "diamant", "name": "Diamant", "value": 85, "max": 3, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/mxKSvYu.png"},
+    "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 500, "max": 1, "rare": 4, "energie": 30, "imageurl": "https://i.imgur.com/EFidrgS.png"},
+    "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 200, "max": 3, "rare": 4, "energie": 20, "imageurl": "https://i.imgur.com/sEUUEqq.png"},
+    "mithril": {"id": "mithril", "name": "Mithril", "value": 150, "max": 4, "rare": 4, "energie": 15, "imageurl": "https://i.imgur.com/wd8Nj2G.png"}
   },
   "UNIQUE":{
     "gespace": {"id": "gespace", "name": "Gemme de l'Espace", "qte": 1},
@@ -321,6 +326,7 @@ class Cobalt:
                     em.set_footer(text=foot)
                     await self.bot.edit_message(notif, embed=em)
                     data["energie"] -= item["energie"]
+                    self.add_log(channel.server, "{} a obtenu **{}**".format(rep.user, item["name"]))
 
                     sac = sum([data["minerais"][i]["qte"] for i in data["minerais"]])
                     if sac + qte <= data["max_capacite"]:
@@ -1049,10 +1055,10 @@ class Cobalt:
                                 itemid = hb["item"]
                             hb["ack"] = 0
                             if await self.obtain_item(channel, itemid):
-                                hb["limit"] = random.randint(50, sys["maxfreq"])
+                                hb["limit"] = random.randint((sys["maxfreq"] / 4), sys["maxfreq"])
                                 hb["item"] = None
                             else:
-                                hb["limit"] = random.randint(50, sys["maxfreq"] / 2)
+                                hb["limit"] = sys["maxfreq"] / 4 + random.randint(25, 75)
                         except Exception as e:
                             print(e)
                             pass
