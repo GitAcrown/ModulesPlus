@@ -19,7 +19,7 @@ items_list = {
     "or": {"id": "or", "name": "Or", "value": 22, "max": 7, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/p5uSxT3.png"},
     "platine": {"id": "platine", "name": "Platine", "value": 18, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/RgWFuw8.png"},
     "rubis": {"id": "rubis", "name": "Rubis", "value": 40, "max": 5, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
-    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 60 "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
+    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 60, "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
     "diamant": {"id": "diamant", "name": "Diamant", "value": 85, "max": 3, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/mxKSvYu.png"},
     "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 500, "max": 1, "rare": 4, "energie": 30, "imageurl": "https://i.imgur.com/EFidrgS.png"},
     "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 200, "max": 3, "rare": 4, "energie": 20, "imageurl": "https://i.imgur.com/sEUUEqq.png"},
