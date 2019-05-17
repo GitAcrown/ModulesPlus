@@ -311,8 +311,8 @@ class Cobalt:
                 return False
 
             notif = await self.bot.send_message(channel, embed=em)
+            await asyncio.sleep(0.2)
             await self.bot.add_reaction(notif, "⛏")
-            await asyncio.sleep(0.1)
             rep = await self.bot.wait_for_reaction(["⛏"], message=notif, timeout=120, check=check)
             if rep is None:
                 await self.bot.delete_message(notif)
@@ -418,8 +418,9 @@ class Cobalt:
                 if not user.bot:
                     return True if self.get_user(user) else False
                 return False
+
+            await asyncio.sleep(0.2)
             await self.bot.add_reaction(notif, "🖐")
-            await asyncio.sleep(0.1)
             rep = await self.bot.wait_for_reaction(["🖐"], message=notif, timeout=120, check=check)
             if rep is None:
                 await self.bot.delete_message(notif)
@@ -832,9 +833,9 @@ class Cobalt:
             em = discord.Embed(title="Boutique » Vente (Tout vendre)", description=txt, color=0x0047AB)
             em.set_footer(text="» Êtes-vous certain de tout vendre ?")
             msg = await self.bot.say(embed=em)
+            await asyncio.sleep(0.1)
             await self.bot.add_reaction(msg, "✅")
             await self.bot.add_reaction(msg, "❎")
-            await asyncio.sleep(0.1)
             rep = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=20, check=check,
                                                    user=ctx.message.author)
             if rep is None or rep.reaction.emoji == "❎":
