@@ -12,18 +12,18 @@ import os
 
 items_list = {
   "MINERAI":{
-    "fer": {"id": "fer", "name": "Fer", "value": 3, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/l3vehZd.png"},
-    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 5, "max": 11, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/kCGVGbC.png"},
-    "argent": {"id": "argent", "name": "Argent", "value": 14, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/gmuQJZr.png"},
-    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 20, "max": 8, "rare": 3, "energie": 3, "imageurl": "https://i.imgur.com/KJvBWx4.png"},
-    "or": {"id": "or", "name": "Or", "value": 22, "max": 7, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/p5uSxT3.png"},
-    "platine": {"id": "platine", "name": "Platine", "value": 18, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/RgWFuw8.png"},
-    "rubis": {"id": "rubis", "name": "Rubis", "value": 40, "max": 5, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
-    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 60, "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
-    "diamant": {"id": "diamant", "name": "Diamant", "value": 85, "max": 3, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/mxKSvYu.png"},
-    "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 500, "max": 1, "rare": 4, "energie": 30, "imageurl": "https://i.imgur.com/EFidrgS.png"},
-    "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 200, "max": 3, "rare": 4, "energie": 20, "imageurl": "https://i.imgur.com/sEUUEqq.png"},
-    "mithril": {"id": "mithril", "name": "Mithril", "value": 150, "max": 4, "rare": 4, "energie": 15, "imageurl": "https://i.imgur.com/wd8Nj2G.png"}
+    "fer": {"id": "fer", "name": "Fer", "value": 4, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/l3vehZd.png"},
+    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 7, "max": 11, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/kCGVGbC.png"},
+    "argent": {"id": "argent", "name": "Argent", "value": 16, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/gmuQJZr.png"},
+    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 22, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/KJvBWx4.png"},
+    "or": {"id": "or", "name": "Or", "value": 28, "max": 7, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/p5uSxT3.png"},
+    "platine": {"id": "platine", "name": "Platine", "value": 19, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/RgWFuw8.png"},
+    "rubis": {"id": "rubis", "name": "Rubis", "value": 50, "max": 5, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
+    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 66, "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
+    "diamant": {"id": "diamant", "name": "Diamant", "value": 90, "max": 3, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/mxKSvYu.png"},
+    "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 500, "max": 1, "rare": 4, "energie": 26, "imageurl": "https://i.imgur.com/EFidrgS.png"},
+    "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 200, "max": 3, "rare": 4, "energie": 18, "imageurl": "https://i.imgur.com/sEUUEqq.png"},
+    "mithril": {"id": "mithril", "name": "Mithril", "value": 175, "max": 4, "rare": 4, "energie": 12, "imageurl": "https://i.imgur.com/wd8Nj2G.png"}
   },
   "UNIQUE":{
     "gespace": {"id": "gespace", "name": "Gemme de l'Espace", "qte": 1},
@@ -34,9 +34,9 @@ items_list = {
     "gpouvoir": {"id": "gpouvoir", "name": "Gemme du Pouvoir", "qte": 1}
   },
   "ITEM":{
-    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 120, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
-    "booster": {"id": "booster", "name": "Booster de pioche", "value": 200, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
-    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 300, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
+    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 100, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
+    "booster": {"id": "booster", "name": "Booster de pioche", "value": 150, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
+    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 200, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
     "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 1500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
     "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
   }
@@ -66,8 +66,15 @@ class Cobalt:
             self.heartbeat[server.id] = {"ack": 0,
                                          "limit": random.randint(50, 300),
                                          "item": None,
-                                         "journal": []}
+                                         "journal": [],
+                                         "user_nrj": {}}
         return self.heartbeat[server.id]
+
+    def get_energy_sess(self, user: discord.Member):
+        hb = self.get_heartbeat(user.server)
+        if user.id not in hb["user_nrj"]:
+            hb["user_nrj"][user.id] = 0
+        return hb["user_nrj"][user.id]
 
     def add_log(self, server: discord.Server, text: str):
         """Ajoute un log au serveur"""
@@ -890,10 +897,10 @@ class Cobalt:
             for e in journal[::-1]:
                 txt += "• {} — *{}*\n".format(time.strftime("%d/%m/%Y %H:%M", time.localtime(e[0])), e[1])
                 if len(txt) >= 1980 * n:
-                    n += 1
                     em = discord.Embed(title="Journal d'actions Cobalt", description=txt, color=0xf7f7f7)
                     em.set_footer(text="Page n°{}".format(n))
                     await self.bot.say(embed=em)
+                    n += 1
                     txt = ""
             em = discord.Embed(title="Journal d'actions Cobalt", description=txt, color=0xf7f7f7)
             em.set_footer(text="Page n°{}".format(n))
@@ -965,6 +972,7 @@ class Cobalt:
 
         Entrer l'ID de l'item à utiliser permet de l'utiliser directement"""
         data = self.get_user(ctx.message.author)
+        saveritem = False
         if not data:
             "**Banni·e** — Vous ne pouvez pas consulter votre inventaire."
             return
@@ -973,75 +981,79 @@ class Cobalt:
             while data["items"]:
                 mequip = ""
                 items = data["items"]
-                if not ritem:
-                    for item in items:
-                        mequip += "• **{}** 》 *{}* (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
-                                                               self.get_item(item)["desc"])
-                    em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
-                    em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
-                    msg = await self.bot.say(embed=em)
-                    rep = await self.bot.wait_for_message(channel=ctx.message.channel,
-                                                          author=ctx.message.author,
-                                                          timeout=20)
-                    action = rep.content.lower() if rep else None
-                else:
-                    msg = await self.bot.say("**Utiliser directement** 》 *{}*".format(ritem))
-                    action = ritem
-                    ritem = None
-                    await asyncio.sleep(1)
-                if action is None or action in ["q", "stop", "quitter"]:
-                    await self.bot.delete_message(msg)
-                    return
-                elif action in items:
-                    cible = items[action]
-                    if cible["qte"] >= 1:
-                        if action == "detector":
-                            await self.bot.delete_message(msg)
-                            if len(data["status"]) < 3:
-                                data["status"].append("detector")
-                                self.del_item(ctx.message.author, "detector", 1)
-                                await self.bot.say("**Détecteur activé** — Vous recevrez une notification 10s avant l'apparition du prochain minerai !")
-                            else:
-                                await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
-                        elif action == "booster":
-                            await self.bot.delete_message(msg)
-                            if len(data["status"]) < 3:
-                                data["status"].append("booster")
-                                self.del_item(ctx.message.author, "booster", 1)
-                                await self.bot.say(
-                                    "**Booster activé** — Vous recevrez plus de minerai lors de votre prochain minage !")
-                            else:
-                                await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
-                        elif action == "barrenrj":
-                            await self.bot.delete_message(msg)
-                            data["energie"] = data["max_energie"]
-                            self.del_item(ctx.message.author, "barrenrj", 1)
-                            self.save()
-                            await self.bot.say("**Energie restaurée** — Vous avez désormais {}\⚡".format(data["energie"]))
-                        elif action == "coeurnrj":
-                            await self.bot.delete_message(msg)
-                            data["max_energie"] += 10
-                            self.del_item(ctx.message.author, "coeurnrj", 1)
-                            self.save()
-                            await self.bot.say("**Coeur consommé** — Vous pouvez désormais avoir jusqu'à {}\⚡".format(data["max_energie"]))
-                        elif action == "poche":
-                            await self.bot.delete_message(msg)
-                            data["max_capacite"] += 20
-                            self.del_item(ctx.message.author, "poche", 1)
-                            self.save()
-                            await self.bot.say("**Poche supplémentaire ajoutée** — Vous pouvez désormais avoir jusqu'à {} items".format(data["max_capacite"]))
-                        else:
-                            await self.bot.delete_message(msg)
-                            await self.bot.say("**Erreur** — Item inconnu.")
-                            return
-                        if random.randint(1, 5) == 1:
-                            await self.disp_astuce()
+                if not saveritem:
+                    if not ritem:
+                        for item in items:
+                            mequip += "• **{}** 》 *{}* (x{}) — *{}*\n".format(item, items[item]["name"], items[item]["qte"],
+                                                                   self.get_item(item)["desc"])
+                        em = discord.Embed(title="Vos équipements", description=mequip, color=0x0047AB)
+                        em.set_footer(text="» Entrez l'identifiant de l'item que vous voulez utiliser | \"Q\" pour quitter")
+                        msg = await self.bot.say(embed=em)
+                        rep = await self.bot.wait_for_message(channel=ctx.message.channel,
+                                                              author=ctx.message.author,
+                                                              timeout=20)
+                        action = rep.content.lower() if rep else None
                     else:
-                        await self.bot.say("**Quantité insufissante** — Vous n'avez pas cet item.")
+                        msg = await self.bot.say("**Utiliser directement** 》 *{}*".format(ritem))
+                        action = ritem
+                        saveritem = True
+                        ritem = None
+                        await asyncio.sleep(1)
+                    if action is None or action in ["q", "stop", "quitter"]:
+                        await self.bot.delete_message(msg)
+                        return
+                    elif action in items:
+                        cible = items[action]
+                        if cible["qte"] >= 1:
+                            if action == "detector":
+                                await self.bot.delete_message(msg)
+                                if len(data["status"]) < 3:
+                                    data["status"].append("detector")
+                                    self.del_item(ctx.message.author, "detector", 1)
+                                    await self.bot.say("**Détecteur activé** — Vous recevrez une notification 10s avant l'apparition du prochain minerai !")
+                                else:
+                                    await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
+                            elif action == "booster":
+                                await self.bot.delete_message(msg)
+                                if len(data["status"]) < 3:
+                                    data["status"].append("booster")
+                                    self.del_item(ctx.message.author, "booster", 1)
+                                    await self.bot.say(
+                                        "**Booster activé** — Vous recevrez plus de minerai lors de votre prochain minage !")
+                                else:
+                                    await self.bot.say("**Impossible** — Vous ne pouvez utiliser plus de 3 items actifs à la fois !")
+                            elif action == "barrenrj":
+                                await self.bot.delete_message(msg)
+                                data["energie"] = data["max_energie"]
+                                self.del_item(ctx.message.author, "barrenrj", 1)
+                                self.save()
+                                await self.bot.say("**Energie restaurée** — Vous avez désormais {}\⚡".format(data["energie"]))
+                            elif action == "coeurnrj":
+                                await self.bot.delete_message(msg)
+                                data["max_energie"] += 10
+                                self.del_item(ctx.message.author, "coeurnrj", 1)
+                                self.save()
+                                await self.bot.say("**Coeur consommé** — Vous pouvez désormais avoir jusqu'à {}\⚡".format(data["max_energie"]))
+                            elif action == "poche":
+                                await self.bot.delete_message(msg)
+                                data["max_capacite"] += 20
+                                self.del_item(ctx.message.author, "poche", 1)
+                                self.save()
+                                await self.bot.say("**Poche supplémentaire ajoutée** — Vous pouvez désormais avoir jusqu'à {} items".format(data["max_capacite"]))
+                            else:
+                                await self.bot.delete_message(msg)
+                                await self.bot.say("**Erreur** — Item inconnu.")
+                                return
+                            if random.randint(1, 5) == 1:
+                                await self.disp_astuce()
+                        else:
+                            await self.bot.say("**Quantité insufissante** — Vous n'avez pas cet item.")
+                    else:
+                        await self.bot.say("**Erreur** — Item inconnu ou non possédé.")
+                        await self.bot.delete_message(msg)
+                        continue
                 else:
-                    await self.bot.say("**Erreur** — Item inconnu ou non possédé.")
-                    await self.bot.delete_message(msg)
-                    continue
+                    return
             await self.bot.say("**Vous n'avez plus aucun item à utiliser !** — Fermeture du menu")
             return
         else:
@@ -1172,13 +1184,21 @@ class Cobalt:
                                 itemid = hb["item"]
                             hb["ack"] = 0
                             if await self.obtain_item(channel, itemid):
-                                hb["limit"] = random.randint((sys["maxfreq"] / 4), sys["maxfreq"])
+                                hb["limit"] = random.randint(int(sys["maxfreq"] / 4), sys["maxfreq"])
                                 hb["item"] = None
                             else:
-                                hb["limit"] = sys["maxfreq"] / 4 + random.randint(25, 75)
+                                hb["limit"] = int(sys["maxfreq"] / 4) + random.randint(25, 75)
                         except Exception as e:
                             print(e)
                             pass
+                    nrj_sess = self.get_energy_sess(message.author)
+                    if random.randint(0, 2) == 0:
+                        nrj_sess += 1
+                        if nrj_sess >= int(sys["maxfreq"] / 8):
+                            nrj_sess = 0
+                            userdata =  self.get_user(message.author)
+                            if userdata["energie"] < userdata["max_energie"]:
+                                self.get_user(message.author)["energie"] += 1
 
     async def dynamic_react(self, reaction, user):
         if reaction.message.channel:
