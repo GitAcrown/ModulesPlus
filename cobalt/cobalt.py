@@ -65,7 +65,7 @@ class Cobalt:
         if server.id not in self.heartbeat:
             self.heartbeat[server.id] = {"ack": 0,
                                          "limit": random.randint(50, 300),
-                                         "item": None,
+                                         "item": False,
                                          "journal": [],
                                          "user_nrj": {}}
         return self.heartbeat[server.id]
@@ -1192,13 +1192,13 @@ class Cobalt:
                             hb["ack"] = 0
                             if await self.obtain_item(channel, itemid):
                                 hb["limit"] = random.randint(int(sys["maxfreq"] / 4), sys["maxfreq"])
-                                hb["item"] = None
+                                hb["item"] = False
                             else:
                                 hb["limit"] = int(sys["maxfreq"] / 4) + random.randint(25, 75)
                         except Exception as e:
                             print(e)
                             pass
-                    nrj_sess = self.get_energy_sess(message.author)
+                    nrj_sess = self.heartbeat[message.server.id]["user_nrj"][message.author.id]
                     if random.randint(0, 2) == 0:
                         nrj_sess += 1
                         if nrj_sess >= int(sys["maxfreq"] / 8):
