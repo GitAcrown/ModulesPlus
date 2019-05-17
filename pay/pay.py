@@ -454,7 +454,7 @@ class PayAPI:
         """Ajoute des crédits au membre"""
         data = self.get_account(user)
         if somme > 0:
-            data["solde"] += somme
+            data["solde"] += int(somme)
             return self.new_transaction(user, somme, "gain", raison)
         return False
 
@@ -463,7 +463,7 @@ class PayAPI:
         somme = abs(somme)
         data = self.get_account(user)
         if self.enough_credits(user, somme):
-            data["solde"] -= somme
+            data["solde"] -= int(somme)
             return self.new_transaction(user, -somme, "perte", raison)
         elif accept_null:
             somme = data["solde"]
@@ -475,7 +475,7 @@ class PayAPI:
         """Modifie le solde du membre"""
         data = self.get_account(user)
         if somme >= 0:
-            data["solde"] = somme
+            data["solde"] = int(somme)
             return self.new_transaction(user, somme, "modification", raison)
         return False
 

@@ -326,7 +326,7 @@ class Cobalt:
                     foot = ""
                     if self.have_status(rep.user, "booster", True):
                         boost = random.choice([1.25, 1.50, 1.75, 2])
-                        qte *= boost
+                        qte = round(qte * boost)
                         foot = "Boosté = minerai x{}".format(boost)
                     p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
                                                     "{1} obtient **{0}** (x{2}) !",
