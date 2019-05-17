@@ -321,15 +321,7 @@ class Cobalt:
                 data = self.get_user(rep.user)
                 barreuse = True if self.own_item(rep.user, "barrenrj") else False
 
-                ok = data["energie"] >= item["energie"]
-                if not ok:
-                    ok = barreuse
-                    data["energie"] = data["max_energie"]
-                    self.del_item(rep.user, "barrenrj", 1)
-                    self.save()
-                    await self.bot.send_message(rep.user,
-                                                "Votre item **Barre d'énergie** a été utilisée automatiquement afin de vous permettre le minage !")
-                if ok:
+                if data["energie"] >= item["energie"]:
                     await self.bot.clear_reactions(notif)
                     foot = ""
                     if self.have_status(rep.user, "booster", True):
@@ -339,6 +331,44 @@ class Cobalt:
                     p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
                                                     "{1} obtient **{0}** (x{2}) !",
                                                     "Bien joué {1} ! Tu obtiens {2} unité(s) de **{0}**"])
+                    em.description = p.format(item["name"], rep.user.mention, qte)
+                    em.set_footer(text=foot)
+                    em.set_thumbnail(url="")
+                    await self.bot.edit_message(notif, embed=em)
+                    data["energie"] -= item["energie"]
+                    self.add_log(channel.server, "{} a obtenu **{}**".format(rep.user, item["name"]))
+
+                    sac = sum([data["minerais"][i]["qte"] for i in data["minerais"]])
+                    if sac + qte <= data["max_capacite"]:
+                        self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
+                    else:
+                        qte = data["max_capacite"] - sac
+                        if qte != 0:
+                            self.add_item(rep.user, id=item["id"], type=item["type"], name=item["name"], qte=qte)
+                            em = discord.Embed(title="Attention - Seuil maximum de l'inventaire atteint",
+                                               description="Votre inventaire est plein ! Toutes les unités dépassant le seuil ont été jetées !")
+                            await self.bot.send_message(rep.user, embed=em)
+                        else:
+                            em = discord.Embed(title="Attention - Inventaire plein",
+                                               description="Votre inventaire est plein ! Vous n'avez pas pu récupérer les ressources minées !")
+                            await self.bot.send_message(rep.user, embed=em)
+
+                    await asyncio.sleep(30)
+                    await self.bot.delete_message(notif)
+                    return True
+                elif barreuse:
+                    data["energie"] = data["max_energie"]
+                    self.del_item(rep.user, "barrenrj", 1)
+                    self.save()
+                    await self.bot.clear_reactions(notif)
+                    foot = "Votre barre d'énergie a été utilisée automatiquement car vous n'aviez plus d'énergie"
+                    if self.have_status(rep.user, "booster", True):
+                        boost = random.choice([1.25, 1.50, 1.75, 2])
+                        qte *= boost
+                        foot += " | Boosté = minerai x{}".format(boost)
+                    p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
+                                       "{1} obtient **{0}** (x{2}) !",
+                                       "Bien joué {1} ! Tu obtiens {2} unité(s) de **{0}**"])
                     em.description = p.format(item["name"], rep.user.mention, qte)
                     em.set_footer(text=foot)
                     em.set_thumbnail(url="")
