@@ -1195,7 +1195,7 @@ class Karma:
         """Commande de gestion des logs avancés"""
         server = ctx.message.server
         serv = self.karma.get_server(server, "META")
-        if reset:
+        if hardreset:
             self.karma.get_server(server, "META")["logs_channels"] = {}
             self.karma.save(True)
             await self.bot.say("**Hardreset effectué**")
