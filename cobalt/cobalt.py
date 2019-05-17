@@ -1037,9 +1037,10 @@ class Cobalt:
                             elif action == "coeurnrj":
                                 await self.bot.delete_message(msg)
                                 data["max_energie"] += 10
+                                data["energie"] = data["max_energie"]
                                 self.del_item(ctx.message.author, "coeurnrj", 1)
                                 self.save()
-                                await self.bot.say("**Coeur consommé** — Vous pouvez désormais avoir jusqu'à {}\⚡".format(data["max_energie"]))
+                                await self.bot.say("**Coeur consommé** — Vous pouvez désormais avoir jusqu'à {}\⚡ (Votre énergie a aussi été rechargée)".format(data["max_energie"]))
                             elif action == "poche":
                                 await self.bot.delete_message(msg)
                                 data["max_capacite"] += 20
