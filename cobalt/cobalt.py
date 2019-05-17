@@ -1221,13 +1221,16 @@ class Cobalt:
                             if not hb["item"]:
                                 itemid = self.gen_minerai()
                                 hb["item"] = itemid
+                                print("nouvel item généré")
                             else:
                                 itemid = hb["item"]
                             hb["ack"] = 0
                             if await self.obtain_item(channel, itemid):
+                                print("item obtenu")
                                 hb["limit"] = random.randint(int(sys["maxfreq"] / 4), sys["maxfreq"])
                                 hb["item"] = False
                             else:
+                                print("item non-obtenu")
                                 hb["limit"] = int(sys["maxfreq"] / 4) + random.randint(25, 75)
                         except Exception as e:
                             print(e)
