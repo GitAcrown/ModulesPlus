@@ -1191,10 +1191,15 @@ class Karma:
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def logs(self, ctx):
+    async def logs(self, ctx, hardreset: bool = False):
         """Commande de gestion des logs avancés"""
         server = ctx.message.server
         serv = self.karma.get_server(server, "META")
+        if reset:
+            self.karma.get_server(server, "META")["logs_channels"] = {}
+            self.karma.save(True)
+            await self.bot.say("**Hardreset effectué**")
+            return
         serv = serv["logs_channels"]
         while True:
             types = ["msg_post", "msg_delete", "msg_edit", "msg_hide", "msg_slow",
