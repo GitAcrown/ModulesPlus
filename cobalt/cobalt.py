@@ -1233,14 +1233,15 @@ class Cobalt:
                             print(e)
                             pass
 
-                    nrj_sess = self.heartbeat[message.server.id]["user_nrj"][message.author.id]
-                    if random.randint(0, 2) == 0:
-                        nrj_sess += 1
-                        if nrj_sess >= int(sys["maxfreq"] / 8):
-                            nrj_sess = 0
-                            userdata =  self.get_user(message.author)
-                            if userdata["energie"] < userdata["max_energie"]:
-                                self.get_user(message.author)["energie"] += 1
+                    if self.get_energy_sess(message.author):
+                        nrj_sess = self.heartbeat[message.server.id]["user_nrj"][message.author.id]
+                        if random.randint(0, 2) == 0:
+                            nrj_sess += 1
+                            if nrj_sess >= int(sys["maxfreq"] / 8):
+                                nrj_sess = 0
+                                userdata =  self.get_user(message.author)
+                                if userdata["energie"] < userdata["max_energie"]:
+                                    self.get_user(message.author)["energie"] += 1
 
     async def dynamic_react(self, reaction, user):
         if reaction.message.channel:
