@@ -320,13 +320,17 @@ class Cobalt:
             elif rep.reaction.emoji == "⛏":
                 data = self.get_user(rep.user)
                 barreuse = True if self.own_item(rep.user, "barrenrj") else False
-                if data["energie"] >= item["energie"] or barreuse:
+
+                ok = data["energie"] >= item["energie"]
+                if not ok:
+                    ok = barreuse
+                    data["energie"] = data["max_energie"]
+                    self.del_item(rep.user, "barrenrj", 1)
+                    self.save()
+                    await self.bot.send_message(rep.user,
+                                                "Votre item **Barre d'énergie** a été utilisée automatiquement afin de vous permettre le minage !")
+                if ok:
                     await self.bot.clear_reactions(notif)
-                    if barreuse and data["energie"] < item["energie"]:
-                        data["energie"] = data["max_energie"]
-                        self.del_item(rep.user, "barrenrj", 1)
-                        self.save()
-                        await self.bot.send_message(rep.user, "Votre item **Barre d'énergie** a été utilisée automatiquement afin de vous permettre le minage !")
                     foot = ""
                     if self.have_status(rep.user, "booster", True):
                         boost = random.choice([1.25, 1.50, 1.75, 2])
@@ -1198,6 +1202,7 @@ class Cobalt:
                         except Exception as e:
                             print(e)
                             pass
+
                     nrj_sess = self.heartbeat[message.server.id]["user_nrj"][message.author.id]
                     if random.randint(0, 2) == 0:
                         nrj_sess += 1
