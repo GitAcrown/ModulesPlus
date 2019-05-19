@@ -38,10 +38,11 @@ items_list = {
     "booster": {"id": "booster", "name": "Booster de pioche", "value": 150, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
     "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 200, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
     "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 1500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
-    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"},
-    "palmade": {"id":  "palmade", "name":  "Pierre Palmade", "value": 50, "qte": 1, "desc": "???"}
+    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
   }
 }
+
+# "palmade": {"id":  "palmade", "name":  "Pierre Palmade", "value": 50, "qte": 1, "desc": "???"}
 
 class Cobalt:
     """Minez, récoltez, enrichissez-vous !"""
