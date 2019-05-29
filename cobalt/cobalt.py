@@ -971,7 +971,7 @@ class Cobalt:
         val = 0
         for m in equip:
             unival = round(self.get_item(m)["value"] / self.get_item(m)["qte"], 2)
-            totm = unival * equip[m]["qte"]
+            totm = round(unival * equip[m]["qte"], 2)
             txt += "{}x **{}** — {}g/unité 》 **{}**g\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
             val += totm
         val = int(val)
