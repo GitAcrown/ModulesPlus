@@ -986,7 +986,7 @@ class Cobalt:
         rep = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=30, user=ctx.message.author)
         if rep is None or rep.reaction.emoji == "❎":
             await self.bot.delete_message(msg)
-            await self.bot.say("**Transaction annulée** — Vos minerais n'ont pas été vendus.")
+            await self.bot.say("**Transaction annulée** — Vos items n'ont pas été revendus.")
             return
         else:
             self.reset_user_type(ctx.message.author, "items")
