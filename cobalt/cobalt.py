@@ -952,6 +952,55 @@ class Cobalt:
                                "*sellall* = Vendre toutes vos ressources (minerais)\n*<itemid> <qte>* = Acheter/Vendre directement l'item possédant cet id")
 
     @commands.command(pass_context=True, no_pm=True)
+    async def refundall(self, ctx):
+        """Rembourse tous les items achetés"""
+        user = self.get_user(ctx.message.author)
+        if not user:
+            "**Banni·e** — Vous ne pouvez pas consulter votre inventaire."
+            return
+
+        if not self.pay:
+            await self.bot.say("**Erreur** — Impossible de contacter le module *Pay*.")
+            return
+        if not await self.pay.account_dial(ctx.message.author):
+            await self.bot.say("**Impossible** — Vous devez avoir un compte *Pay* valide.")
+            return
+
+        equip = user["items"]
+        txt = ""
+        val = 0
+        for m in equip:
+            unival = self.get_item(m)["value"]
+            totm = unival * equip[m]["qte"]
+            txt += "{}x **{}** — {}g/unité 》 **{}**g\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
+            val += totm
+        txt = "\nTotal du remboursement ⟫ **{}** golds".format(val)
+        em = discord.Embed(description=txt, color=0x0047AB)
+        em.set_author(name="Boutique » Remboursement (Tout revendre)", icon_url=ctx.message.author.avatar_url)
+        em.set_footer(text="» Êtes-vous certain de tout revendre ?")
+        msg = await self.bot.say(embed=em)
+        await asyncio.sleep(0.1)
+        await self.bot.add_reaction(msg, "✅")
+        await self.bot.add_reaction(msg, "❎")
+        rep = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=20, check=check,
+                                               user=ctx.message.author)
+        if rep is None or rep.reaction.emoji == "❎":
+            await self.bot.delete_message(msg)
+            await self.bot.say("**Transaction annulée** — Vos minerais n'ont pas été vendus.")
+            return
+        else:
+            self.reset_user_type(ctx.message.author, "items")
+            self.save()
+            self.pay.add_credits(ctx.message.author, val, "Remboursement Cobalt")
+            em.description = "Revente réalisée ! **{}**g ont été transférés sur votre compte.".format(val)
+            em.set_footer(text="")
+            await self.bot.edit_message(msg, embed=em)
+            await self.bot.clear_reactions(msg)
+            if random.randint(1, 5) == 1:
+                await self.disp_astuce()
+
+
+    @commands.command(pass_context=True, no_pm=True)
     async def journal(self, ctx):
         """Affiche les dernières action sur Cobalt de la session en cours"""
         journal = self.get_heartbeat(ctx.message.server)["journal"]
