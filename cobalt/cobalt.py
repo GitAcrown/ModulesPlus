@@ -982,8 +982,7 @@ class Cobalt:
         await asyncio.sleep(0.1)
         await self.bot.add_reaction(msg, "✅")
         await self.bot.add_reaction(msg, "❎")
-        rep = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=20, check=check,
-                                               user=ctx.message.author)
+        rep = await self.bot.wait_for_reaction(["✅", "❎"], message=msg, timeout=30, user=ctx.message.author)
         if rep is None or rep.reaction.emoji == "❎":
             await self.bot.delete_message(msg)
             await self.bot.say("**Transaction annulée** — Vos minerais n'ont pas été vendus.")
