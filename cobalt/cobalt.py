@@ -974,7 +974,7 @@ class Cobalt:
             totm = unival * equip[m]["qte"]
             txt += "{}x **{}** — {}g/unité 》 **{}**g\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
             val += totm
-        txt = "\nTotal du remboursement ⟫ **{}** golds".format(val)
+        txt += "\nTotal du remboursement ⟫ **{}** golds".format(val)
         em = discord.Embed(description=txt, color=0x0047AB)
         em.set_author(name="Boutique » Remboursement (Tout revendre)", icon_url=ctx.message.author.avatar_url)
         em.set_footer(text="» Êtes-vous certain de tout revendre ?")
