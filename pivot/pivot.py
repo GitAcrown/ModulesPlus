@@ -34,7 +34,7 @@ class Pivot:
                             "executant": executant.id,
                             "num": nb}
         self.save()
-        return sys["teams"]["nb"]
+        return sys["teams"][nb]
 
 
     @commands.command(pass_context=True, no_pm=True)
