@@ -90,18 +90,18 @@ class Pivot:
         em.set_footer(text="IDR = {}".format(sys["resetid"]))
         for team in sys["teams"]:
             membres = []
-            for m in team["users"]:
+            for m in sys["teams"][team]["users"]:
                 try:
                     membres.append(ctx.message.server.get_member(m).mention)
                 except:
                     membres.append(m)
             txt = "**Membres** : {}\n".format(" ".join(membres))
-            exec = ctx.message.server.get_member(team["executant"]).mention if \
-                ctx.message.server.get_member(team["executant"]) else team["executant"]
+            exec = ctx.message.server.get_member(sys["teams"][team]["executant"]).mention if \
+                ctx.message.server.get_member(sys["teams"][team]["executant"]) else sys["teams"][team]["executant"]
             txt += "**Exécutant** : {}\n".format(exec)
             txt += "**Date** : {t.tm_mday}/{t.tm_mon}/{t.tm_year} à {t.tm_hour}:{t.tm_min}".format(
-                t=time.localtime(team["date"]))
-            em.add_field(name="Equipe n°{}".format(team["num"]), value=txt)
+                t=time.localtime(sys["teams"][team]["date"]))
+            em.add_field(name="Equipe n°{}".format(sys["teams"][team]["num"]), value=txt)
         await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, no_pm=True)
