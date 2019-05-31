@@ -12,18 +12,18 @@ import os
 
 items_list = {
   "MINERAI":{
-    "fer": {"id": "fer", "name": "Fer", "value": 4, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/l3vehZd.png"},
-    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 7, "max": 11, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/kCGVGbC.png"},
-    "argent": {"id": "argent", "name": "Argent", "value": 16, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/gmuQJZr.png"},
-    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 22, "max": 8, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/KJvBWx4.png"},
-    "or": {"id": "or", "name": "Or", "value": 28, "max": 7, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/p5uSxT3.png"},
-    "platine": {"id": "platine", "name": "Platine", "value": 19, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/RgWFuw8.png"},
-    "rubis": {"id": "rubis", "name": "Rubis", "value": 50, "max": 5, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
-    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 66, "max": 6, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/YHLyC4Q.png"},
-    "diamant": {"id": "diamant", "name": "Diamant", "value": 90, "max": 3, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/mxKSvYu.png"},
-    "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 500, "max": 1, "rare": 4, "energie": 26, "imageurl": "https://i.imgur.com/EFidrgS.png"},
-    "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 200, "max": 3, "rare": 4, "energie": 18, "imageurl": "https://i.imgur.com/sEUUEqq.png"},
-    "mithril": {"id": "mithril", "name": "Mithril", "value": 175, "max": 4, "rare": 4, "energie": 12, "imageurl": "https://i.imgur.com/wd8Nj2G.png"}
+    "fer": {"id": "fer", "name": "Fer", "value": 5, "max": 15, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/DT5UFL9.png"},
+    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/x1w4rvk.png"},
+    "argent": {"id": "argent", "name": "Argent", "value": 18, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/5vpIa7g.png"},
+    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/8tTb0TN.png"},
+    "or": {"id": "or", "name": "Or", "value": 35, "max": 9, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/yisG8jH.png"},
+    "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/FQVNapP.png"},
+    "rubis": {"id": "rubis", "name": "Rubis", "value": 60, "max": 7, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
+    "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 75, "max": 7, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/yCLEbgZ.png"},
+    "diamant": {"id": "diamant", "name": "Diamant", "value": 100, "max": 5, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/vGRv297.png"},
+    "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 600, "max": 3, "rare": 4, "energie": 22, "imageurl": "https://i.imgur.com/QiIN42H.png"},
+    "orichalque": {"id": "orichalque", "name": "Orichalque", "value": 220, "max": 4, "rare": 4, "energie": 15, "imageurl": "https://i.imgur.com/TQOVxTp.png"},
+    "mithril": {"id": "mithril", "name": "Mithril", "value": 160, "max": 5, "rare": 4, "energie": 12, "imageurl": "https://i.imgur.com/HxZVq1H.png"}
   },
   "UNIQUE":{
     "pespace": {"id": "pespace", "name": "Pierre de l'Espace", "qte": 1},
@@ -34,11 +34,11 @@ items_list = {
     "ppouvoir": {"id": "ppouvoir", "name": "Pierre du Pouvoir", "qte": 1}
   },
   "ITEM":{
-    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 100, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
-    "booster": {"id": "booster", "name": "Booster de pioche", "value": 150, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
-    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 200, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
-    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 1500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
-    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 1000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
+    "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 50, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
+    "booster": {"id": "booster", "name": "Booster de pioche", "value": 75, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
+    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
+    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 2500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
+    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 2000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
   }
 }
 
@@ -313,7 +313,7 @@ class Cobalt:
                 return False
 
             notif = await self.bot.send_message(channel, embed=em)
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
             await self.bot.add_reaction(notif, "⛏")
             rep = await self.bot.wait_for_reaction(["⛏"], message=notif, timeout=120, check=check)
             if rep is None:
@@ -421,7 +421,7 @@ class Cobalt:
                     return True if self.get_user(user) else False
                 return False
 
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
             await self.bot.add_reaction(notif, "🖐")
             rep = await self.bot.wait_for_reaction(["🖐"], message=notif, timeout=120, check=check)
             if rep is None:
@@ -1318,7 +1318,7 @@ class Cobalt:
                                 nrj_sess = 0
                                 userdata =  self.get_user(message.author)
                                 if userdata["energie"] < userdata["max_energie"]:
-                                    self.get_user(message.author)["energie"] += 1
+                                    self.get_user(message.author)["energie"] += 3
 
     async def dynamic_react(self, reaction, user):
         if reaction.message.channel:
