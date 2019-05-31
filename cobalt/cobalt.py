@@ -15,7 +15,7 @@ items_list = {
     "fer": {"id": "fer", "name": "Fer", "value": 5, "max": 15, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/DT5UFL9.png"},
     "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/x1w4rvk.png"},
     "argent": {"id": "argent", "name": "Argent", "value": 18, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/5vpIa7g.png"},
-    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/8tTb0TN.png"},
+    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/E04CMpW.png"},
     "or": {"id": "or", "name": "Or", "value": 35, "max": 9, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/yisG8jH.png"},
     "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/FQVNapP.png"},
     "rubis": {"id": "rubis", "name": "Rubis", "value": 60, "max": 7, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/gRRFpfM.png"},
