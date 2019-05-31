@@ -25,7 +25,7 @@ class Pivot:
             self.save()
         return self.data[server.id]
 
-    def save_team(self, server: discord.Server, users: list, executant: discord.Member):
+    def save_team(self, server: discord.Server, users, executant: discord.Member):
         """Sauvegarde une Team tirée au sort avec .modteam"""
         sys = self.get_server(server)
         nb = len(sys["teams"]) + 1
