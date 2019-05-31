@@ -86,7 +86,7 @@ class Pivot:
     async def logsteam(self, ctx):
         """Affiche les équipes enregistrées en logs"""
         sys = self.get_server(ctx.message.server)
-        em = discord.Embed(title="Logs d'équipes")
+        em = discord.Embed(title="Logs d'équipes", inline=False)
         em.set_footer(text="IDR = {}".format(sys["resetid"]))
         for team in sys["teams"]:
             membres = []
