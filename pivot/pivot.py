@@ -25,13 +25,13 @@ class Pivot:
             self.save()
         return self.data[server.id]
 
-    def save_team(self, server: discord.Server, users, executant: discord.Member):
+    def save_team(self, server: discord.Server, userlist, execut: discord.Member):
         """Sauvegarde une Team tirée au sort avec .modteam"""
         sys = self.get_server(server)
         nb = len(sys["teams"]) + 1
-        sys["teams"][nb] = {"users": users,
+        sys["teams"][nb] = {"users": userlist,
                             "date": time.time(),
-                            "executant": executant.id,
+                            "executant": execut.id,
                             "num": nb}
         self.save()
         return sys["teams"][nb]
@@ -61,9 +61,11 @@ class Pivot:
             color = int('0x%02X%02X%02X' % (rs(), rs(), rs()), 16) # On génère une couleur unique pour chaque tirage
 
             teamtxt = ""
+            ids = []
             for membre in result:
                 teamtxt += "• {}\n".format(membre.mention)
-            if self.save_team(ctx.message.server, [m.id for m in result], ctx.message.author):
+                ids.append(membre.id)
+            if self.save_team(ctx.message.server, ids, ctx.message.author):
                 em = discord.Embed(title="Membres sélectionnés ─ Equipe n°{}".format(nb_team), description=teamtxt,
                                    color=color, timestamp=ctx.message.timestamp)
                 em.set_footer(text="IDR: {}".format(sys["resetid"]))
