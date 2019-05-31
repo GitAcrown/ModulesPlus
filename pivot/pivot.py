@@ -39,7 +39,7 @@ class Pivot:
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(administrator=True)
-    async def modteam(self, ctx, nombre, *cibles):
+    async def modteam(self, ctx, nombre: int, *cibles):
         """Sélectionne <nombre> membres parmi la liste <cibles>
 
         La liste peut être une liste de membres ou un rôle qui liste déjà ces membres"""
@@ -52,7 +52,7 @@ class Pivot:
             await self.bot.say("❌ **Erreur** ─ Il me faut soit la liste des membres éligibles, "
                                "soit un rôle qui liste ces membres.")
             return
-        if nombre < len(cibles):
+        if int(nombre) < len(cibles):
             sys = self.get_server(ctx.message.server)
             result = random.sample(cibles, nombre) # On tire X membres au hasard
             nb_team = len(sys["team"]) + 1 # On récupère le numéro de cette nouvelle team
