@@ -18,7 +18,7 @@ items_list = {
     "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/8tTb0TN.png"},
     "or": {"id": "or", "name": "Or", "value": 35, "max": 9, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/yisG8jH.png"},
     "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/FQVNapP.png"},
-    "rubis": {"id": "rubis", "name": "Rubis", "value": 60, "max": 7, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/rv9JPJx.png"},
+    "rubis": {"id": "rubis", "name": "Rubis", "value": 60, "max": 7, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/gRRFpfM.png"},
     "plutonium": {"id": "plutonium", "name": "Plutonium", "value": 75, "max": 7, "rare": 3, "energie": 12, "imageurl": "https://i.imgur.com/yCLEbgZ.png"},
     "diamant": {"id": "diamant", "name": "Diamant", "value": 100, "max": 5, "rare": 3, "energie": 10, "imageurl": "https://i.imgur.com/vGRv297.png"},
     "adamantium": {"id": "adamantium", "name": "Adamantium", "value": 600, "max": 3, "rare": 4, "energie": 22, "imageurl": "https://i.imgur.com/QiIN42H.png"},
