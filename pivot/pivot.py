@@ -11,9 +11,9 @@ from .utils import checks
 
 class Pivot:
     """Outils de gestion d'une communauté"""
-    def __init__(self, bot, path):
+    def __init__(self, bot):
         self.bot = bot
-        self.data = dataIO.load_json(path)
+        self.data = dataIO.load_json("data/pivot/data.json")
 
     def save(self):
         fileIO("data/pivot/data.json", "save", self.data)
