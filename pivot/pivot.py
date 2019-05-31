@@ -55,7 +55,7 @@ class Pivot:
         if int(nombre) < len(cibles):
             sys = self.get_server(ctx.message.server)
             result = random.sample(cibles, nombre) # On tire X membres au hasard
-            nb_team = len(sys["team"]) + 1 # On récupère le numéro de cette nouvelle team
+            nb_team = len(sys["teams"]) + 1 # On récupère le numéro de cette nouvelle team
 
             rs = lambda: random.randint(0, 255)
             color = int('0x%02X%02X%02X' % (rs(), rs(), rs()), 16) # On génère une couleur unique pour chaque tirage
