@@ -148,7 +148,7 @@ class PayAPI:
             if rep is None or rep.reaction.emoji == "✖":
                 await self.bot.clear_reactions(msg)
                 em = discord.Embed(
-                    description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
+                    description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `;pay new`".format(
                         user.mention), color=palette["dark"])
                 await self.bot.edit_message(msg, embed=em)
                 await asyncio.sleep(5)
@@ -166,7 +166,7 @@ class PayAPI:
                 else:
                     em = discord.Embed(
                         description="{} ─ Je n'ai pas réussi à vous ouvrir un compte.\n"
-                                    "Réessayez plus tard avec `.pay new`".format(
+                                    "Réessayez plus tard avec `;pay new`".format(
                             user.mention), color=palette["warning"])
                     await self.bot.edit_message(msg, embed=em)
                     await asyncio.sleep(5)
@@ -190,7 +190,7 @@ class PayAPI:
                 if rep is None or rep.reaction.emoji == "✖":
                     await self.bot.clear_reactions(msg)
                     em = discord.Embed(
-                        description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `.pay new`".format(
+                        description="{} ─ Annulé, vous pourrez en ouvrir un plus tard avec `;pay new`".format(
                             user.mention), color=palette["dark"])
                     await self.bot.edit_message(msg, embed=em)
                     await asyncio.sleep(8)
@@ -474,10 +474,10 @@ class Pay:
         """Ouvre un compte bancaire Pay"""
         data = self.pay.get_account(ctx.message.author)
         if data:
-            await self.bot.say("**Inutile** ─ Vous avez déjà un compte : consultez-le avec `.b`")
+            await self.bot.say("**Inutile** ─ Vous avez déjà un compte : consultez-le avec `;b`")
         else:
             await self.pay.create_account(ctx.message.author)
-            await self.bot.say("**Compte créé ─ Consultez-le avec `.b`")
+            await self.bot.say("**Compte créé ─ Consultez-le avec `;b`")
 
     @pay_account.command(pass_context=True)
     async def compte(self, ctx, user: discord.Member = None):
@@ -517,7 +517,7 @@ class Pay:
         user = user if user else ctx.message.author
         data = self.pay.get_account(user, True)
         if data:
-            txt = "Utilisez `.b check` pour voir une transaction en détails\n"
+            txt = "Utilisez `;b check` pour voir une transaction en détails\n"
             page = 1
             jour = time.strftime("%d/%m/%Y", time.localtime())
             heure = time.strftime("%H:%M", time.localtime())

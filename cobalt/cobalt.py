@@ -35,7 +35,7 @@ items_list = {
   },
   "ITEM":{
     "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 50, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
-    "booster": {"id": "booster", "name": "Booster de pioche", "value": 75, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.25 à x2)"},
+    "booster": {"id": "booster", "name": "Booster de pioche", "value": 75, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.5 à x2)"},
     "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
     "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 2500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
     "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 2000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
@@ -327,7 +327,7 @@ class Cobalt:
                     await self.bot.clear_reactions(notif)
                     foot = ""
                     if self.have_status(rep.user, "booster", True):
-                        boost = random.choice([1.25, 1.50, 1.75, 2])
+                        boost = random.choice([1.50, 1.75, 2])
                         qte = round(qte * boost)
                         foot = "Boosté = minerai x{}".format(boost)
                     p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
@@ -504,9 +504,9 @@ class Cobalt:
                                 txt = "*{}*\n".format(item["desc"])
                             if "qte" in item:
                                 if item["qte"] > 1:
-                                    txt += "Vendu par __lot de {}__, chaque lot coûtant **{}B**".format(item["qte"], item["value"])
+                                    txt += "Vendu par __lot de {}__, chaque lot coûtant **{} bits**".format(item["qte"], item["value"])
                             else:
-                                txt += "Chaque unité coûte **{}B**".format(item["value"])
+                                txt += "Chaque unité coûte **{} bits**".format(item["value"])
                             em = discord.Embed(description=txt, color=0x0047AB)
                             em.set_author(name="Achat — {} [{}]".format(item["name"], itemid),icon_url=user.avatar_url)
                             if "imageurl" in item:
@@ -610,7 +610,7 @@ class Cobalt:
                    " fournie en bas de l'affichage de l'item ? Il se trouve toujours sous cette forme : `!Y$` avec Y l'identifiant de l'item."
         elif comcontext == "sellall":
             title +="Vendre tout ses minerais d'un coup"
-            desc = "Il est en effet possible de faire `.shop sellall` ! Un écran de confirmation vous affichera la " \
+            desc = "Il est en effet possible de faire `;shop sellall` ! Un écran de confirmation vous affichera la " \
                    "valeur totale de votre stock et vous permettra de tout vendre d'un coup !"
         elif comcontext == "use_cumul":
             title +="Cumul des effets à l'utilisation"
@@ -632,7 +632,7 @@ class Cobalt:
                    "Un serveur mort ne fera probablement jamais apparaître d'item !"
         elif comcontext == "fast_buy":
             title += "Acheter/vendre rapidement sur la boutique"
-            desc = "Il est possible, plutôt que rentrer `buy` ou `sell` après la commande `.shop` de rentrer directement " \
+            desc = "Il est possible, plutôt que rentrer `buy` ou `sell` après la commande `;shop` de rentrer directement " \
                    "l'identifiant d'un minerai pour le vendre ou l'identifiant d'un équipement pour l'acheter !"
         em = discord.Embed(title=title, description=desc, color=0xf7f7f7)
         if not channel:
@@ -668,7 +668,7 @@ class Cobalt:
         desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
         if data["status"]:
             desc += "**Items actifs** — {}\n".format(", ".join([self.get_item(i)["name"].lower() for i in data["status"]]))
-        desc += "**Solde Pay** — {}B\n".format(self.pay.get_account(ctx.message.author, True).solde)
+        desc += "**Solde Pay** — {} bits\n".format(self.pay.get_account(ctx.message.author, True).solde)
         desc += "**Valeur estimée du stock** — {} bits".format(val)
         em = discord.Embed(description= desc, color=0x0047AB)
         if data["items"]:
@@ -685,7 +685,7 @@ class Cobalt:
             minerais = data["minerais"]
             for item in minerais:
                 nb += minerais[item]["qte"]
-                mtxt += "• {}x **{}** — {}B/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
+                mtxt += "• {}x **{}** — {} b/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
                                                      self.get_item(item)["value"])
         em.add_field(name="📦 Minerais ({}/{})".format(nb, data["max_capacite"]), value=mtxt)
 
@@ -720,10 +720,10 @@ class Cobalt:
 
         if not item_action:
             em = discord.Embed(title="Boutique » Aide", description="__**Actions que vous pouvez réaliser**__\n"
-                                                                    "• Acheter des équipements = `.shop buy` / `.shop achat`\n"
-                                                                    "• Vendre des ressources = `.shop sell` / `.shop vendre`\n"
-                                                                    "• Vendre toutes vos ressources = `.shop sellall` / `.shop vendretout`\n"
-                                                                    "• Acheter/Vendre directement un item = `.shop <item_id> <qté>`", color=0x0047AB)
+                                                                    "• Acheter des équipements = `;shop buy` / `;shop achat`\n"
+                                                                    "• Vendre des ressources = `;shop sell` / `;shop vendre`\n"
+                                                                    "• Vendre toutes vos ressources = `;shop sellall` / `;shop vendretout`\n"
+                                                                    "• Acheter/Vendre directement un item = `;shop <item_id> <qté>`", color=0x0047AB)
             await self.bot.say(embed=em)
             return
 
@@ -844,7 +844,7 @@ class Cobalt:
             for m in minerais:
                 unival = self.get_item(m)["value"]
                 totm = unival * minerais[m]["qte"]
-                txt += "{}x **{}** — {}B/unité 》 **{}**B\n".format(minerais[m]["qte"], minerais[m]["name"], unival, totm)
+                txt += "{}x **{}** — {} bits/unité 》 **{}**B\n".format(minerais[m]["qte"], minerais[m]["name"], unival, totm)
                 val += totm
             txt = "\nTotal de la vente ⟫ **{}** bits".format(val)
             em = discord.Embed(description=txt, color=0x0047AB)
@@ -864,7 +864,7 @@ class Cobalt:
                 self.reset_user_type(ctx.message.author, "minerais")
                 self.save()
                 self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › SellAll")
-                em.description = "Vente réalisée ! **{}**B ont été transférés sur votre compte.".format(val)
+                em.description = "Vente réalisée ! **{}** bits ont été transférés sur votre compte.".format(val)
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
                 await self.bot.clear_reactions(msg)
@@ -903,7 +903,7 @@ class Cobalt:
                             self.del_item(ctx.message.author, itemid, qte)
                             self.save()
                             self.pay.add_credits(ctx.message.author, val, "Vente Cobalt › {} [{}]".format(item["name"], itemid))
-                            em.description = "Vente réalisée ! **{}**B ont été transférés sur votre compte.".format(val)
+                            em.description = "Vente réalisée ! **{}** bits ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
                             if random.randint(1, 5) == 1:
                                 await self.disp_astuce()
@@ -927,7 +927,7 @@ class Cobalt:
                         self.save()
                         self.pay.add_credits(ctx.message.author, val,
                                              "Vente Cobalt › {}".format(item["name"]))
-                        em = discord.Embed(description="Vente réalisée ! **{}**B ont été transférés sur votre compte."
+                        em = discord.Embed(description="Vente réalisée ! **{}** bits ont été transférés sur votre compte."
                                                        "".format(val),
                                            color=0x0047AB)
                         em.set_author(name="Boutique » Vente » {} [{}]".format(item["name"], itemid),
@@ -972,7 +972,7 @@ class Cobalt:
         for m in equip:
             unival = round(self.get_item(m)["value"] / self.get_item(m)["qte"], 2)
             totm = round(unival * equip[m]["qte"], 2)
-            txt += "{}x **{}** — {}B/unité 》 **{}**B\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
+            txt += "{}x **{}** — {} bits/unité 》 **{}**B\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
             val += totm
         val = int(val)
         txt += "\nTotal du remboursement ⟫ **{}** bits".format(val)
@@ -1198,7 +1198,7 @@ class Cobalt:
                     sys["channels"].remove(chan)
                     self.save()
             if not txt:
-                txt = "**Aucun channel** — Pour ajouter une liste de channels, faîtes `.cset channels` et " \
+                txt = "**Aucun channel** — Pour ajouter une liste de channels, faîtes `;cset channels` et " \
                       "mentionnez à la suite les channels désirés."
             em = discord.Embed(title="Channels où peuvent apparaître les items", description=txt)
             em.set_footer(text="Modifier la liste » '.cset channels` puis mentionnez les channels")
