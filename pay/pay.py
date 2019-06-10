@@ -36,152 +36,12 @@ class PayAPI:
                      "last_update": None, "security": []}
         self.cooldown = {}
 
-        scope = ['https://spreadsheets.google.com/feeds']
-        creds = ServiceAccountCredentials.from_json_keyfile_name('data/client/client_secret.json', scope)
-        self.gs = gspread.authorize(creds)
-        self.sheets = self.gs.open_by_key("1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0")
-        # self.cycle_task = bot.loop.create_task(self.auto_update())
-
-    async def auto_update(self):
-        await self.bot.wait_until_ready()
-        try:
-            await asyncio.sleep(10)
-            selfid = random.randint(0, 99)
-            self.meta["security"].append(selfid)
-            while True:
-                if len(self.meta["security"]) > 1:
-                    if self.meta["security"][-1] != selfid:
-                        print("Extinction ancien loop")
-                        return
-                self.meta["last_try"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                if self.update_all_sheets():
-                    print("MAJ Sheets réalisée")
-                    self.meta["last_update"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                await asyncio.sleep(21600)
-        except asyncio.CancelledError:
-            pass
-
-    def get_update_status(self):
-        return (self.meta["last_try"], self.meta["last_update"])
-
     def save(self, force: bool = False):
         if force:
             fileIO("data/pay/data.json", "save", self.data)
         elif (time.time() - self.meta["last_save"]) > 30: # 30 secondes
             fileIO("data/pay/data.json", "save", self.data)
             self.meta["last_save"] = time.time()
-
-    def update_sheet(self, server: discord.Server):
-        data = self.get_all_accounts(server)
-        date = datetime.now().strftime("%d/%m/%Y") # POURLETEST
-        if server.id not in [i.title for i in self.sheets.worksheets()]:
-            ws = self.sheets.add_worksheet(server.id, 2, 3)
-            ws.update_acell("A1", "ID"); ws.update_acell("B1", "Pseudo"); ws.update_acell("C1", date)
-            data_list = []
-            for user in data:
-                try:
-                    username = server.get_member(user.userid).name
-                except:
-                    username = "Absent"
-                if [user.userid, username, user.solde] not in data_list:
-                    data_list.append([user.userid, username, user.solde])
-            maxrow = len(data_list)
-            ws.resize(maxrow, 3)
-            try:
-                self.convert_sheet(ws, data_list, top=2)
-                self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-                return True
-            except Exception as e:
-                print(e)
-                return False
-        else:
-            ws = self.sheets.worksheet(server.id)
-            if ws.cell(1, ws.col_count).value != date:
-                wslist = ws.get_all_values()
-                inforow = wslist.pop(0)
-                longrow = len(inforow) - 2
-                inforow.append(date)
-                allids = [i[0] for i in wslist]
-                for user in data:
-                    try:
-                        username = server.get_member(user.userid).name
-                    except:
-                        username = "Absent"
-                    if user.userid not in allids:
-                        newlist = [user.userid, username] + [""] * longrow
-                        wslist.append(newlist)
-                for i in wslist:
-                    for u in data:
-                        if u.userid == i[0]:
-                            i.append(u.solde)
-                            try:
-                                user = server.get_member(u.userid)
-                                i[1] = user.name
-                            except:
-                                pass
-                            break
-                total = [inforow] + wslist
-                try:
-                    self.convert_sheet(ws, total)
-                    self.sheets.worksheet("Infos").update_acell("B1", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-                    return True
-                except Exception as e:
-                    print(e)
-                    return False
-            return False
-
-    def update_all_sheets(self):
-        self.gs.login()
-        for serv in self.data:
-            server = self.bot.get_server(serv)
-            if self.update_sheet(server):
-                pass
-            else:
-                return False
-        return True
-
-    def numberToLetters(self, q):
-        """
-        Helper function to convert number of column to its index, like 10 -> 'A'
-        """
-        q = q - 1
-        result = ''
-        while q >= 0:
-            remain = q % 26
-            result = chr(remain + 65) + result;
-            q = q // 26 - 1
-        return result
-
-    def colrow_to_A1(self, col, row):
-        return self.numberToLetters(col) + str(row)
-
-    def convert_sheet(self, ws, rows, left=1, top=1):
-        """
-        updates the google spreadsheet with given table
-        - ws is gspread.models.Worksheet object
-        - rows is a table (list of lists)
-        - left is the number of the first column in the target document (beginning with 1)
-        - top is the number of first row in the target document (beginning with 1)
-        """
-
-        # number of rows and columns
-        num_lines, num_columns = len(rows), len(rows[0])
-
-        # selection of the range that will be updated
-        cell_list = ws.range(
-            self.colrow_to_A1(left, top) + ':' + self.colrow_to_A1(left + num_columns - 1, top + num_lines - 1)
-        )
-
-        # modifying the values in the range
-
-        for cell in cell_list:
-            val = rows[cell.row - top][cell.col - left]
-            cell.value = val
-
-        # update in batch
-        ws.update_cells(cell_list)
-
-
 
     def pong(self):
         """Envoie un PONG permettant de vérifier si l'API est connectée à un autre module"""
@@ -563,98 +423,6 @@ class PayAPI:
                     return True
         return False
 
-
-    """async def script_detect(self, user: discord.Member, id: str, tol: int = 5):
-        Détecte un script et agit en conséquence
-        now = time.time()
-        if user.id not in self.meta["script"]:
-            self.meta["script"][user.id] = {"logs": [],
-                                            "last": None,
-                                            "last_diffs": [],
-                                            "bot_test": 0,
-                                            "is_script": False,
-                                            "wait_for_test": False}
-
-        if self.meta["script"][user.id]["wait_for_test"]:
-            return "WAIT"
-        if self.meta["script"][user.id]["logs"]:
-            if id == self.meta["script"][user.id]["logs"][-1]:
-                self.meta["script"][user.id]["logs"].append(id)
-            else:
-                self.meta["script"][user.id]["logs"] = [id]
-                self.meta["script"][user.id]["last_diffs"] = []
-        else:
-            self.meta["script"][user.id]["logs"] = [id]
-            self.meta["script"][user.id]["last_diffs"] = []
-
-        if self.meta["script"][user.id]["last"]:
-            diff = now - self.meta["script"][user.id]["last"]
-            self.meta["script"][user.id]["last_diffs"].append(diff)
-            self.meta["script"][user.id]["last"] = now
-            if len(self.meta["script"][user.id]["last_diffs"]) >= tol:
-                moy = sum(self.meta["script"][user.id]["last_diffs"]) / len(self.meta["script"][user.id]["last_diffs"])
-                minval = min(self.meta["script"][user.id]["last_diffs"])
-                maxval = max(self.meta["script"][user.id]["last_diffs"])
-                self.meta["script"][user.id]["last_diffs"] = [self.meta["script"][user.id]["last_diffs"][-1]]
-                if (now - self.meta["script"][user.id]["bot_test"]) > 600:
-                    if moy - minval < 1:
-                        if maxval - moy < 1:
-                            self.meta["script"][user.id]["bot_test"] = time.time()
-                            result = ""
-                            msg = None
-                            self.meta["script"][user.id]["wait_for_test"] = True
-                            typecaptcha = random.choice(["maths", "copy"])
-                            if typecaptcha == "maths":
-                                typemaths = random.choice(["addition", "multiplication"])
-                                if typemaths == "addition":
-                                    n1, n2 = random.randint(1, 100), random.randint(1, 100)
-                                    result = str(n1 + n2)
-                                    txt = "Combien font **{}+{}** ?".format(n1, n2)
-                                if typemaths == "multiplication":
-                                    n1, n2 = random.randint(1, 10), random.randint(1, 10)
-                                    result = str(n1 * n2)
-                                    txt = "Combien font **{}+{}** ?".format(n1, n2)
-                                em = discord.Embed(color=palette["warning"], description=txt)
-                                em.set_author(name="Êtes-vous humain ? · Résolvez ce calcul", icon_url=user.avatar_url)
-                                msg = await self.bot.say(embed=em)
-                            elif typecaptcha == "copy":
-                                result =  str(''.join(random.SystemRandom().choice(
-                                    string.ascii_letters + string.digits) for _ in range(6)))
-                                txt = "Recopiez `{}`".format(result)
-                                em = discord.Embed(color=palette["warning"], description=txt)
-                                em.set_author(name="Êtes-vous humain ? · Recopiez ce texte", icon_url=user.avatar_url)
-                                msg = await self.bot.say(embed=em)
-
-                            rep = await self.bot.wait_for_message(channel=msg.channel,
-                                                                  author=user,
-                                                                  timeout=30)
-                            if rep is None:
-                                await self.bot.delete_message(msg)
-                                await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
-                                                   "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
-                                self.meta["script"][user.id]["is_script"] = True
-                                self.meta["script"][user.id]["wait_for_test"] = False
-                                return True
-                            elif result in rep.content:
-                                await self.bot.add_reaction(rep, "✅")
-                                await self.bot.delete_message(msg)
-                                self.meta["script"][user.id]["is_script"] = False
-                                self.meta["script"][user.id]["wait_for_test"] = False
-                                return False
-                            else:
-                                await self.bot.delete_message(msg)
-                                await self.bot.say("**Anti-Script** ─ {} vous êtes soupçonné d'utiliser un script.\n"
-                                                   "Certaines fonctionnalités seront adaptées en conséquence.".format(user.mention))
-                                self.meta["script"][user.id]["is_script"] = True
-                                self.meta["script"][user.id]["wait_for_test"] = False
-                                return True
-                else:
-                    return self.meta["script"][user.id]["is_script"]
-
-        else:
-            self.meta["script"][user.id]["last"] = now
-        return False"""
-
     def reset_user(self, user: discord.Member):
         """Reset les données d'un membre"""
         server = user.server
@@ -675,6 +443,7 @@ class PayAPI:
             self.save(True)
             return True
 
+# =======================================================================
 
 class Pay:
     """Système monétaire virtuel et systèmes divers exploitant celle-ci"""
@@ -683,7 +452,7 @@ class Pay:
         self.bot = bot
         self.pay = PayAPI(bot, "data/pay/data.json")
         # Pour importer l'API : self.bot.get_cog("Pay").pay
-        self.karma = self.bot.get_cog("Karma").karma
+        # self.karma = self.bot.get_cog("Karma").karma
 
     def check(self, reaction, user):
         return not user.bot
@@ -725,7 +494,7 @@ class Pay:
                 data = self.pay.get_account(user, True)
                 gains = self.pay.daily_total_from(user)
                 gainstxt = "+{}".format(gains) if gains >= 0 else "{}".format(gains)
-                txt = "**Solde** ─ {} Gold{}\n" \
+                txt = "**Solde** ─ {} Bit{}\n" \
                       "**Aujourd'hui** ─ {}".format(data.solde, "s" if data.solde > 1 else "", gainstxt)
                 em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name=user.name, icon_url=user.avatar_url)
@@ -826,7 +595,7 @@ class Pay:
                                     prc = (somme / solde_before) * 100
                                     ctime = 180 + (20 * round(prc))
                                     cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**g ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**b ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                     em.set_footer(text="Prochain don possible dans {}".format(cool.string))
                                     await self.bot.say(embed=em)
                                 else:
@@ -857,108 +626,27 @@ class Pay:
             for l in palm:
                 try:
                     username = server.get_member(l.userid).name
+                    if l.userid == ctx.message.author.id:
+                        txt += "**{}.** __**{}**__ ─ **{}**b\n".format(n, username, l[0])
+                        found = True
+                    else:
+                        txt += "**{}.** **{}** ─ **{}**b\n".format(n, username, l[0])
+                    n += 1
                 except:
                     continue
-                if l.userid == ctx.message.author.id:
-                    txt += "**{}.** __**{}**__ ─ **{}**g\n".format(n, username, l[0])
-                    found = True
-                else:
-                    txt += "**{}.** **{}** ─ **{}**g\n".format(n, username, l[0])
-                n += 1
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n**{}.** **{}** ─ **{}**g".format(place[0], ctx.message.author.name, place[1].solde)
+                    txt += "(...)\n**{}.** **{}** ─ **{}**b".format(place[0], ctx.message.author.name, place[1].solde)
             em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
-            em.set_footer(text="Total = {} Golds".format(total))
+            em.set_footer(text="Total = {} Bits".format(total))
             try:
                 await self.bot.say(embed=em)
             except:
                 await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
         else:
             await self.bot.say("**Erreur** ─ Aucun membre n'a de compte sur ce serveur")
-
-    @commands.command(pass_context=True, no_pm=True, aliases=["ftn"])
-    async def fontaine(self, ctx):
-        """Lancer une pièce dans la fontaine
-
-        A une certaine chance de déclencher un évenement aléatoire"""
-        user = ctx.message.author
-        if await self.pay.account_dial(user):
-            if self.pay.enough_credits(user, 1):
-                cool = self.pay.get_cooldown(user, "ftn")
-                if not cool:
-                    self.pay.new_cooldown(user, "ftn", 120)
-                    event_type = random.randint(0, 100)
-                    if 0 <= event_type <= 10: # Reset de cooldown give
-                        coolgive = self.pay.get_cooldown(user, "give")
-                        self.pay.remove_credits(user, 1, "Fontaine")
-                        if coolgive:
-                            self.pay.reset_cooldown(user, "give")
-                            randomtxt = random.choice(["Quelle chance ! Vous avez reset le cooldown du don !",
-                                                       "Vous vous sentez revigoré, prêt à faire un nouveau don immédiatement !",
-                                                       "Bingo ! Vous avez reset le cooldown pour le prochain don !"])
-                            em = discord.Embed(color=palette["stay"], description=randomtxt)
-                            em.set_author(name="Fontaine · Cooldown reset", icon_url=user.avatar_url)
-                            await self.bot.say(embed=em)
-                            return
-                    elif 11 <= event_type <= 16:
-                        raisonrandom = random.choice(["Magie de la fontaine", "Un coup de chance",
-                                                      "Fontaine de la chance"])
-                        self.pay.add_credits(user, 50, raisonrandom)
-                        randomtxt = random.choice(["Quelle chance ! Vous avez gagné un salaire ! (+50g)",
-                                                   "Vous trouvez 50g trainant au fond de la fontaine !",
-                                                   "La fontaine se met à cracher 50g d'un coup !"])
-                        em = discord.Embed(color=palette["stay"], description=randomtxt)
-                        em.set_author(name="Fontaine · Bonus de golds", icon_url=user.avatar_url)
-                        await self.bot.say(embed=em)
-                        return
-                    elif 17 <= event_type <= 20:
-                        raisonrandom = random.choice(["La fontaine...", "Un coup de la fontaine", "Fontaine de la malchance"])
-                        self.pay.remove_credits(user, 10, raisonrandom, True)
-                        randomtxt = random.choice(["Mince, vous avez malencontreusement lancé 10g qui n'ont eu aucun effet...",
-                                                   "Oups ! Votre porte-monnaie tombe à l'eau et quelques pièces sont perdues... (-10g)",
-                                                   "Pendant que vous étiez occupé à lancer une pièce, un voleur vous a retiré 10g !"])
-                        em = discord.Embed(color=palette["stay"], description=randomtxt)
-                        em.set_author(name="Fontaine · Malus de golds", icon_url=user.avatar_url)
-                        await self.bot.say(embed=em)
-                        return
-                    elif 21 <= event_type <= 23:
-                        raisonrandom = random.choice(
-                            ["La fontaine...", "Un coup de la fontaine", "Fontaine de la malchance"])
-                        self.pay.remove_credits(user, 1, raisonrandom, True)
-                        self.pay.new_cooldown(user, "ftn", 600)
-                        randomtxt = random.choice(
-                            ["Vous vous sentez faible... Le cooldown de la fontaine s'allonge... (+10m)",
-                             "Vous avez tenté de ramasser les pièces des autres - la police vous embarque (+10m de cooldown)",
-                             "Dans votre précipitation vous vous êtes brisé le poignet (+10m de cooldown)"])
-                        em = discord.Embed(color=palette["stay"], description=randomtxt)
-                        em.set_author(name="Fontaine · Cooldown augmenté", icon_url=user.avatar_url)
-                        await self.bot.say(embed=em)
-                        return
-                    self.pay.remove_credits(user, 1, "Fontaine")
-                    randomtxt = random.choice(["Vous lancez la pièce et... rien.",
-                                  "Vous y aviez cru mais il ne se passe rien.",
-                                  "Désolé mais votre essai est infructeux...",
-                                  "Dommage, la chance n'est pas venue cette fois-ci !",
-                                  "Ça vous portera peut-être chance IRL, mais pas cette fois là.",
-                                  "Vous lancez la pièce et... c'est un échec cuisant.",
-                                  "Vous y aviez cru cette fois-ci hein ?",
-                                  "Encore un échec de plus.",
-                                  "Mince, pas cette fois là.",
-                                  "Allez-y, gaspillez votre argent, ça n'a servit à rien."])
-                    em = discord.Embed(color=palette["stay"], description=randomtxt)
-                    em.set_author(name="Fontaine", icon_url=user.avatar_url)
-                    await self.bot.say(embed=em)
-                    return
-                else:
-                    await self.bot.say("**Cooldown** ─ Revenez voir la fontaine dans {}".format(cool.string))
-            else:
-                await self.bot.say("**Banque** ─ Vous êtes trop pauvre pour lancer la moindre pièce...")
-        else:
-            await self.bot.say("**Banque** ─ Vous n'avez pas l'argent pour ça.")
-
 
     @commands.command(pass_context=True, no_pm=True, aliases=["rj"])
     async def revenu(self, ctx):
@@ -968,7 +656,7 @@ class Pay:
         hier = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
         # Afin de pouvoir facilement modifier :
         base_rj = 100 # Revenu journalier de base
-        base_jc = 20 # Bonus jours consécutifs
+        base_jc = 25 # Bonus jours consécutifs
         if await self.pay.account_dial(user):
             data = self.pay.get_account(user)
 
@@ -997,18 +685,18 @@ class Pay:
                 bonusjc = (len(data["cache"]["revenu"]["suite"]) - 1) * base_jc
                 if data["solde"] >= 50000:
                     bonusjc = 0
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 g)"
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 b)"
                 else:
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**g".format(bonusjc) if \
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**b".format(bonusjc) if \
                         bonusjc > 0 else ""
 
                 self.pay.add_credits(user, rj + bonusjc, "Revenus")
-                notif = "• **Aide journalière** ─ **{}**g{}".format(rj, savetxt)
+                notif = "• **Aide journalière** ─ **{}**b{}".format(rj, savetxt)
                 notif += bonustxt
 
                 em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name="Revenus", icon_url=user.avatar_url)
-                em.set_footer(text="Solde actuel : {}g".format(data["solde"]))
+                em.set_footer(text="Solde actuel : {}b".format(data["solde"]))
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
@@ -1025,9 +713,9 @@ class Pay:
         if not offre:
             txt = ":100: x3 = Offre x 50\n" \
                   ":gem: x3 = Offre x 20\n" \
-                  ":gem: x2 = Offre + 500\n" \
+                  ":gem: x2 = Offre X 10\n" \
                   ":four_leaf_clover: x3 = Offre x 12\n" \
-                  ":four_leaf_clover: x2 = Offre + 250\n" \
+                  ":four_leaf_clover: x2 = Offre x 4\n" \
                   "**fruit** x3 = Offre x 6\n" \
                   "**fruit** x2 = Offre x 3\n" \
                   ":zap: x1 ou x2 = Gains nuls\n" \
@@ -1039,7 +727,7 @@ class Pay:
             await self.bot.say("**Offre invalide** ─ Elle doit être comprise entre 10 et 500.")
             return
         base = offre
-        cooldown = 15
+        cooldown = 10
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, offre):
                 cool = self.pay.get_cooldown(user, "slot")
@@ -1048,7 +736,7 @@ class Pay:
                     if self.pay.get_cooldown(user, "slot_antispam", True) > 90:
                         self.pay.reset_cooldown(user, "slot_antispam")
                         self.pay.new_cooldown(user, "slot_antispam", 20)
-                        cooldown = 60
+                        cooldown = 40
                     self.pay.new_cooldown(user, "slot", cooldown)
                     roue = [":zap:", ":gem:", ":cherries:", ":strawberry:", ":watermelon:", ":tangerine:", ":lemon:",
                             ":four_leaf_clover:", ":100:"]
@@ -1060,7 +748,7 @@ class Pay:
                         n = random.randint(3, 11)
                         cols.append([roue[n - 1], roue[n], roue[n + 1]])
                     centre = [cols[0][1], cols[1][1], cols[2][1]]
-                    disp = "**Offre:** {}g\n\n".format(base)
+                    disp = "**Offre:** {}b\n\n".format(base)
                     disp += "{}|{}|{}\n".format(cols[0][0], cols[1][0], cols[2][0])
                     disp += "{}|{}|{} **<<<**\n".format(cols[0][1], cols[1][1], cols[2][1])
                     disp += "{}|{}|{}\n".format(cols[0][2], cols[1][2], cols[2][2])
@@ -1079,13 +767,13 @@ class Pay:
                         offre *= 20
                         gaintxt = "3x 💎 ─ Tu gagnes {} {}"
                     elif c("gem") == 2:
-                        offre += 500
+                        offre *= 10
                         gaintxt = "2x 💎 ─ Tu gagnes {} {}"
                     elif c("four_leaf_clover") == 3:
                         offre *= 12
                         gaintxt = "3x 🍀 ─ Tu gagnes {} {}"
                     elif c("four_leaf_clover") == 2:
-                        offre += 250
+                        offre *= 4
                         gaintxt = "2x 🍀 ─ Tu gagnes {} {}"
                     elif c("cherries") == 3 or c("strawberry") == 3 or c("watermelon") == 3 or c("tangerine") == 3 or c(
                             "lemon") == 3:
@@ -1126,7 +814,7 @@ class Pay:
                         self.pay.remove_credits(user, base, "Perte à la machine à sous")
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
                                            color=0xff4971)
-                    em.set_footer(text=gaintxt.format(offre, "Golds"))
+                    em.set_footer(text=gaintxt.format(offre, "Bits"))
                     await self.bot.delete_message(msg)
                     await self.bot.say(embed=em)
                 else:
@@ -1136,46 +824,12 @@ class Pay:
         else:
             await self.bot.say("Un compte Pay est nécessaire pour jouer à la machine à sous.")
 
-    @commands.command(pass_context=True, hidden=True)
-    async def sheetmaj(self, ctx):
-        """Force la MAJ des stats Pay sur le Google Sheets"""
-        if ctx.message.author.id == "168378684497985536":
-            if self.pay.update_all_sheets():
-                await self.bot.say(
-                    "**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
-            else:
-                await self.bot.say("**Echec de la mise à jour** ─ Elle a probablement déjà été réalisée aujourd'hui")
-        else:
-            pass
-
-    @commands.command(pass_context=True)
-    async def syncinfo(self, ctx):
-        """Affiche les infos sur la synchronisation avec le Google Sheet"""
-        infos = self.pay.get_update_status()
-        em = discord.Embed(title="Synchronisation Auto. Pay <-> Google Sheet",description="**Dernière tentative :** {}\n"
-                                       "**Dernière synchronisation :** {}".format(infos[0], infos[1]), url="https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing")
-        await self.bot.say(embed=em)
-
     @commands.group(name="modpay", aliases=["modbank", "mb"], pass_context=True, no_pm=True)
     @checks.admin_or_permissions(ban_members=True)
     async def _modpay(self, ctx):
         """Gestion de la banque pay"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
-
-    @_modpay.command(pass_context=True)
-    async def updategs(self, ctx, mode: str = "only"):
-        """Force la mise à jour du Google Sheet lié au serveur"""
-        if mode is "only":
-            if self.pay.update_sheet(ctx.message.server):
-                await self.bot.say("**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
-            else:
-                await self.bot.say("**Echec de la mise à jour**")
-        else:
-            if self.pay.update_all_sheets():
-                await self.bot.say("**Mise à jour réalisée** ─ Voir <https://docs.google.com/spreadsheets/d/1grqBVQ8QRqcFdqVY0OfTxxlMd6SG-f52AjRjdte-8a0/edit?usp=sharing>")
-            else:
-                await self.bot.say("**Echec de la mise à jour**")
 
     @_modpay.command(pass_context=True)
     async def forcenew(self, ctx, user: discord.Member):
@@ -1192,14 +846,6 @@ class Pay:
         if self.pay.get_account(user):
             self.pay.reset_user(user)
             await self.bot.say("**Succès** ─ Le compte du membre a été effacé")
-            if self.karma.logs_on(ctx.message.server, "notif_low"):
-                em = discord.Embed(
-                    description="Le compte Pay de {} a été supprimé par {}".format(user.mention,
-                                                                        ctx.message.author.mention), color=0xfffc51,
-                    timestamp=ctx.message.timestamp)
-                em.set_author(name=str(user) + " ─ Notification Pay · Suppression de compte", icon_url=user.avatar_url)
-                em.set_footer(text="ID:{}".format(user.id))
-                await self.karma.add_server_logs(ctx.message.server, "notif_low", em)
         else:
             await self.bot.say("**Erreur** ─ Le membre ne possède pas de compte bancaire")
 
@@ -1224,15 +870,7 @@ class Pay:
         if somme > 0:
             if self.pay.get_account(user):
                 self.pay.add_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}g ont été donnés au membre".format(somme))
-                if self.karma.logs_on(server, "notif_low"):
-                    em = discord.Embed(
-                        description="{}g ont été donnés à {} par {}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
-                        timestamp=ctx.message.timestamp)
-                    em.add_field(name="Raison", value=raison)
-                    em.set_author(name=str(user) + " ─ Notification Pay · Grant", icon_url=user.avatar_url)
-                    em.set_footer(text="ID:{}".format(user.id))
-                    await self.karma.add_server_logs(server, "notif_low", em)
+                await self.bot.say("**Succès** ─ {}b ont été donnés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1248,15 +886,7 @@ class Pay:
                 if not self.pay.enough_credits(user, somme):
                     somme = self.pay.get_account(user, True).solde
                 self.pay.remove_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}g ont été retirés au membre".format(somme))
-                if self.karma.logs_on(server, "notif_low"):
-                    em = discord.Embed(
-                        description="{}g ont été retirés à {} par {}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
-                        timestamp=ctx.message.timestamp)
-                    em.add_field(name="Raison", value=raison)
-                    em.set_author(name=str(user) + " ─ Notification Pay · Take", icon_url=user.avatar_url)
-                    em.set_footer(text="ID:{}".format(user.id))
-                    await self.karma.add_server_logs(server, "notif_low", em)
+                await self.bot.say("**Succès** ─ {}b ont été retirés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1270,15 +900,7 @@ class Pay:
         if somme >= 0:
             if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ Le membre possède désormais {}g".format(somme))
-                if self.karma.logs_on(server, "notif_low"):
-                    em = discord.Embed(
-                        description="Le solde de {1} a été réglé à {0}g par {2}".format(somme, user.mention, ctx.message.author.mention), color=0xfffc51,
-                        timestamp=ctx.message.timestamp)
-                    em.add_field(name="Raison", value=raison)
-                    em.set_author(name=str(user) + " ─ Notification Pay · Set", icon_url=user.avatar_url)
-                    em.set_footer(text="ID:{}".format(user.id))
-                    await self.karma.add_server_logs(server, "notif_low", em)
+                await self.bot.say("**Succès** ─ Le membre possède désormais {}b".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
