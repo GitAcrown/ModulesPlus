@@ -4,14 +4,12 @@ import os
 import random
 import string
 import time
+import discord
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-import discord
-import gspread
 from __main__ import send_cmd_help
 from discord.ext import commands
-from oauth2client.service_account import ServiceAccountCredentials
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
@@ -595,7 +593,7 @@ class Pay:
                                     prc = (somme / solde_before) * 100
                                     ctime = 180 + (20 * round(prc))
                                     cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**b ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**B ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                     em.set_footer(text="Prochain don possible dans {}".format(cool.string))
                                     await self.bot.say(embed=em)
                                 else:
@@ -627,17 +625,17 @@ class Pay:
                 try:
                     username = server.get_member(l.userid).name
                     if l.userid == ctx.message.author.id:
-                        txt += "**{}.** __**{}**__ ─ **{}**b\n".format(n, username, l[0])
+                        txt += "**{}.** __**{}**__ ─ **{}**B\n".format(n, username, l[0])
                         found = True
                     else:
-                        txt += "**{}.** **{}** ─ **{}**b\n".format(n, username, l[0])
+                        txt += "**{}.** **{}** ─ **{}**B\n".format(n, username, l[0])
                     n += 1
                 except:
                     continue
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n**{}.** **{}** ─ **{}**b".format(place[0], ctx.message.author.name, place[1].solde)
+                    txt += "(...)\n**{}.** **{}** ─ **{}**B".format(place[0], ctx.message.author.name, place[1].solde)
             em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
             em.set_footer(text="Total = {} Bits".format(total))
@@ -685,18 +683,18 @@ class Pay:
                 bonusjc = (len(data["cache"]["revenu"]["suite"]) - 1) * base_jc
                 if data["solde"] >= 50000:
                     bonusjc = 0
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 b)"
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 B)"
                 else:
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**b".format(bonusjc) if \
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**B".format(bonusjc) if \
                         bonusjc > 0 else ""
 
                 self.pay.add_credits(user, rj + bonusjc, "Revenus")
-                notif = "• **Aide journalière** ─ **{}**b{}".format(rj, savetxt)
+                notif = "• **Aide journalière** ─ **{}**B{}".format(rj, savetxt)
                 notif += bonustxt
 
                 em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name="Revenus", icon_url=user.avatar_url)
-                em.set_footer(text="Solde actuel : {}b".format(data["solde"]))
+                em.set_footer(text="Solde actuel : {}B".format(data["solde"]))
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
@@ -748,7 +746,7 @@ class Pay:
                         n = random.randint(3, 11)
                         cols.append([roue[n - 1], roue[n], roue[n + 1]])
                     centre = [cols[0][1], cols[1][1], cols[2][1]]
-                    disp = "**Offre:** {}b\n\n".format(base)
+                    disp = "**Offre:** {}B\n\n".format(base)
                     disp += "{}|{}|{}\n".format(cols[0][0], cols[1][0], cols[2][0])
                     disp += "{}|{}|{} **<<<**\n".format(cols[0][1], cols[1][1], cols[2][1])
                     disp += "{}|{}|{}\n".format(cols[0][2], cols[1][2], cols[2][2])
@@ -870,7 +868,7 @@ class Pay:
         if somme > 0:
             if self.pay.get_account(user):
                 self.pay.add_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}b ont été donnés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}B ont été donnés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -886,7 +884,7 @@ class Pay:
                 if not self.pay.enough_credits(user, somme):
                     somme = self.pay.get_account(user, True).solde
                 self.pay.remove_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}b ont été retirés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}B ont été retirés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -900,7 +898,7 @@ class Pay:
         if somme >= 0:
             if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ Le membre possède désormais {}b".format(somme))
+                await self.bot.say("**Succès** ─ Le membre possède désormais {}B".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
