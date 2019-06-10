@@ -130,13 +130,13 @@ class Russianroulette:
                             msg = "─ **{}** a rejoint la partie".format(user.name)
                         else:
                             start_bet = settings["System"]["Start Bet"]
-                            msg = "**Offre** ─ L'offre doit être supérieure ou égale à **{}**G".format(start_bet)
+                            msg = "**Offre** ─ L'offre doit être supérieure ou égale à **{}** bits".format(start_bet)
                     await self.bot.say(msg)
                 else:
                     self.initial_set(settings, bet)
                     self.player_add(settings, user, bet)
                     self.subtract_credits(settings, user, bet)
-                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{}**G.".format(user.mention, bet)
+                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{}** bits.".format(user.mention, bet)
                     em = discord.Embed(title="Roulette russe", description=txt, color=0x6b554e)
                     em.set_footer(text="Le jeu commence dans 45 secondes ou si 5 autres joueurs y participe. "
                                        "({}rr <offre>)".format(ctx.prefix))
@@ -145,7 +145,7 @@ class Russianroulette:
                     if len(settings["Players"].keys()) == 1:
                         seultxt = ["Désolé mais je ne vais pas vous laisser tirer une "
                                    "balle dans la tête sans personne pour y assister.",
-                                   "La Roulette russe c'est plus fun à plusierus, là vous êtes seul·e.",
+                                   "La Roulette russe c'est plus fun à plusieurs, là vous êtes seul·e.",
                                    "Non, je ne vais pas vous laisser vous suicider...",
                                    "Je suis sadique, mais pas au point de vous laisser mourir seul·e et sans amis.",
                                    "Personne ne vous a rejoint, on dirait qu'ils ne sont pas aussi fous que vous.",
@@ -218,7 +218,7 @@ class Russianroulette:
                 pay = self.bot.get_cog("Pay").pay
                 winner = players[0]
                 txt = "Bravo {}, tu es la dernière personne en vie.\n" \
-                      "Tu gagnes **{}**G.".format(winner.mention, pot)
+                      "Tu gagnes **{}** bits.".format(winner.mention, pot)
                 em = discord.Embed(title="Roulette russe ─ Gagnant", description=txt, color=0x6b554e)
                 em.set_footer(text="{}G ont été déposés sur le compte de {}".format(
                     pot, winner.name))
