@@ -774,11 +774,11 @@ class Pay:
                             em.set_author(name="Fontaine", icon_url=user.avatar_url)
                             dil = await self.bot.say(embed=em)
                             await asyncio.sleep(0.1)
-                            await self.bot.add_reaction(msg, "✅")
-                            await self.bot.add_reaction(msg, "❎")
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
                             rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
                             if rep is None or rep.reaction.emoji == "❎":
-                                await self.bot.delete_message(msg)
+                                await self.bot.delete_message(dil)
                                 result = random.choice(["success", "fail"])
                                 if result == "success":
                                     txt = random.choice(["En faisant demi-tour vous êtes rattrapé par un caméraman : "
@@ -796,7 +796,7 @@ class Pay:
                                     self.pay.remove_credits(user, 1, "Fontaine")
                                     await send_result(txt)
                             else:
-                                await self.bot.delete_message(msg)
+                                await self.bot.delete_message(dil)
                                 result = random.choice(["success", "fail"])
                                 if result == "success":
                                     txt = random.choice(["Il ne vous a pas vu ! Vous partez avec {} crédits !",
@@ -821,11 +821,11 @@ class Pay:
                             em.set_author(name="Fontaine", icon_url=user.avatar_url)
                             dil = await self.bot.say(embed=em)
                             await asyncio.sleep(0.1)
-                            await self.bot.add_reaction(msg, "✅")
-                            await self.bot.add_reaction(msg, "❎")
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
                             rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
                             if rep is None or rep.reaction.emoji == "❎":
-                                await self.bot.delete_message(msg)
+                                await self.bot.delete_message(dil)
                                 result = random.choice(["success", "fail"])
                                 if result == "success":
                                     txt = random.choice(["Vous la rattrapez et vous lui rendez le porte-monnaie. Pour vous remercier elle vous donne quelques pièces. (+{} bits)",
@@ -841,7 +841,7 @@ class Pay:
                                     self.pay.remove_credits(user, 1, "Fontaine")
                                     await send_result(txt)
                             else:
-                                await self.bot.delete_message(msg)
+                                await self.bot.delete_message(dil)
                                 result = random.choice(["success", "fail"])
                                 if result == "success":
                                     txt = random.choice(["Super ! Le porte-monnaie est plein de liquide ! Vous gagnez {} crédits.",
