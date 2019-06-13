@@ -713,7 +713,7 @@ class Pay:
         if await self.pay.account_dial(user):
             if self.pay.enough_credits(user, 1):
                 cool = self.pay.get_cooldown(user, "fontaine")
-                if not cool or force:
+                if not cool:
                     intro = random.choice(["Vous lancez une pièce", "Vous posez une pièce au fond",
                                            "Voilà une pièce de plus dans la fontaine", "Vous jetez une pièce"])
                     msg = None
