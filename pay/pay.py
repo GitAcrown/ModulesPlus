@@ -707,7 +707,7 @@ class Pay:
             await self.bot.say("**Refusé** ─ Un compte Pay est nécessaire afin de percevoir ces aides.")
 
     @commands.command(pass_context=True)
-    async def fontaine(self, ctx, force: bool = False):
+    async def fontaine(self, ctx):
         """Que vous réserve la fontaine aujourd'hui ?"""
         user = ctx.message.author
         if await self.pay.account_dial(user):
