@@ -815,7 +815,7 @@ class Pay:
                                     self.pay.remove_credits(user, val + 1, "Fontaine", True)
                                     await send_result(txt.format(val))
                         elif situation == 2:
-                            txt = "En rentrant chez vou, une femme laisse tomber un porte-monnaie devant vous.\n" \
+                            txt = "En rentrant chez vous, une femme laisse tomber un porte-monnaie devant vous.\n" \
                                   "**Est-ce que vous le gardez ?**"
                             em = discord.Embed(description=txt, color=0xFFEADB)
                             em.set_author(name="Fontaine", icon_url=user.avatar_url)
