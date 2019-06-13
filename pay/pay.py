@@ -760,7 +760,7 @@ class Pay:
                                              "Vous croisez Bill Gates qui vous donne {} crédits !",
                                              "Vous croisez Elon Musk qui vous donne {} crédits (et promet un tour de fusée)."])
                         self.pay.new_cooldown(user, "fontaine", 180)
-                        val = random.randint(10, 200)
+                        val = random.randint(10, 100)
                         self.pay.add_credits(user, val - 1, "Fontaine")
                         await send_result(txt.format(val))
                     elif event == 8 or event == 9:
@@ -785,7 +785,7 @@ class Pay:
                                                          "c'était une scène en caméra cachée ! Vous gagnez {} bits pour vous récompenser.",
                                                          "Sur le chemin du retour vous recevez un appel : vous êtes un des gagnant d'une grande lotterie nationale ! Vous remportez {} bits.",
                                                          "L'homme vous rattrape : il a bien vu votre intention et décide de vous donner une partie de ses gains ! (+{} bits)"])
-                                    val = random.randint(20, 50)
+                                    val = random.randint(10, 30)
                                     self.pay.add_credits(user, val - 1, "Fontaine")
                                     await send_result(txt.format(val))
                                 else:
@@ -803,7 +803,7 @@ class Pay:
                                                          "C'est un succès, vous récuperez {} bits.",
                                                          "Bien joué, il ne vous a pas repéré ! Vous récuperez {} bits !",
                                                          "Vous subtilisez avec succès {} crédits de sa gamelle !"])
-                                    val = random.randint(5, 100)
+                                    val = random.randint(5, 60)
                                     self.pay.add_credits(user, val - 1, "Fontaine")
                                     await send_result(txt.format(val))
                                 else:
@@ -811,7 +811,7 @@ class Pay:
                                                          "L'homme vous rattrape et vous perdez {} crédits en plus de ceux que vous avez tenté de lui voler...",
                                                          "~~C'est un succès~~ vous trébuchez et l'homme vous rattrape et vous tabasse. Vous perdez {} crédits.",
                                                          "Une vieille dame vous assomme avec son sac alors que vous étiez en train de ramasser les pièces. A votre réveil vous aviez perdu {} bits."])
-                                    val = random.randint(20, 100)
+                                    val = random.randint(20, 80)
                                     self.pay.remove_credits(user, val + 1, "Fontaine", True)
                                     await send_result(txt.format(val))
                         elif situation == 2:
@@ -831,7 +831,7 @@ class Pay:
                                     txt = random.choice(["Vous la rattrapez et vous lui rendez le porte-monnaie. Pour vous remercier elle vous donne quelques pièces. (+{} bits)",
                                                          "Vous essayez de la rattraper mais votre embonpoint vous en empêche et elle disparaît. Finalement, vous le gardez. (+{} bits)",
                                                          "Vous lui rendez le porte-monnaie. Pour vous remercier elle vous donne un ticket de loto qui s'avère être gagnant ! (+{} bits)"])
-                                    val = random.randint(10, 60)
+                                    val = random.randint(8, 40)
                                     self.pay.add_credits(user, val - 1, "Fontaine")
                                     await send_result(txt.format(val))
                                 else:
@@ -848,14 +848,14 @@ class Pay:
                                                          "Le porte-monnaie est plutôt vide, mais vous vous contentez des restes. (+{} bits)",
                                                          "Vous récuperez rapidement le porte-monnaie. Miracle ! Vous y trouvez {} bits.",
                                                          "Vous vous sentez mal mais au moins, vous récuperez {} crédits !"])
-                                    val = random.randint(40, 200)
+                                    val = random.randint(30, 90)
                                     self.pay.add_credits(user, val - 1, "Fontaine")
                                     await send_result(txt.format(val))
                                 else:
                                     txt = random.choice(["Vous essayez de le récuperer mais la femme s'est retournée et le ramasse avant vous. Elle vous donne une claque qui vous met K.O. (-{} bits de frais médicaux)",
                                                          "Ayant eu l'impression d'être suivie, la femme appelle la police et ceux-ci vous arrêtent en possession de son porte-monnaie ! Vous perdez {} crédits.",
                                                          "Vous ramassez le porte-monnaie sur le bord du trottoir avant de vous faire renverser ! Le porte-monnaie, vide, ne vous servira pas pour payer le frais d'hospitalisation... (-{} bits)"])
-                                    val = random.randint(50, 150)
+                                    val = random.randint(40, 120)
                                     self.pay.remove_credits(user, val + 1, "Fontaine", True)
                                     await send_result(txt.format(val))
                     else:
