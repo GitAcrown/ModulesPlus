@@ -765,7 +765,7 @@ class Pay:
                         await send_result(txt.format(val))
                     elif event == 8 or event == 9:
                         self.pay.new_cooldown(user, "fontaine", 180)
-                        situation = random.randint(1, 2)
+                        situation = random.randint(1, 3)
 
                         if situation == 1:
                             txt = "Sur le retour, vous apercevez un musicien de rue qui semble avoir remporté pas mal d'argent aujourd'hui et il a le dos tourné, occupé à arranger son instrument.\n" \
@@ -858,6 +858,53 @@ class Pay:
                                     val = random.randint(40, 120)
                                     self.pay.remove_credits(user, val + 1, "Fontaine", True)
                                     await send_result(txt.format(val))
+                        elif situation == 3:
+                            txt = "Il semblerait que la fontaine soit tombée en panne à cause de votre lancer de pièce.\n" \
+                                  "**Tentez-vous de la réparer ?**"
+                            em = discord.Embed(description=txt, color=0xFFEADB)
+                            em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                            dil = await self.bot.say(embed=em)
+                            await asyncio.sleep(0.1)
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
+                            rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
+                            if rep is None or rep.reaction.emoji == "❎":
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(["Vous vous en allez, sans que personne n'ai rien vu.",
+                                                         "Vous faîtes semblant de n'avoir rien vu, en vous décalant discrètement sur le côté.",
+                                                         "Vous vous éclipsez discrètement afin de ne pas être remarqué.",
+                                                         "Vous dissumulez votre visage en courant au loin."])
+                                    self.pay.remove_credits(user, 1, "Fontaine", True)
+                                    await send_result(txt)
+                                else:
+                                    txt = random.choice(["Vous essayez de fuir mais un passant vous rattrape : va falloir payer la réparation ! (-{} bits)",
+                                                         "Alors que vous tentez de vous éclipser discrètement, un passant vous pointe du doigt... Vous êtes repéré ! (-{} bits)",
+                                                         "En tentant de fuir de manière discrète vous trébuchez sur la fontaine et vous perdez {} bits..."])
+                                    val = random.randint(30, 80)
+                                    self.pay.remove_credits(user, val + 1, "Fontaine")
+                                    await send_result(txt.format((val)))
+                            else:
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(
+                                        ["Vous arrivez à déboucher le trou créé avec toutes les pièces jetées. Vous en profitez pour en prendre une poignée. (+{} bits)",
+                                         "Vous réussissez à réparer la fontaine : la mairie vous remercie avec un chèque de {} crédits.",
+                                         "Grâce à votre talent (ou votre chance, qui sait ?) vous réussissez à réparer la fontaine. Pour vous récompenser, la ville vous verse {} bits."])
+                                    val = random.randint(20, 80)
+                                    self.pay.add_credits(user, val - 1, "Fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice(["Vous tentez de déboucher la fontaine mais c'est un échec cuisant."
+                                                         " Vous allez devoir payer les techniciens qui vont le faire à votre place. (-{} bits)",
+                                                         "Après avoir essayé plusieurs fois, vous abandonnez. La ville vous demande alors de payer {} bits de frais de réparation.",
+                                                         "Malheureusement pour vous, un touriste qui passait faire la "
+                                                         "même chose que vous s'est énervé de voir la fontaine dans un tel état et vous casse le nez. (-{} bits de frais médicaux)"])
+                                    val = random.randint(20, 60)
+                                    self.pay.remove_credits(user, val + 1, "Fontaine", True)
+                                    await send_result(txt.format(val))
                     else:
                         txt = random.choice(["Tout d'un coup vous avez le vertige... vous tombez dans les pommes... (-{} bits)",
                                              "Un policier vous arrête : c'est interdit de lancer des pièces dans une fontaine historique ! Vous recevez une amende de {} bits.",
@@ -880,7 +927,7 @@ class Pay:
                                          "de terre », selon le premier dictionnaire de l'Académie française. C'est "
                                          "également une construction architecturale, généralement accompagnée d'un bassin, d'où jaillit de l'eau.`",
                                          "Vous ne semblez pas assez patient pour mériter cette action.",
-                                         "Où trouvez-vous tout ce temps pour gacher votre argent comme ça ?!",
+                                         "Où trouvez-vous tout ce temps pour gâcher votre argent comme ça ?!",
                                          "Et puis d'ailleurs, elle vient d'où cette pratique qui consiste à jeter de l'argent dans une fontaine ?",
                                          "**Le saviez-vous** : la coutume de lancer une pièce dans la fontaine vient de la *fontana di Trevi* à Rome.\nIl est de coutume de jeter une pièce de monnaie par le bras droit en tournant le dos à la fontaine avant de quitter « la ville éternelle », une superstition associée à la fontaine étant que celui qui fait ce geste est assuré de revenir dans la capitale italienne afin de retrouver cette pièce."])
                     txt += " (Cooldown {})".format(cool.string)
