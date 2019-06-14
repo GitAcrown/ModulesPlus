@@ -886,6 +886,88 @@ class Pay:
                     txt += " (Cooldown {})".format(cool.string)
                     await self.bot.say(txt)
 
+    @commands.command(pass_context=True)
+    async def roleshop(self, ctx, role: discord.Role = None):
+        """Obtenir un rôle sur le serveur (peut nécessiter un compte Pay)
+
+        Faire la commande alors que vous possédez le rôle permet de se le faire rembourser partiellement"""
+        server = ctx.message.server
+        user = ctx.message.author
+        sys = self.pay.get_server(server, "SYS")
+        if not "buyrole_list" in sys:
+            self.pay.get_server(server, "SYS")["buyrole_list"] = {}
+            self.pay.get_server(server, "SYS")["buyrole_remb"] = 50
+            self.pay.save(True)
+        if role:
+            if role not in server.roles:
+                await self.bot.say("Ce rôle n'existe pas ou ne m'est pas accessible.")
+                return
+            sysroles = sys["buyrole_list"]
+            if sysroles:
+                if role.id in sysroles:
+                    if sysroles[role.id] > 0:
+                        if await self.pay.account_dial(user):
+                            if role in user.roles:
+                                calc = sysroles[role.id] / (100 / sys["buyrole_remb"])
+                                txt = "Voulez-vous être remboursé du rôle {} ?\nCelui-ci s'élève à {}% du prix d'origine," \
+                                      " ce qui équivaut à **{}** bits.".format(role.name, sys["buyrole_remb"], calc)
+                                em = discord.Embed(description=txt, color=0xff2a3d)
+                                em.set_author(name="Boutique de rôles ─ Remboursement", icon_url=user.avatar_url)
+                                dil = await self.bot.say(embed=em)
+                                await asyncio.sleep(0.1)
+                                await self.bot.add_reaction(dil, "✅")
+                                await self.bot.add_reaction(dil, "❎")
+                                rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
+                                if rep is None or rep.reaction.emoji == "❎":
+                                    await self.bot.delete_message(dil)
+                                    await self.bot.say("**Transaction annulée**")
+                                    return
+                                else:
+                                    await self.bot.clear_reactions(dil)
+                                    await self.bot.remove_roles(user, role)
+                                    self.pay.add_credits(user, calc, "Remboursement de {}".format(role.name))
+                                    em.description = "Rôle ***{}*** remboursé ! **{}** bits ont été transférés sur " \
+                                                     "votre compte.".format(role.name, calc)
+                                    await self.bot.edit_message(dil, embed=em)
+                                    return
+                            else:
+                                if self.pay.enough_credits(user, sysroles[role.id]):
+                                    try:
+                                        await self.bot.add_roles(user, role)
+                                    except:
+                                        await self.bot.say("**Erreur** ─ L'opération ne s'est pas produite comme prévue... (autorisation manquante)")
+                                        return
+                                    self.pay.remove_credits(user, sysroles[role.id], "Achat rôle {}".format(role.name))
+                                    await self.bot.say("Rôle ***{}*** obtenu avec succès !".format(role.name))
+                                else:
+                                    await self.bot.say("Vous n'avez pas assez de crédits pour obtenir ce rôle.")
+                        else:
+                            await self.bot.say("Un compte **Pay** est nécessaire pour les rôles payants.")
+                    else:
+                        if role in user.roles:
+                            await self.bot.remove_roles(user, role)
+                            await self.bot.say("Rôle ***{}*** retiré avec succès.".format(role.name))
+                        else:
+                            await self.bot.add_roles(user, role)
+                            await self.bot.say("Rôle ***{}*** obtenu avec succès !".format(role.name))
+                else:
+                    await self.bot.say("Ce rôle n'est pas disponible dans la boutique.")
+            else:
+                await self.bot.say("Aucun rôle n'est disponible dans la boutique.")
+        else:
+            if sys["buyrole_list"]:
+                txt = ""
+                for r in sys["buyrole_list"]:
+                    role = discord.utils.get(server.roles, id=r)
+                    rolename = role.mention if role.mentionable else "**@{}**".format(role.name)
+                    prix = sys["buyrole_list"][role.id] if sys["buyrole_list"][role.id] > 0 else "Gratuit"
+                    txt += "{} ─ {}\n".format(rolename, prix)
+                em = discord.Embed(description=txt, color=0xfdfdfd)
+                em.set_author(name="Boutique de rôles ─ Liste", icon_url=user.avatar_url)
+                await self.bot.say(embed=em)
+            else:
+                await self.bot.say("Aucun rôle n'est disponible dans la boutique.")
+
     @commands.command(pass_context=True, aliases=["mas"])
     async def slot(self, ctx, offre: int = None):
         """Jouer à la machine à sous
@@ -1007,6 +1089,68 @@ class Pay:
         else:
             await self.bot.say("Un compte Pay est nécessaire pour jouer à la machine à sous.")
 
+    # BUYROLESET -  -   -   -   -   -   -   -   -    -   -
+
+    @commands.group(name="roleshopset", aliases=["rshop"], pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(ban_members=True)
+    async def _roleshopset(self, ctx):
+        """Gestion de la boutique de rôles"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @_roleshopset.command(name="add", pass_context=True)
+    async def add_role(self, ctx, role: discord.Role, prix: int):
+        """Ajouter un rôle à la liste de la boutique de rôle"""
+        server = ctx.message.server
+        sys = self.pay.get_server(server, "SYS")
+        if not "buyrole_list" in sys:
+            self.pay.get_server(server, "SYS")["buyrole_list"] = {}
+            self.pay.get_server(server, "SYS")["buyrole_remb"] = 50
+            self.pay.save(True)
+        if prix >= 0:
+            roles = self.pay.get_server(server, "SYS")["buyrole_list"]
+            if role.id not in roles:
+                self.pay.get_server(server, "SYS")["buyrole_list"][role.id] = prix
+                self.pay.save(True)
+                await self.bot.say("Rôle **{}** ajouté avec succès !".format(role.name))
+            else:
+                await self.bot.say("Ce rôle est déjà présent dans la liste.")
+        else:
+            await self.bot.say("Le prix ne peut pas être négatif !")
+
+    @_roleshopset.command(name="remove", pass_context=True)
+    async def remove_role(self, ctx, role: discord.Role):
+        """Retirer un rôle de la liste de la boutique de rôle"""
+        server = ctx.message.server
+        sys = self.pay.get_server(server, "SYS")
+        if not "buyrole_list" in sys:
+            self.pay.get_server(server, "SYS")["buyrole_list"] = {}
+            self.pay.get_server(server, "SYS")["buyrole_remb"] = 50
+            self.pay.save(True)
+        roles = self.pay.get_server(server, "SYS")["buyrole_list"]
+        if role.id in roles:
+            sys = self.pay.get_server(server)
+            del sys["SYS"]["buyrole_list"][role.id]
+            self.pay.save()
+            await self.bot.say("Rôle **{}** retiré avec succès !".format(role.name))
+        else:
+            await self.bot.say("Ce rôle est déjà présent dans la liste.")
+
+    @_roleshopset.command(name="remove", pass_context=True)
+    async def remboursement(self, ctx, pourcentage: int):
+        """Régler le pourcentage remboursé en cas de revente du rôle"""
+        server = ctx.message.server
+        sys = self.pay.get_server(server, "SYS")
+        if not "buyrole_list" in sys:
+            self.pay.get_server(server, "SYS")["buyrole_list"] = {}
+            self.pay.get_server(server, "SYS")["buyrole_remb"] =  50
+            self.pay.save(True)
+        if 0 < pourcentage <= 100:
+            self.pay.get_server(server, "SYS")["buyrole_remb"] = pourcentage
+            await self.bot.say("Le pourcentage remboursé a été modifié avec succès !")
+            self.pay.save(True)
+        else:
+            await self.bot.say("Le pourcentage doit être compris entre 1 et 100%.")
 
     # PARAMETRES -------------------------------------------------------------
 
