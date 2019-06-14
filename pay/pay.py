@@ -1098,7 +1098,7 @@ class Pay:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @_roleshopset.command(name="add", pass_context=True)
+    @_roleshopset.command(name="addrole", pass_context=True)
     async def add_role(self, ctx, role: discord.Role, prix: int):
         """Ajouter un rôle à la liste de la boutique de rôle"""
         server = ctx.message.server
@@ -1118,7 +1118,7 @@ class Pay:
         else:
             await self.bot.say("Le prix ne peut pas être négatif !")
 
-    @_roleshopset.command(name="remove", pass_context=True)
+    @_roleshopset.command(name="removerole", pass_context=True)
     async def remove_role(self, ctx, role: discord.Role):
         """Retirer un rôle de la liste de la boutique de rôle"""
         server = ctx.message.server
@@ -1136,7 +1136,7 @@ class Pay:
         else:
             await self.bot.say("Ce rôle est déjà présent dans la liste.")
 
-    @_roleshopset.command(name="remove", pass_context=True)
+    @_roleshopset.command(name="remboursement", pass_context=True, aliases=["remb"])
     async def remboursement(self, ctx, pourcentage: int):
         """Régler le pourcentage remboursé en cas de revente du rôle"""
         server = ctx.message.server
