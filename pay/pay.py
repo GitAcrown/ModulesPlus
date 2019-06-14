@@ -934,8 +934,9 @@ class Pay:
                                 if self.pay.enough_credits(user, sysroles[role.id]):
                                     try:
                                         await self.bot.add_roles(user, role)
-                                    except:
+                                    except Exception as e:
                                         await self.bot.say("**Erreur** ─ L'opération ne s'est pas produite comme prévue... (autorisation manquante)")
+                                        print(e)
                                         return
                                     self.pay.remove_credits(user, sysroles[role.id], "Achat rôle {}".format(role.name))
                                     await self.bot.say("Rôle ***{}*** obtenu avec succès !".format(role.name))
@@ -964,6 +965,7 @@ class Pay:
                     txt += "{} ─ {}\n".format(rolename, prix)
                 em = discord.Embed(description=txt, color=0xfdfdfd)
                 em.set_author(name="Boutique de rôles ─ Liste", icon_url=user.avatar_url)
+                em.set_footer(text="Obtenir un rôle = ;roleshop <nom>")
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("Aucun rôle n'est disponible dans la boutique.")
