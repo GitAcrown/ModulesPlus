@@ -908,7 +908,7 @@ class Pay:
                     if sysroles[role.id] > 0:
                         if await self.pay.account_dial(user):
                             if role in user.roles:
-                                calc = sysroles[role.id] / (100 / sys["buyrole_remb"])
+                                calc = int(sysroles[role.id] / (100 / sys["buyrole_remb"]))
                                 txt = "Voulez-vous être remboursé du rôle {} ?\nCelui-ci s'élève à {}% du prix d'origine," \
                                       " ce qui équivaut à **{}** bits.".format(role.name, sys["buyrole_remb"], calc)
                                 em = discord.Embed(description=txt, color=0xff2a3d)
