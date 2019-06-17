@@ -83,7 +83,8 @@ class Central:
         """Renvoie les infos sur un service"""
         serv_list = [("repost", {}, "Détecte les reposts de liens web"),
                      ("msg_chrono", False, "Permet de créer des messages chronométrés avec !Xs"),
-                     ("reddit", False, "Détecte les ")]
+                     ("reddit", False, "Détecte les subreddit et affiche des informations à propos de celui-ci"),
+                     ("bave", False, "???")]
         if nom:
             for s in serv_list:
                 if s[0] == nom.lower():
@@ -185,6 +186,10 @@ class Central:
                                              "Qui a supprimé le message chrono ? Qu'il se dénonce !",
                                              "Vous voulez me mettre au chômage à force de supprimer les messages à ma place ?"])
                         await self.bot.send_message(message.channel, rdm)
+            if self.check_service(server, "bave"):
+                r = random.randint(0, 300)
+                if r == 0 or "bave" in message.content.split():
+                    await self.bot.add_reaction(message, "💧")
 
     async def on_reaction(self, reaction, user):
         message = reaction.message
