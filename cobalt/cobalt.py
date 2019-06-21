@@ -1174,6 +1174,17 @@ class Cobalt:
         else:
             await self.bot.say("**Vide** — Vous ne possédez aucun item consommable ou utilisable.")
 
+    @commands.command(pass_context=True, hidden=True)
+    async def pingpay(self):
+        """Teste la connexion avec le module Pay"""
+        try:
+            if self.pay.pong():
+                await self.bot.say("Pong du module **Pay** reçu")
+            else:
+                await self.bot.say("Pong non reçu")
+        except:
+            await self.bot.say("Pong non reçu.")
+
     # --------------------------------------------------------------------------------------------
 
     @commands.group(name="cobaltset", aliases=["cset"], pass_context=True)
@@ -1265,17 +1276,6 @@ class Cobalt:
         else:
             self.unban_user(user)
             await self.bot.say("**Joueur débanni** — {} peut de nouveau jouer à Cobalt.".format(user.mention))
-
-    @_cobaltset.command(pass_context=True)
-    async def pingpay(self):
-        """Teste la connexion avec le module Pay"""
-        try:
-            if self.pay.pong():
-                await self.bot.say("Pong du module **Pay** reçu")
-            else:
-                await self.bot.say("Pong non reçu")
-        except:
-            await self.bot.say("Pong non reçu.")
 
     # --------------------------------------------------------------------------------------------
 
