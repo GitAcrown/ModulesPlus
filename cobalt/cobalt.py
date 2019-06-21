@@ -1266,6 +1266,17 @@ class Cobalt:
             self.unban_user(user)
             await self.bot.say("**Joueur débanni** — {} peut de nouveau jouer à Cobalt.".format(user.mention))
 
+    @_cobaltset.command(pass_context=True)
+    async def pingpay(self):
+        """Teste la connexion avec le module Pay"""
+        try:
+            if self.pay.pong():
+                await self.bot.say("Pong du module **Pay** reçu")
+            else:
+                await self.bot.say("Pong non reçu")
+        except:
+            await self.bot.say("Pong non reçu.")
+
     # --------------------------------------------------------------------------------------------
 
     def gen_minerai(self):
