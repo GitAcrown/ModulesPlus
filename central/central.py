@@ -226,7 +226,7 @@ class Central:
         await self.bot.say(embed=em)
 
     @commands.command(pass_context=True)
-    async def frames(self, ctx):
+    async def testframes(self, ctx):
         """Test de frames"""
         msg = None
         await self.bot.say("Début du test de frames dans 3s")
