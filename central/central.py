@@ -45,6 +45,7 @@ class Central:
         self.reddit = praw.Reddit(client_id='uE7NMd2ISBWR7w',
                      client_secret='2pZk2tj9oHMMz_BJCzbJd4JrIRY',
                      user_agent='discordbot:Stay.:1.0 (by /u/Nordsko)')
+        self.frames = {}
 
     def save_sys(self, force: bool = False):
         if force:
@@ -223,6 +224,16 @@ class Central:
         em = discord.Embed(title="Testimg")
         em.set_image(url="https://i.imgur.com/Gc5zR4z.gif")
         await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True)
+    async def frames(self, ctx):
+        """Test de frames"""
+        msg = None
+        for i in range(24):
+            if msg:
+                await self.bot.edit_message(msg, str(i + 1))
+            else:
+                msg = await self.bot.say(str(i + 1))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
