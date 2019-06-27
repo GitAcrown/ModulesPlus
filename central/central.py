@@ -230,7 +230,7 @@ class Central:
         """Test de frames"""
         msg = None
         await self.bot.say("Début du test de frames dans 3s")
-        await asyncio.sleep(180)
+        await asyncio.sleep(3)
         await self.bot.say("**TOP**")
         debut = time.time()
         for i in range(24):
