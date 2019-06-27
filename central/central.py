@@ -238,7 +238,8 @@ class Central:
                 await self.bot.edit_message(msg, str(i + 1))
             else:
                 msg = await self.bot.say(str(i + 1))
-        await self.bot.say("**FINI** - Temps par frame = {}s".format((time.time() - debut) / 25))
+            await asyncio.sleep(0.2)
+        await self.bot.say("**FINI** - Temps par frame = {}s (avec cooldown inter-frames de 0.2s)".format(round((time.time() - debut) / 25), 3))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
