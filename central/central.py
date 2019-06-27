@@ -229,11 +229,16 @@ class Central:
     async def frames(self, ctx):
         """Test de frames"""
         msg = None
+        await self.bot.say("Début du test de frames dans 3s")
+        await asyncio.sleep(180)
+        await self.bot.say("**TOP**")
+        debut = time.time()
         for i in range(24):
             if msg:
                 await self.bot.edit_message(msg, str(i + 1))
             else:
                 msg = await self.bot.say(str(i + 1))
+        await self.bot.say("**FINI** - Temps par frame = {}s".format((time.time() - debut) / 25))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
