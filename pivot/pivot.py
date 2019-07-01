@@ -17,6 +17,7 @@ class Pivot:
 
     def save(self):
         fileIO("data/pivot/data.json", "save", self.data)
+        return True
 
     def get_server(self, server: discord.Server, reset: bool = False):
         if server.id not in self.data or reset:
@@ -35,7 +36,6 @@ class Pivot:
                             "num": nb}
         self.save()
         return sys["teams"][nb]
-
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(administrator=True)
@@ -112,6 +112,18 @@ class Pivot:
         await self.bot.say("Reset effectué pour `{}`. Nouvel IDR généré : **{}**".format(ctx.message.server.id,
                                                                                      sys["resetid"]))
 
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
+    async def appendpivotteam(self, ctx, num: int):
+        """Change le numero de la dernière team générée en cas de problème"""
+        sys = self.get_server(ctx.message.server)
+        nb = len(sys["teams"]) + 1
+        sys["teams"][nb] = {"users": [ctx.message.author.id],
+                            "date": time.time(),
+                            "executant": ctx.message.author.id,
+                            "num": nb}
+        self.save()
+        await self.bot.say("Ajout d'une team virtuelle avec succès")
 
 def check_folders():
     if not os.path.exists("data/pivot"):
