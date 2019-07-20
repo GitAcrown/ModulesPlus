@@ -126,13 +126,23 @@ class Pivot:
         await self.bot.say("Ajout d'une team virtuelle avec succès")
 
     @commands.command(pass_context=True)
-    async def screenshare(self, ctx, salon: discord.Channel):
+    async def screenshare(self, ctx, nom_salon: discord.Channel = None):
         """Génère un lien de partage d'écran pour un salon vocal sur le serveur"""
-        if salon.type == discord.ChannelType.voice:
-            link = "https://www.discordapp.com/channels/{}/{}".format(salon.server.id, salon.id)
-            await self.bot.say("**Partage d'écran sur {}** ─ {}".format(salon.mention, link))
+        if not nom_salon:
+            if ctx.message.author.voice.voice_channel:
+                nom_salon = ctx.message.author.voice.voice_channel
+            else:
+                await self.bot.say("Sélectionnez un salon vocal pour démarrer le partage d'écran ou rejoignez-en un avant de faire cette commande.")
+                return
+        if nom_salon.type == discord.ChannelType.voice:
+            link = "https://www.discordapp.com/channels/{}/{}".format(nom_salon.server.id, nom_salon.id)
+            txt = "1) Cliquez sur {}\n" \
+                  "2) Si vous n'êtes pas déjà dans le salon vocal, cliquez sur le salon pour le rejoindre\n" \
+                  "3) Profitez.".format(nom_salon.mention)
+            em = discord.Embed(title="Partage d'écran sur {}".format(nom_salon.name), description=txt, url=link)
+            await self.bot.say(embed=em)
         else:
-            await self.bot.say("Vous devez sélectionner un salon vocal sur ce serveur.")
+            await self.bot.say("Sélectionnez un salon vocal pour démarrer le partage d'écran ou rejoignez-en un avant de faire cette commande.")
 
 def check_folders():
     if not os.path.exists("data/pivot"):
