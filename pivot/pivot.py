@@ -137,9 +137,9 @@ class Pivot:
         if nom_salon.type == discord.ChannelType.voice:
             link = "https://www.discordapp.com/channels/{}/{}".format(nom_salon.server.id, nom_salon.id)
             txt = "1) Cliquez sur {}\n" \
-                  "2) Si vous n'êtes pas déjà dans le salon vocal, cliquez sur le salon pour le rejoindre\n" \
+                  "2) Si vous n'êtes pas déjà dans le salon vocal, cliquez sur le salon pour le rejoindre.\n" \
                   "3) Profitez.".format(nom_salon.mention)
-            em = discord.Embed(title="Partage d'écran sur {}".format(nom_salon.name), description=txt, url=link)
+            em = discord.Embed(title="Partage d'écran sur {}".format(nom_salon.name), description=txt, url=link, color=ctx.message.author.color)
             await self.bot.say(embed=em)
         else:
             await self.bot.say("Sélectionnez un salon vocal pour démarrer le partage d'écran ou rejoignez-en un avant de faire cette commande.")
