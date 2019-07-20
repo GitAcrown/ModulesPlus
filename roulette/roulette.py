@@ -220,7 +220,7 @@ class Russianroulette:
                 txt = "Bravo {}, tu es la dernière personne en vie.\n" \
                       "Tu gagnes **{}** bits.".format(winner.mention, pot)
                 em = discord.Embed(title="Roulette russe ─ Gagnant", description=txt, color=0x6b554e)
-                em.set_footer(text="{}G ont été déposés sur le compte de {}".format(
+                em.set_footer(text="{}B ont été déposés sur le compte de {}".format(
                     pot, winner.name))
                 await self.bot.say(embed=em)
                 pay.add_credits(winner, pot, "Gain Roulette")

@@ -125,6 +125,15 @@ class Pivot:
         self.save()
         await self.bot.say("Ajout d'une team virtuelle avec succès")
 
+    @commands.command(pass_context=True)
+    async def screenshare(self, ctx, salon: discord.Channel):
+        """Génère un lien de partage d'écran pour un salon vocal sur le serveur"""
+        if salon.type == discord.ChannelType.voice:
+            link = "https://www.discordapp.com/channels/{}/{}".format(salon.server.id, salon.id)
+            await self.bot.say("**Partage d'écran sur {}** ─ {}".format(salon.mention, link))
+        else:
+            await self.bot.say("Vous devez sélectionner un salon vocal sur ce serveur.")
+
 def check_folders():
     if not os.path.exists("data/pivot"):
         print("Création du dossier Pivot...")
