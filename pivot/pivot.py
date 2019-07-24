@@ -144,6 +144,18 @@ class Pivot:
         else:
             await self.bot.say("Sélectionnez un salon vocal pour démarrer le partage d'écran ou rejoignez-en un avant de faire cette commande.")
 
+    async def citer(self, reaction, user):
+        if reaction.message.channel:
+            message = reaction.message
+            if not user.bot:
+                if reaction.emoji == "🗨":
+                    msg_cite = "`" + "> " + message.content + "`"
+                    msg_cite.replace("\n", " ")
+                    try:
+                        await self.bot.send_message(user, msg_cite)
+                    except Exception as e:
+                        print(e)
+
 def check_folders():
     if not os.path.exists("data/pivot"):
         print("Création du dossier Pivot...")
@@ -161,3 +173,4 @@ def setup(bot):
     check_files()
     n = Pivot(bot)
     bot.add_cog(n)
+    bot.add_listener(n.citer, 'on_reaction_add')
