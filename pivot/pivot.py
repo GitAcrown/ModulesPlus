@@ -149,8 +149,7 @@ class Pivot:
             message = reaction.message
             if not user.bot:
                 if reaction.emoji == "🗨":
-                    msg_cite = "`" + "> " + message.content + "`"
-                    msg_cite.replace("\n", " ")
+                    msg_cite = "`" + "> " + " ".join(message.content.split()) + "`"
                     try:
                         await self.bot.send_message(user, msg_cite)
                     except Exception as e:
