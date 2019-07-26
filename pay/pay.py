@@ -128,6 +128,18 @@ class PayAPI:
                     liste.append(self.obj_account(serv["USERS"][u]))
             return liste
 
+    def get_boosters(self, server: discord.Server):
+        boost = self.get_server(server, "SYS")
+        if "booster_role" in boost:
+            liste = []
+            for r in server.roles:
+                if r.id == boost["booster_role"]:
+                    role = r
+                    for member in server.members:
+                        if role in member.roles:
+                            liste.append(member)
+            return liste
+        return False
 
     async def account_dial(self, user: discord.Member):
         """S'inscrire sur le système Pay du serveur"""
@@ -1240,6 +1252,18 @@ class Pay:
         """Reset les données des serveurs, y compris la monnaie et les comptes bancaires des membres"""
         self.pay.reset_all()
         await self.bot.say("**Succès** ─ Toutes les données de TOUS les serveurs ont été reset")
+
+    @_modpay.command(pass_context=True)
+    async def booster(self, ctx, role: discord.Role):
+        """Permet d'indiquer au bot le rôle lié aux boosters Discord afin qu'ils puissent bénéficier de bonus"""
+        server = ctx.message.server
+        sys = self.pay.get_server(server, "SYS")
+        if not "booster_role" in sys:
+            self.pay.get_server(server, "SYS")["booster_role"] = None
+        self.pay.get_server(server, "SYS")["booster_role"] = role.id
+        self.pay.save(True)
+        await self.bot.say("**Rôle booster configuré** ─ Les personnes possédant ce rôle (boostant votre serveur) "
+                           "pourraient recevoir divers avantages (minimes) dans les différents jeux.")
 
     @_modpay.command(pass_context=True)
     async def grant(self, ctx, user: discord.Member, somme: int, *raison):
