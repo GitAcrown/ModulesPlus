@@ -13,9 +13,9 @@ import os
 items_list = {
   "MINERAI":{
     "fer": {"id": "fer", "name": "Fer", "value": 5, "max": 15, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/DT5UFL9.png"},
-    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/x1w4rvk.png"},
+    "cuivre": {"id": "cuivre", "name": "Cuivre", "value": 8, "max": 12, "rare": 1, "energie": 1, "imageurl": "https://i.imgur.com/E04CMpW.png"},
     "argent": {"id": "argent", "name": "Argent", "value": 18, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/5vpIa7g.png"},
-    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/E04CMpW.png"},
+    "cobalt": {"id": "cobalt", "name": "Cobalt", "value": 25, "max": 10, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/zmEKTiy.png"},
     "or": {"id": "or", "name": "Or", "value": 35, "max": 9, "rare": 2, "energie": 4, "imageurl": "https://i.imgur.com/yisG8jH.png"},
     "platine": {"id": "platine", "name": "Platine", "value": 27, "max": 9, "rare": 2, "energie": 3, "imageurl": "https://i.imgur.com/FQVNapP.png"},
     "rubis": {"id": "rubis", "name": "Rubis", "value": 60, "max": 7, "rare": 3, "energie": 8, "imageurl": "https://i.imgur.com/gRRFpfM.png"},
@@ -36,9 +36,7 @@ items_list = {
   "ITEM":{
     "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 50, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
     "booster": {"id": "booster", "name": "Booster de pioche", "value": 75, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.5 à x2)"},
-    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
-    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 2500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
-    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 2000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
+    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"}
   }
 }
 
@@ -87,7 +85,7 @@ class Cobalt:
     def get_server(self, server: discord.Server):
         if server.id not in self.data:
             self.data[server.id] = {"SYS": {"channels": [],
-                                            "maxfreq": 300},
+                                            "maxfreq": 200},
                                     "USERS": {}}
             self.save()
         return self.data[server.id]
@@ -355,7 +353,7 @@ class Cobalt:
                                                description="Votre inventaire est plein ! Vous n'avez pas pu récupérer les ressources minées !")
                             await self.bot.send_message(rep.user, embed=em)
 
-                    await asyncio.sleep(20)
+                    await asyncio.sleep(16)
                     await self.bot.delete_message(notif)
                     return True
                 elif barreuse:
@@ -365,7 +363,7 @@ class Cobalt:
                     await self.bot.clear_reactions(notif)
                     foot = "Votre barre d'énergie a été utilisée automatiquement car vous n'aviez plus d'énergie"
                     if self.have_status(rep.user, "booster", True):
-                        boost = random.choice([1.25, 1.50, 1.75, 2])
+                        boost = random.choice([1.50, 1.75, 2])
                         qte *= boost
                         foot += " | Boosté = minerai x{}".format(boost)
                     p = random.choice(["**{0}** a été miné ! {1} en obtient {2} unité(s).",
@@ -393,16 +391,21 @@ class Cobalt:
                                                description="Votre inventaire est plein ! Vous n'avez pas pu récupérer les ressources minées !")
                             await self.bot.send_message(rep.user, embed=em)
 
-                    await asyncio.sleep(20)
+                    await asyncio.sleep(16)
                     await self.bot.delete_message(notif)
                     return True
                 else:
                     await self.bot.clear_reactions(notif)
+                    perte = random.randint(50, 150)
                     em.description = "{} a tenté de miner **{}** mais n'avait pas assez d'énergie ! " \
-                                     "Il a détruit le minerai.".format(rep.user, item["name"])
-                    em.set_footer(text="")
+                                     "Sa pioche est cassée.".format(rep.user, item["name"])
+                    try:
+                        self.pay.remove_credits(rep.user, perte, "Pioche cassée", True)
+                        em.set_footer(text="Vous perdez {} bits.".format(perte))
+                    except:
+                        em.set_footer(text="Vous n'avez plus d'argent à perdre")
                     await self.bot.edit_message(notif, embed=em)
-                    await asyncio.sleep(20)
+                    await asyncio.sleep(16)
                     await self.bot.delete_message(notif)
                     return True
             else:
@@ -1226,7 +1229,7 @@ class Cobalt:
         """Modifier la fréquence d'apparition des items
 
         Doit être supérieure ou égale à 100"""
-        if val >= 100:
+        if val >= 50:
             self.get_server(ctx.message.server)["SYS"]["maxfreq"] = val
             self.save()
             await self.bot.say("**Fréquence d'apparition modifiée !**")
@@ -1316,20 +1319,17 @@ class Cobalt:
                                 hb["item"] = False
                             else:
                                 print("item non-obtenu")
-                                hb["limit"] = int(sys["maxfreq"] / 4) + random.randint(25, 75)
+                                hb["limit"] = int(sys["maxfreq"] / 4) + random.randint(25, 50)
                         except Exception as e:
                             print(e)
                             pass
 
-                    if self.get_energy_sess(message.author):
-                        nrj_sess = self.heartbeat[message.server.id]["user_nrj"][message.author.id]
-                        if random.randint(0, 2) == 0:
-                            nrj_sess += 1
-                            if nrj_sess >= int(sys["maxfreq"] / 8):
-                                nrj_sess = 0
-                                userdata =  self.get_user(message.author)
-                                if userdata["energie"] < userdata["max_energie"]:
-                                    self.get_user(message.author)["energie"] += 3
+                    data = self.get_user(message.author)
+                    if data:
+                        chance = random.randint(0, 10)
+                        if chance == 0:
+                            if data["energie"] < int(data["max_energie"] / 2):
+                                self.get_user(message.author)["energie"] += 1
 
     async def dynamic_react(self, reaction, user):
         if reaction.message.channel:
