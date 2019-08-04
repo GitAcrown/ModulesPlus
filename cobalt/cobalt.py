@@ -36,7 +36,9 @@ items_list = {
   "ITEM":{
     "detector": {"id": "detector", "name": "Détecteur de minerai", "value": 50, "qte": 1, "desc": "Permet de recevoir une notification 10s avant qu'une entité apparaisse"},
     "booster": {"id": "booster", "name": "Booster de pioche", "value": 75, "qte": 1, "desc": "Permet d'obtenir davantage d'unités lors d'un minage (x1.5 à x2)"},
-    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"}
+    "barrenrj": {"id": "barrenrj", "name": "Barre énergétique", "value": 150, "qte": 3, "desc": "Recharge l'énergie au maximum (\\⚡)"},
+    "coeurnrj": {"id":  "coeurnrj", "name":  "Coeur énergétique", "value": 2500, "qte": 1, "desc": "Augmente de manière permanente l'énergie maximale (\\⚡)"},
+    "poche": {"id":  "poche", "name":  "Poche supplémentaire", "value": 2000, "qte": 1, "desc": "Augmente de manière permanente la capacité de l'inventaire (+20)"}
   }
 }
 
