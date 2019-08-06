@@ -148,7 +148,6 @@ class Pivot:
     @commands.command(pass_context=True)
     async def mcompare(self, ctx, serverid_cible):
         """Compare les membres présents à la fois sur ce serveur et le serveur cible"""
-        liste = []
         try:
             async def post(txt, page):
                 em = discord.Embed(title="Membres présents sur {} et ici".format(server.name), description=txt)
@@ -159,7 +158,6 @@ class Pivot:
             server = self.bot.get_server(serverid_cible)
             for m in server.members:
                 if m in ctx.message.server.members:
-                    liste.append(m)
                     txt += "{}\n".format(m.mention)
                     if len(txt) > 1970:
                         await post(txt, n)
@@ -175,7 +173,7 @@ class Pivot:
             message = reaction.message
             if not user.bot:
                 if reaction.emoji == "🗨":
-                    msg_cite = "`" + "> **{}** à {}\n".format(message.author.display_name, message.timestamp.)
+                    msg_cite = "`" + "> **{}**\n".format(message.author.display_name)
                     clean_content = " ".join(message.content.split())
                     msg_cite += "> " + clean_content + "`"
                     try:
