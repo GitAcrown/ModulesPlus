@@ -1,6 +1,7 @@
 import os
 import random
 import time
+import datetime
 
 import discord
 from cogs.utils.dataIO import fileIO, dataIO
@@ -144,14 +145,38 @@ class Pivot:
         else:
             await self.bot.say("Sélectionnez un salon vocal pour démarrer le partage d'écran ou rejoignez-en un avant de faire cette commande.")
 
+    @commands.command(pass_context=True)
+    async def mcompare(self, ctx, serverid_cible):
+        """Compare les membres présents à la fois sur ce serveur et le serveur cible"""
+        liste = []
+        try:
+            async def post(txt, page):
+                em = discord.Embed(title="Membres présents sur {} et ici".format(server.name), description=txt)
+                em.set_footer(text="Page {}".format(page))
+                await self.bot.say(embed=em)
+            txt = ""
+            n = 1
+            server = self.bot.get_server(serverid_cible)
+            for m in server.members:
+                if m in ctx.message.server.members:
+                    liste.append(m)
+                    txt += "{}\n".format(m.mention)
+                    if len(txt) > 1970:
+                        await post(txt, n)
+                        n += 1
+                        txt = ""
+            await post(txt, n)
+        except:
+            await self.bot.say("Je ne suis pas sur le serveur cible, impossible d'y vérifier les membres.")
+
+
     async def citer(self, reaction, user):
         if reaction.message.channel:
             message = reaction.message
             if not user.bot:
                 if reaction.emoji == "🗨":
-                    msg_cite = "`" + "> **{}**\n".format(message.author.display_name)
+                    msg_cite = "`" + "> **{}** à {}\n".format(message.author.display_name, message.timestamp.)
                     clean_content = " ".join(message.content.split())
-                    clean_content.replace("  ", "\n")
                     msg_cite += "> " + clean_content + "`"
                     try:
                         await self.bot.send_message(user, msg_cite)
