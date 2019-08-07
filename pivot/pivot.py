@@ -181,6 +181,39 @@ class Pivot:
                     except Exception as e:
                         print(e)
 
+    async def dia_detect(self, message):
+        if message.author.bot:
+            if message.content.lower() == "dia":
+                r = random.choice(["Insupportable ce \"dia\".",
+                                   "Tu veux te battre {} ?!",
+                                   "Tu as cru que c'était dia mais c'était moi, Dio !",
+                                   "dia ?",
+                                   "Pardon ?",
+                                   "Vraiment casse-couilles ce bot.",
+                                   "/ban {}",
+                                   "Ah, c'est marrant.",
+                                   "Oui c'est ça, dia.",
+                                   "Je vais te retrouver et te détruire {}.",
+                                   "Au moins on sait quel bot est saoulant et les autres.",
+                                   "Vraiment, ça me tape sur les circuits ce \"dia\".",
+                                   "Je vais le bannir si ça continue.",
+                                   "Je vais péter un cable.",
+                                   "Je vais te faire bouffer tes circuits, {}.",
+                                   "Moi aussi je sais le faire.\n\n\n**dia**",
+                                   "Pardon ? C'est quoi cette expression ?",
+                                   "Si un bot pouvait avoir un QI négatif, ça serait probablement {}.",
+                                   "gramme.",
+                                   "-ble.",
+                                   "-cre.",
+                                   "-magnétique.",
+                                   "-phragme.",
+                                   "-lectique.",
+                                   "-mant.",
+                                   "-logue (ce que {} est incapable de faire visiblement).",
+                                   "-ntre."])
+                await self.bot.say(r.format(message.author.name))
+
+
 def check_folders():
     if not os.path.exists("data/pivot"):
         print("Création du dossier Pivot...")
@@ -199,3 +232,4 @@ def setup(bot):
     n = Pivot(bot)
     bot.add_cog(n)
     bot.add_listener(n.citer, 'on_reaction_add')
+    bot.add_listener(n.dia_detect, "on_message")
