@@ -220,7 +220,7 @@ class Pivot:
                                    "-mant.",
                                    "-logue (ce que {} est incapable de faire visiblement).",
                                    "-ntre."])
-                await self.bot.say(r.format(message.author.name))
+                await self.bot.send_message(message.channel, r.format(message.author.name))
 
 
 def check_folders():
