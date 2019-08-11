@@ -167,6 +167,15 @@ class Pivot:
         except:
             await self.bot.say("Je ne suis pas sur le serveur cible, impossible d'y vérifier les membres.")
 
+    @commands.command(pass_context=True, hidden=True)
+    async def remotesay(self, ctx, channel_id, *msg):
+        """Demande au bot d'afficher un texte à distance"""
+        msg = " ".join(msg)
+        try:
+            await self.bot.send_message(self.bot.get_channel(channel_id), msg)
+            await self.bot.say("**Message envoyé**")
+        except:
+            await self.bot.say("**Accès interdit**")
 
     async def citer(self, reaction, user):
         if reaction.message.channel:
