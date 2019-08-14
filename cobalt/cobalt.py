@@ -1114,10 +1114,10 @@ class Cobalt:
                         action = rep.content.lower() if rep else None
                     else:
                         msg = await self.bot.say("**Utiliser directement** 》 *{}*".format(ritem))
-                        action = ritem
+                        action = ritem.lower()
                         saveritem = True
                         ritem = None
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(0.5)
                     if action is None or action in ["q", "stop", "quitter"]:
                         await self.bot.delete_message(msg)
                         return
@@ -1308,6 +1308,7 @@ class Cobalt:
                     if hb["ack"] >= hb["limit"]:
                         try:
                             channel = self.bot.get_channel(random.choice(sys["channels"]))
+                            await asyncio.sleep(random.randint(1, 5))
                             if not hb["item"]:
                                 itemid = self.gen_minerai()
                                 hb["item"] = itemid
