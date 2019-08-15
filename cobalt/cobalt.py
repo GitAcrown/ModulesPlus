@@ -284,6 +284,7 @@ class Cobalt:
         server = channel.server
         hb = self.get_heartbeat(server)
         if item["type"] is "MINERAI":
+            await asyncio.sleep(random.randint(1, 4))
             qte = random.randint(1, item["max"])
             phrase = random.choice(["**{0}** (x{1}) est apparu !\nCliquez sur `⛏` pour le miner !",
                                     "**{0}** (x{1}) vient d'apparaître !\nCliquez sur `⛏` pour le miner !",
@@ -1308,7 +1309,6 @@ class Cobalt:
                     if hb["ack"] >= hb["limit"]:
                         try:
                             channel = self.bot.get_channel(random.choice(sys["channels"]))
-                            await asyncio.sleep(random.randint(1, 5))
                             if not hb["item"]:
                                 itemid = self.gen_minerai()
                                 hb["item"] = itemid
