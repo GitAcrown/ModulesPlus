@@ -677,7 +677,7 @@ class Pay:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
                     txt += "(...)\n{}**{}** · {}b ─ *__{}__*\n".format(medal(place[0]), place[0], place[1].solde,
-                                                                       ctx.message.author.name)
+                                                                       ctx.message.author)
 
             em = discord.Embed(title="Palmarès des plus riches du serveur", description=txt, color=palette["stay"],
                                timestamp=ctx.message.timestamp)
