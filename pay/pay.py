@@ -661,6 +661,8 @@ class Pay:
                 if n < top:
                     try:
                         username = str(server.get_member(u[1]))
+                        if username.lower() == "None:"
+                            username = str(await self.bot.get_user_info(u[1]))
                         if u[1] == author.id:
                             txt += "{}**{}** · {}b ─ *__{}__*\n".format(medal(n), n, u[0], username)
                             found = True
