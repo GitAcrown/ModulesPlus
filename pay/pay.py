@@ -667,7 +667,7 @@ class Pay:
                         else:
                             txt += "{}**{}** · {}b ─ *{}*\n".format(medal(n), n, u[0], username)
                         if n == 3:
-                            txt += "――――――――――"
+                            txt += "――――――――――\n"
                         n += 1
                     except:
                         continue
