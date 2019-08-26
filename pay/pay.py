@@ -728,6 +728,8 @@ class Pay:
                     bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**b".format(bonusjc) if \
                         bonusjc > 0 else ""
 
+                bonusboost = 0
+
                 if "booster_role" in self.pay.get_server(server, "SYS"):
                     boostrole = self.pay.get_server(server, "SYS")["booster_role"]
                     if boostrole:
