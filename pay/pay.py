@@ -513,8 +513,10 @@ class Pay:
                 data = self.pay.get_account(user, True)
                 gains = self.pay.daily_total_from(user)
                 gainstxt = "+{}".format(gains) if gains >= 0 else "{}".format(gains)
+                top = self.pay.get_top_usernum(user)[0]
                 txt = "**Solde** ─ {} bit{}\n" \
-                      "**Aujourd'hui** ─ `{}`".format(data.solde, "s" if data.solde > 1 else "", gainstxt)
+                      "**Aujourd'hui** ─ `{}`\n" \
+                      "**Classement** ─ #{}".format(data.solde, "s" if data.solde > 1 else "", gainstxt, top)
                 em = discord.Embed(title=user.name, description=txt, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_thumbnail(url=user.avatar_url)
                 trs = self.pay.get_transactions_from(user, 3)
