@@ -729,7 +729,7 @@ class Pay:
                         bonusjc > 0 else ""
 
                 bonusboost = 0
-
+                boosttxt = ""
                 if "booster_role" in self.pay.get_server(server, "SYS"):
                     boostrole = self.pay.get_server(server, "SYS")["booster_role"]
                     if boostrole:
