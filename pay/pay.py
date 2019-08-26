@@ -14,8 +14,9 @@ from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
-# Ce module est volontairement "sur-commenté" dans un soucis de lisibilité et afin que certaines personnes puisse
+# Ce module est volontairement "surcommenté" dans un soucis de lisibilité et afin que certaines personnes puisse
 # s'en servir de base
+
 palette = {"lighter": 0x34bba7,
            "light" : 0x219d7e,
            "dark": 0x2c7972,
@@ -24,7 +25,7 @@ palette = {"lighter": 0x34bba7,
            "stay": 0xfff952}
 
 class PayAPI:
-    """API Turing Pay | Système de monnaie globale par serveur"""
+    """API Pay | Système de monnaie globale par serveur"""
 
     def __init__(self, bot, path):
         self.bot = bot
@@ -115,12 +116,15 @@ class PayAPI:
             return data[user.id] if not tuple else self.obj_account(data[user.id])
         return False
 
-    def get_all_accounts(self, server: discord.Server = None):
+    def get_all_accounts(self, server: discord.Server = None, brut: bool = False):
         liste = []
         if server:
             serv = self.get_server(server, "USERS")
             for u in serv:
-                liste.append(self.obj_account(serv[u]))
+                if brut:
+                    liste.append(serv[u])
+                else:
+                    liste.append(self.obj_account(serv[u]))
             return liste
         else:
             for serv in self.data:
@@ -144,7 +148,8 @@ class PayAPI:
     async def account_dial(self, user: discord.Member):
         """S'inscrire sur le système Pay du serveur"""
         if not self.get_account(user):
-            em = discord.Embed(description="{} ─ Vous n'avez pas de compte **Pay**, voulez-vous en ouvrir un ?".format(
+            em = discord.Embed(description="{} ─ Vous n'avez pas de compte **Pay**, voulez-vous en ouvrir un ?\n"
+                                           "Ce compte vous permettra de participer à l'économie virtuelle du serveur (comme les jeux).".format(
                 user.mention), color=palette["light"])
 
             msg = await self.bot.say(embed=em)
@@ -365,15 +370,17 @@ class PayAPI:
     def total_credits_on_server(self, server: discord.Server):
         """Renvoie la valeur totale de la monnaie en circulation sur le serveur"""
         if server.id in self.data:
-            return sum([user.solde for user in self.get_all_accounts(server)])
+            return sum([user["solde"] for user in self.data[server.id]["USERS"]])
         return False
 
-    def get_top(self, server: discord.Server, nombre: int):
+    def get_top(self, server: discord.Server, nombre: int = None):
         """Renvoie un top des plus riches du serveur"""
         if server.id in self.data:
-            liste = [[u.solde, u] for u in self.get_all_accounts(server)]
+            liste = []
+            for user in self.data[server.id]["USERS"]:
+                liste.append([user["solde"], user])
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
-            return [i[1] for i in sort][:nombre]
+            return sort[:nombre] if nombre else sort
         return False
 
     def get_top_usernum(self, user: discord.Member):
@@ -501,16 +508,15 @@ class Pay:
         [user] -> Permet de voir le compte d'un autre membre"""
         user = user if user else ctx.message.author
         same = True if user == ctx.message.author else False
-        server = ctx.message.server
         if same or self.pay.get_account(user):
             if await self.pay.account_dial(user):
                 data = self.pay.get_account(user, True)
                 gains = self.pay.daily_total_from(user)
                 gainstxt = "+{}".format(gains) if gains >= 0 else "{}".format(gains)
-                txt = "**Solde** ─ {} Bit{}\n" \
-                      "**Aujourd'hui** ─ {}".format(data.solde, "s" if data.solde > 1 else "", gainstxt)
-                em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.timestamp)
-                em.set_author(name=user.name, icon_url=user.avatar_url)
+                txt = "**Solde** ─ {} bit{}\n" \
+                      "**Aujourd'hui** ─ `{}`".format(data.solde, "s" if data.solde > 1 else "", gainstxt)
+                em = discord.Embed(title=user.name, description=txt, color=user.color, timestamp=ctx.message.timestamp)
+                em.set_thumbnail(url=user.avatar_url)
                 trs = self.pay.get_transactions_from(user, 3)
                 if trs:
                     hist = ""
@@ -520,7 +526,7 @@ class Pay:
                         else:
                             somme = str(i.somme) if i.somme < 0 else "+" + str(i.somme)
                         raison = i.raison if len(i.raison) <= 40 else i.raison[:40] + "..."
-                        hist += "**{}** ─ *{}* `{}`\n".format(somme, raison, i.id)
+                        hist += "`{}` · **{}** ─ *{}*\n".format(i.id, somme, raison)
                     em.add_field(name="Historique", value=hist)
                 await self.bot.say(embed=em)
             return
@@ -607,7 +613,7 @@ class Pay:
                                     prc = (somme / solde_before) * 100
                                     ctime = 60 + (10 * round(prc))
                                     cool = self.pay.new_cooldown(ctx.message.author, "give", ctime)
-                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**B ont été donnés à {}".format(somme, user.mention), color=palette["info"])
+                                    em = discord.Embed(description="**Transfert réalisé** ─ **{}**b ont été donnés à {}".format(somme, user.mention), color=palette["info"])
                                     em.set_footer(text="Prochain don possible dans {}".format(cool.string))
                                     await self.bot.say(embed=em)
                                 else:
@@ -630,33 +636,47 @@ class Pay:
     async def top(self, ctx, top: int = 10):
         """Affiche un top des membres les plus riches du serveur"""
         server = ctx.message.server
-        palm = self.pay.get_top(server, top)
+        author = ctx.message.author
+        palm = self.pay.get_top(server)
         n = 1
         txt = ""
+        def medal(n):
+            if n == 1:
+                return " \🥇"
+            elif n == 2:
+                return " \🥈"
+            elif n == 3:
+                return " \🥉"
+            else:
+                return ""
         found = False
         if palm:
-            for l in palm:
-                try:
-                    username = server.get_member(l.userid).name
-                    if l.userid == ctx.message.author.id:
-                        txt += "**{}.** __**{}**__ ─ **{}**B\n".format(n, username, l[0])
-                        found = True
-                    else:
-                        txt += "**{}.** **{}** ─ **{}**B\n".format(n, username, l[0])
-                    n += 1
-                except:
-                    continue
+            for u in palm: # u[0] = Solde, u[1] = ID
+                if n < top:
+                    try:
+                        username = str(server.get_member(u[1]))
+                        if u[1] == author.id:
+                            txt += "{}**{}** · {}b ─ *__{}__*\n".format(medal(n), n, u[0], username)
+                            found = True
+                        else:
+                            txt += "{}**{}** · {}b ─ *{}*\n".format(medal(n), n, u[0], username)
+                        n += 1
+                    except:
+                        continue
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n**{}.** **{}** ─ **{}**B".format(place[0], ctx.message.author.name, place[1].solde)
-            em = discord.Embed(title="Top · Les plus riches du serveur", description=txt, color=palette["stay"], timestamp=ctx.message.timestamp)
+                    txt += "(...)\n{}**{}** · {}b ─ *__{}__*\n".format(medal(place[0]), place[0], place[1].solde,
+                                                                       ctx.message.author.name)
+
+            em = discord.Embed(title="Palmarès des plus riches du serveur", description=txt, color=palette["stay"],
+                               timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
-            em.set_footer(text="Total = {} Bits".format(total))
+            em.set_footer(text="Total » {} bits | Sur {} comptes".format(total, len(self.data[server.id]["USERS"])))
             try:
                 await self.bot.say(embed=em)
             except:
-                await self.bot.say("**Erreur** ─ Le classement est trop long pour être envoyé")
+                await self.bot.say("**Erreur** ─ Le classement est trop long pour être affiché, essayez un top moins élevé.")
         else:
             await self.bot.say("**Erreur** ─ Aucun membre n'a de compte sur ce serveur")
 
@@ -672,6 +692,7 @@ class Pay:
         # Afin de pouvoir facilement modifier :
         base_rj = 100 # Revenu journalier de base
         base_jc = 25 # Bonus jours consécutifs
+        base_boost = 100
         if await self.pay.account_dial(user):
             data = self.pay.get_account(user)
 
@@ -700,18 +721,27 @@ class Pay:
                 bonusjc = (len(data["cache"]["revenu"]["suite"]) - 1) * base_jc
                 if data["solde"] >= 50000:
                     bonusjc = 0
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 B)"
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ Non percevable (+ 50 000 b)"
                 else:
-                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**B".format(bonusjc) if \
+                    bonustxt = "\n• **Bonus** \"Jours consécutif\" ─ **{}**b".format(bonusjc) if \
                         bonusjc > 0 else ""
 
-                self.pay.add_credits(user, rj + bonusjc, "Revenus")
+                if "booster_role" in self.pay.get_server(server, "SYS"):
+                    boostrole = self.pay.get_server(server, "SYS")["booster_role"]
+                    if boostrole:
+                        boostrole = discord.utils.get(server.roles, id=boostrole)
+                        if boostrole in user.roles:
+                            bonusboost = base_boost
+                            boosttxt = "\n **Bonus** \"Booster\" ─ **{}**b".format(bonusboost)
+
+                self.pay.add_credits(user, rj + bonusjc + bonusboost, "Revenus")
                 notif = "• **Aide journalière** ─ **{}**B{}".format(rj, savetxt)
                 notif += bonustxt
+                notif += boosttxt
 
                 em = discord.Embed(description=notif, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_author(name="Revenus", icon_url=user.avatar_url)
-                em.set_footer(text="Solde actuel : {}B".format(data["solde"]))
+                em.set_footer(text="Solde actuel : {}b".format(data["solde"]))
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("**Refusé** ─ Tu as déjà pris ton revenu aujourd'hui.")
@@ -1122,6 +1152,7 @@ class Pay:
                     if base == 28: intro = "Un nombre parfait pour jouer"
                     if base == 161: intro = "Le nombre d'or pour porter chance"
                     if base == 420: intro = "420BLAZEIT"
+                    if base == 314: intro = "π."
                     msg = None
                     for i in range(3):
                         points = "•" * (i + 1)
@@ -1263,7 +1294,7 @@ class Pay:
         self.pay.get_server(server, "SYS")["booster_role"] = role.id
         self.pay.save(True)
         await self.bot.say("**Rôle booster configuré** ─ Les personnes possédant ce rôle (boostant votre serveur) "
-                           "pourraient recevoir divers avantages (minimes) dans les différents jeux.")
+                           "pourraient recevoir divers avantages dans les différents jeux et fonctionnalités du bot.")
 
     @_modpay.command(pass_context=True)
     async def grant(self, ctx, user: discord.Member, somme: int, *raison):
@@ -1273,7 +1304,7 @@ class Pay:
         if somme > 0:
             if self.pay.get_account(user):
                 self.pay.add_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}B ont été donnés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}b ont été donnés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1289,7 +1320,7 @@ class Pay:
                 if not self.pay.enough_credits(user, somme):
                     somme = self.pay.get_account(user, True).solde
                 self.pay.remove_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ {}B ont été retirés au membre".format(somme))
+                await self.bot.say("**Succès** ─ {}b ont été retirés au membre".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
@@ -1303,7 +1334,7 @@ class Pay:
         if somme >= 0:
             if self.pay.get_account(user):
                 self.pay.set_credits(user, somme, raison)
-                await self.bot.say("**Succès** ─ Le membre possède désormais {}B".format(somme))
+                await self.bot.say("**Succès** ─ Le membre possède désormais {}b".format(somme))
             else:
                 await self.bot.say("**Erreur** ─ Le membre visé n'a pas de compte")
         else:
