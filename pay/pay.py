@@ -370,7 +370,7 @@ class PayAPI:
     def total_credits_on_server(self, server: discord.Server):
         """Renvoie la valeur totale de la monnaie en circulation sur le serveur"""
         if server.id in self.data:
-            return sum([user["solde"] for user in self.data[server.id]["USERS"]])
+            return sum([self.data[server.id]["USERS"][user]["solde"] for user in self.data[server.id]["USERS"]])
         return False
 
     def get_top(self, server: discord.Server, nombre: int = None):
