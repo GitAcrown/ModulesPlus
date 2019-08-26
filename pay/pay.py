@@ -740,10 +740,10 @@ class Pay:
                         boostrole = discord.utils.get(server.roles, id=boostrole)
                         if boostrole in user.roles:
                             bonusboost = base_boost
-                            boosttxt = "\n **Bonus** \"Booster\" ─ **{}**b".format(bonusboost)
+                            boosttxt = "\n• **Bonus** \"Booster du serveur\" ─ **{}**b".format(bonusboost)
 
                 self.pay.add_credits(user, rj + bonusjc + bonusboost, "Revenus")
-                notif = "• **Aide journalière** ─ **{}**B{}".format(rj, savetxt)
+                notif = "• **Aide journalière** ─ **{}**b{}".format(rj, savetxt)
                 notif += bonustxt
                 notif += boosttxt
 
