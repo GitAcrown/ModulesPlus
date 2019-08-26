@@ -396,6 +396,11 @@ class PayAPI:
                 n += 1
         return False
 
+    def get_account_sum(self, server: discord.Server):
+        if server.id in self.data:
+            return len(self.data[server.id]["USERS"])
+        return 0
+
     def new_cooldown(self, user: discord.Member, id: str, duree: int):
         """Attribue un cooldown à un membre
 
@@ -674,7 +679,7 @@ class Pay:
             em = discord.Embed(title="Palmarès des plus riches du serveur", description=txt, color=palette["stay"],
                                timestamp=ctx.message.timestamp)
             total = self.pay.total_credits_on_server(server)
-            em.set_footer(text="Total » {} bits | Sur {} comptes".format(total, len(self.data[server.id]["USERS"])))
+            em.set_footer(text="Total » {} bits | Sur {} comptes".format(total, self.pay.get_account_sum(server)))
             try:
                 await self.bot.say(embed=em)
             except:
