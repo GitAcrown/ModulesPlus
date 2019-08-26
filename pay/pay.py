@@ -318,7 +318,6 @@ class PayAPI:
             return sum([t.somme for t in trs])
         return 0
 
-
     def enough_credits(self, user: discord.Member, depense: int):
         """Vérifie que le membre peut réaliser cette transaction"""
         data = self.get_account(user, True)
@@ -1270,6 +1269,26 @@ class Pay:
             await self.bot.say("**Succès** ─ Le compte bancaire de {} à été créé".format(user.mention))
         else:
             await self.bot.say("**Erreur** ─ Ce membre possède déjà un compte bancaire")
+
+    @_modpay.command(pass_context=True)
+    async def resetday(self, ctx, user: discord.Member):
+        """Reset les données d'un membre au jour précédent"""
+        if self.pay.get_account(user):
+            data = self.pay.get_account(user)
+            if "revenu" not in data["cache"]:
+                data["cache"]["revenu"] = {"last": None, "suite": []}
+
+            data["cache"]["revenu"]["last"] = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
+            trs = self.pay.daily_total_from(user)
+            if trs > 0:
+                self.pay.remove_credits(user, trs, "Reset de la journée", True)
+            else:
+                self.pay.add_credits(user, trs, "Reset de la journée")
+            await self.bot.say("**Membre reset** ─ Son solde a été rétabli et son revenu débloqué si celui-ci avait été pris. "
+                               "En revanche, les transactions passées seront toujours affichées.")
+        else:
+            await self.bot.say("Le membre visé ne possède pas de compte Pay.")
+
 
     @_modpay.command(pass_context=True)
     async def delete(self, ctx, user: discord.Member):
