@@ -378,7 +378,7 @@ class PayAPI:
         if server.id in self.data:
             liste = []
             for user in self.data[server.id]["USERS"]:
-                liste.append([user["solde"], user])
+                liste.append([self.data[server.id]["USERS"][user]["solde"], user])
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
             return sort[:nombre] if nombre else sort
         return False
