@@ -396,6 +396,7 @@ class PayAPI:
         return False
 
     def get_account_sum(self, server: discord.Server):
+        """Renvoie le nombre de comptes inscrits dans Pay sur ce serveur"""
         if server.id in self.data:
             return len(self.data[server.id]["USERS"])
         return 0
@@ -517,7 +518,8 @@ class Pay:
                 data = self.pay.get_account(user, True)
                 gains = self.pay.daily_total_from(user)
                 gainstxt = "+{}".format(gains) if gains >= 0 else "{}".format(gains)
-                top = self.pay.get_top_usernum(user)[0]
+                top = self.pay.get_top_usernum(user)
+                top = top[0] if top else "Ø"
                 txt = "**Solde** ─ {} bit{}\n" \
                       "**Aujourd'hui** ─ `{}`\n" \
                       "**Classement** ─ #{}".format(data.solde, "s" if data.solde > 1 else "", gainstxt, top)
@@ -676,8 +678,12 @@ class Pay:
             if not found:
                 if self.pay.get_account(ctx.message.author):
                     place = self.pay.get_top_usernum(ctx.message.author)
-                    txt += "(...)\n{}**{}** · {}b ─ *__{}__*\n".format(medal(place[0]), place[0], place[1].solde,
-                                                                       ctx.message.author)
+                    if place:
+                        txt += "(...)\n{}**{}** · {}b ─ *__{}__*\n".format(medal(place[0]), place[0], place[1].solde,
+                                                                           ctx.message.author)
+                    else:
+                        txt += "(...)\nØ · {}b ─ *__{}__*\n".format(self.pay.get_account(ctx.message.author)["solde"],
+                                                                    ctx.message.author)
 
             em = discord.Embed(title="Palmarès des plus riches du serveur", description=txt, color=palette["stay"],
                                timestamp=ctx.message.timestamp)
