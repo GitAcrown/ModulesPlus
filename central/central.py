@@ -257,7 +257,8 @@ class Central:
                 await self.ctr.chat(msg)
             except:
                 await self.bot.say("... Pardon ?")
-        await self.bot.say("Bip boop")
+        else:
+            await self.bot.say("Je ne vois pas les fichiers")
 
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
