@@ -42,16 +42,15 @@ class CentralAPI:
             self.clever.browser.get(self.clever.url)
         except:
             self.clever.browser.close()
-            sys.exit()
         try:
             self.clever.get_form()
+            if userInput in ['quit', 'fermer', 'quitter']:
+                self.clever.browser.close()
+            self.clever.send_input(userInput)
+            bot = self.clever.get_response()
+            await self.bot.say(bot)
         except:
             sys.exit()
-        if userInput in ['quit', 'fermer', 'quitter']:
-            self.clever.browser.close()
-        self.clever.send_input(userInput)
-        bot = self.clever.get_response()
-        await self.bot.say(bot)
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
