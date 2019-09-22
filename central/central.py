@@ -43,17 +43,15 @@ class CentralAPI:
         except:
             self.clever.browser.close()
             sys.exit()
-        while True:
-            try:
-                self.clever.get_form()
-            except:
-                sys.exit()
-            if userInput in ['quit', 'fermer', 'quitter']:
-                break
-            self.clever.send_input(userInput)
-            bot = self.clever.get_response()
-            await self.bot.say(bot)
-        self.clever.browser.close()
+        try:
+            self.clever.get_form()
+        except:
+            sys.exit()
+        if userInput in ['quit', 'fermer', 'quitter']:
+            self.clever.browser.close()
+        self.clever.send_input(userInput)
+        bot = self.clever.get_response()
+        await self.bot.say(bot)
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
@@ -245,9 +243,6 @@ class Central:
         """Parlez avec le bot..."""
         msg = " ".join(msg)
         if len(msg) >= 1:
-            await asyncio.sleep(0.75)
-            await self.bot.send_typing(ctx.message.channel)
-            await asyncio.sleep(random.randint(1, 3))
             try:
                 await self.ctr.chat(msg)
             except:
