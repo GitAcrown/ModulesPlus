@@ -20,7 +20,7 @@ class CentralAPI:
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.meta = {"last_save": 0}
+        self.meta = {"last_save": 0, "cb_sess": False}
         self.clever = cleverbotfree.cbfree.Cleverbot()
 
     def save(self, force: bool = False):
@@ -37,20 +37,29 @@ class CentralAPI:
             self.save()
         return self.data[user.id]
 
-    async def chat(self, userInput: str):
+    def open_session(self):
         try:
             self.clever.browser.get(self.clever.url)
+            self.meta["cb_sess"] = True
+            return True
         except:
             self.clever.browser.close()
+            self.meta["cb_sess"] = False
+            sys.exit()
+            return False
+
+    async def chat(self, userInput: str):
+        if not self.meta["cb_sess"]:
+            self.open_session()
         try:
             self.clever.get_form()
-            if userInput in ['quit', 'fermer', 'quitter']:
-                self.clever.browser.close()
-            self.clever.send_input(userInput)
-            bot = self.clever.get_response()
-            await self.bot.say(bot)
         except:
             sys.exit()
+        if userInput in ["quit", "quitter", "fermer"]:
+            break
+        self.clever.send_input(userInput)
+        bot = self.clever.get_response()
+        await self.bot.say(bot)
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
@@ -243,10 +252,12 @@ class Central:
         msg = " ".join(msg)
         if len(msg) >= 1:
             try:
+                await self.bot.send_typing(ctx.message.channel)
+                await asyncio.sleep(random.randint(1, 2))
                 await self.ctr.chat(msg)
             except:
-                await self.bot.say("...")
-        await self.bot.say("...")
+                await self.bot.say("... Pardon ?")
+        await self.bot.say("Bip boop")
 
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
