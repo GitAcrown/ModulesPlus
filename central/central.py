@@ -56,7 +56,7 @@ class CentralAPI:
         except:
             sys.exit()
         if userInput in ["quit", "quitter", "fermer"]:
-            break
+            self.clever.browser.close()
         self.clever.send_input(userInput)
         bot = self.clever.get_response()
         await self.bot.say(bot)
