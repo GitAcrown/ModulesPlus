@@ -4,6 +4,8 @@ import random
 import re
 import time
 from datetime import datetime
+import cleverbotfree.cbfree
+import sys
 
 import discord
 import praw
@@ -19,6 +21,7 @@ class CentralAPI:
         self.bot = bot
         self.data = dataIO.load_json(path)
         self.meta = {"last_save": 0}
+        self.clever = cleverbotfree.cbfree.Cleverbot()
 
     def save(self, force: bool = False):
         if force:
@@ -33,6 +36,24 @@ class CentralAPI:
             self.data[user.id] = {}
             self.save()
         return self.data[user.id]
+
+    async def chat(self, userInput: str):
+        try:
+            self.clever.browser.get(self.clever.url)
+        except:
+            self.clever.browser.close()
+            sys.exit()
+        while True:
+            try:
+                self.clever.get_form()
+            except:
+                sys.exit()
+            if userInput in ['quit', 'fermer', 'quitter']:
+                break
+            self.clever.send_input(userInput)
+            bot = self.clever.get_response()
+            await self.bot.say(bot)
+        self.clever.browser.close()
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
@@ -218,6 +239,20 @@ class Central:
                                             await asyncio.sleep(5)
                                             await self.bot.delete_message(notif)
                                     return
+
+    @commands.command(pass_context=True)
+    async def talk(self, ctx, *msg):
+        """Parlez avec le bot..."""
+        msg = " ".join(msg)
+        if len(msg) >= 1:
+            await asyncio.sleep(0.75)
+            await self.bot.send_typing(ctx.message.channel)
+            await asyncio.sleep(random.randint(1, 3))
+            try:
+                await self.ctr.chat(msg)
+            except:
+                await self.bot.say("...")
+        await self.bot.say("...")
 
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
