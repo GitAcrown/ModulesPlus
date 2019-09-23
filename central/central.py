@@ -37,6 +37,9 @@ class CentralAPI:
             self.save()
         return self.data[user.id]
 
+    def check_clever_session(self):
+        return self.meta["cb_sess"]
+
     def get_clever_session(self):
         if not self.meta["cb_sess"]:
             try:
@@ -247,6 +250,8 @@ class Central:
     async def talk(self, ctx, *msg):
         """Parlez avec le bot..."""
         msg = " ".join(msg)
+        if self.ctr.check_clever_session() is False:
+            await self.bot.say("**Initialisation** ─ Veuillez patienter...")
         if len(msg) >= 1:
             rep = self.ctr.chat(msg)
             if rep:
