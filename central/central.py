@@ -44,6 +44,7 @@ class CentralAPI:
         if not self.meta["cb_sess"]:
             try:
                 self.clever.browser.get(self.clever.url)
+                self.meta["cb_sess"] = True
             except:
                 self.clever.browser.close()
                 return False
