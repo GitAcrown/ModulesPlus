@@ -58,6 +58,7 @@ class CentralAPI:
                 return False
             if userInput in ["quit", "quitter", "fermer"]:
                 self.clever.browser.close()
+                return "Bye :wave:"
             self.clever.send_input(userInput)
             bot = self.clever.get_response()
             return bot
