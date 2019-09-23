@@ -37,29 +37,26 @@ class CentralAPI:
             self.save()
         return self.data[user.id]
 
-    def open_session(self):
-        try:
-            self.clever.browser.get(self.clever.url)
-            self.meta["cb_sess"] = True
-            return True
-        except:
-            self.clever.browser.close()
-            self.meta["cb_sess"] = False
-            sys.exit()
-            return False
-
-    async def chat(self, userInput: str):
+    def get_clever_session(self):
         if not self.meta["cb_sess"]:
-            self.open_session()
-        try:
-            self.clever.get_form()
-        except:
-            sys.exit()
-        if userInput in ["quit", "quitter", "fermer"]:
-            self.clever.browser.close()
-        self.clever.send_input(userInput)
-        bot = self.clever.get_response()
-        await self.bot.say(bot)
+            try:
+                self.clever.browser.get(self.clever.url)
+            except:
+                self.clever.browser.close()
+                return False
+        return True
+
+    def chat(self, userInput: str):
+        if self.get_clever_session():
+            try:
+                self.clever.get_form()
+            except:
+                return False
+            if userInput in ["quit", "quitter", "fermer"]:
+                self.clever.browser.close()
+            self.clever.send_input(userInput)
+            bot = self.clever.get_response()
+            return bot
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
@@ -251,14 +248,15 @@ class Central:
         """Parlez avec le bot..."""
         msg = " ".join(msg)
         if len(msg) >= 1:
-            try:
-                await self.bot.send_typing(ctx.message.channel)
-                await asyncio.sleep(random.randint(1, 2))
-                await self.ctr.chat(msg)
-            except:
-                await self.bot.say("... Pardon ?")
+            rep = self.ctr.chat(msg)
+            if rep:
+                waiting = len(str(rep)) / 10
+                await asyncio.sleep(waiting)
+                await self.bot.say("> " + str(rep))
+            else:
+                await self.bot.say("> `[Aucune réponse appropriée n'a été trouvée]`")
         else:
-            await self.bot.say("Je ne vois pas les fichiers")
+            await self.bot.say("> `[Impossible de répondre à un fichier]`")
 
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
