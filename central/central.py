@@ -250,7 +250,8 @@ class Central:
         if len(msg) >= 1:
             rep = self.ctr.chat(msg)
             if rep:
-                waiting = len(str(rep)) / 10
+                waiting = len(str(rep)) / 20
+                await self.bot.send_typing(ctx.message.channel)
                 await asyncio.sleep(waiting)
                 await self.bot.say("> " + str(rep))
             else:
