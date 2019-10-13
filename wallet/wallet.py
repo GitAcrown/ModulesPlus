@@ -760,10 +760,10 @@ class Wallet: # MODULE WALLET ==================================================
 
             if data["cache"]["last_revenu"] != today:
                 total += rj
-                txt += "+ {} » Base journalière\n"
+                txt += "+ {} » Base journalière\n".format(rj)
                 if data["cache"]["last_revenu"] == hier:
                     total += jc
-                    txt += "+ {} » Jours consécutifs\n"
+                    txt += "+ {} » Jours consécutifs\n".format(jc)
                 data["cache"]["last_revenu"] = today
 
                 for r in sys:
@@ -774,7 +774,7 @@ class Wallet: # MODULE WALLET ==================================================
                             txt += "+ {} » Rôle {}\n".format(sys[r]["bonus_rj"], role.name)
 
                 self.api.add_credits(user, total, "Récupération de revenus", "revenus")
-                txt += "───────"
+                txt += "───────\n"
                 txt += "= {}g```".format(total)
 
                 em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.timestamp)
