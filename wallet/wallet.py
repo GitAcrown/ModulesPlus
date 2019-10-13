@@ -1173,26 +1173,27 @@ class Wallet: # MODULE WALLET ==================================================
 
     async def onmessage(self, message):
         author = message.author
-        data = self.api.get_account(author, True)
-        if data:
-            today = datetime.now().strftime("%d/%m/%Y")
-            hier = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
+        if hasattr(author, "server"):
+            data = self.api.get_account(author, True)
+            if data:
+                today = datetime.now().strftime("%d/%m/%Y")
+                hier = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
 
-            if data["cache"].get("last_revenu", hier) != today:
-                server = message.server
-                rolecheck = self.api.search_roles(server, "hermitpurple")
-                check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
-                if check:
-                    sys = self.api.get_server(server, "SYS")["roles_settings"]
-                    total = 100
-                    data["cache"]["last_revenu"] = today
+                if data["cache"].get("last_revenu", hier) != today:
+                    server = message.server
+                    rolecheck = self.api.search_roles(server, "hermitpurple")
+                    check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
+                    if check:
+                        sys = self.api.get_server(server, "SYS")["roles_settings"]
+                        total = 100
+                        data["cache"]["last_revenu"] = today
 
-                    for r in sys:
-                        role = discord.utils.get(server.roles, id=r)
-                        if role in author.roles:
-                            if sys[r]["bonus_rj"]:
-                                total += sys[r]["bonus_rj"]
-                    self.api.add_credits(author, total, "Récupération automatique de revenus", "revenus", "auto")
+                        for r in sys:
+                            role = discord.utils.get(server.roles, id=r)
+                            if role in author.roles:
+                                if sys[r]["bonus_rj"]:
+                                    total += sys[r]["bonus_rj"]
+                        self.api.add_credits(author, total, "Récupération automatique de revenus", "revenus", "auto")
 
 
 def check_folders():
