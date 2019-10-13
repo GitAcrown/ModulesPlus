@@ -769,9 +769,9 @@ class Wallet: # MODULE WALLET ==================================================
                 for r in sys:
                     role = discord.utils.get(server.roles, id=r)
                     if role in user.roles:
-                        if sys[r]["revenu_bonus"]:
-                            total += sys[r]["revenu_bonus"]
-                            txt += "+ {} » Rôle {}\n".format(sys[r]["revenu_bonus"], role.name)
+                        if sys[r]["bonus_rj"]:
+                            total += sys[r]["bonus_rj"]
+                            txt += "+ {} » Rôle {}\n".format(sys[r]["bonus_rj"], role.name)
 
                 self.api.add_credits(user, total, "Récupération de revenus", "revenus")
                 txt += "───────"
@@ -1186,8 +1186,8 @@ class Wallet: # MODULE WALLET ==================================================
                     for r in sys:
                         role = discord.utils.get(server.roles, id=r)
                         if role in author.roles:
-                            if sys[r]["revenu_bonus"]:
-                                total += sys[r]["revenu_bonus"]
+                            if sys[r]["bonus_rj"]:
+                                total += sys[r]["bonus_rj"]
                     self.api.add_credits(author, total, "Récupération automatique de revenus", "revenus", "auto")
 
 
