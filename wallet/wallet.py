@@ -1041,7 +1041,7 @@ class Wallet: # MODULE WALLET ==================================================
             rolecheck = self.api.search_roles(ctx.message.server, "bitesthedust")
             check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
             if check:
-                data = self.api.get_account(author)
+                data = self.api.get_account(author, True)
                 if "last_revenu" not in data["cache"]:
                     data["cache"]["last_revenu"] = None
 
