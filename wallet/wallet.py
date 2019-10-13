@@ -95,8 +95,8 @@ class WalletAPI:
         server = user.server
         if server.id in self.data:
             results = {}
-            for user in self.data[server.id]["USERS"]:
-                results[user] = self.data[server.id]["USERS"][user]["solde"]
+            for u in self.data[server.id]["USERS"]:
+                results[u] = self.data[server.id]["USERS"][u]["solde"]
             sort = sorted(results.items(), key=lambda kv: kv[1], reverse=True)
             for i in sort:
                 if user.id == i[0]:
