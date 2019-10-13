@@ -1042,15 +1042,16 @@ class Wallet: # MODULE WALLET ==================================================
             check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
             if check:
                 data = self.api.get_account(author, True)
-                if "last_revenu" not in data["cache"]:
-                    data["cache"]["last_revenu"] = None
-
+                data["cache"]["last_revenu"] = None
                 trs = self.api.day_total_from(author)
                 today = datetime.now().strftime("%d/%m/%Y")
                 if trs > 0:
                     self.api.remove_credits(author, trs, "Reset du {}".format(today), False, "reset")
-                else:
+                elif trs < 0:
                     self.api.add_credits(author, trs, "Reset du {}".format(today), "reset")
+                else:
+                    await self.bot.say("**Inutile** ─ Votre solde n'a pas bougé aujourd'hui")
+                    return
                 await self.bot.say("**Reset effectué** ─ Votre solde a été rétabli à l'état qu'il était le {} à 00h00.".format(today))
         else:
             await self.bot.say("**Erreur** ─ Vous n'avez pas de compte Wallet.")
