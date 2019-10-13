@@ -575,7 +575,7 @@ class Wallet: # MODULE WALLET ==================================================
                             somme = str(t.somme)
                         else:
                             somme = "+" + str(t.somme)
-                        desc = t.desc if len(t.desc) <= 30 else t.raison[:30] + "..."
+                        desc = t.desc if len(t.desc) <= 35 else t.desc[:35] + "..."
                         reg += "`{}` · **{}** ─ *{}*\n".format(t.id, somme, desc)
                     em.add_field(name="Opérations", value=reg)
                 await self.bot.say(embed=em)
