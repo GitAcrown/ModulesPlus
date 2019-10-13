@@ -53,8 +53,8 @@ class WalletAPI:
                                                             "cache": {}}
                     if "booster_role" in pay[server]["SYS"]:
                         self.data[server]["SYS"]["booster"] = pay[server]["SYS"]["booster_role"]
-                    self.save()
-                    return True
+            self.save(True)
+            return True
         except:
             return False
 
