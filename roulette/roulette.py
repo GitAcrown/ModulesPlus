@@ -62,12 +62,20 @@ class Russianroulette:
         self.bot = bot
         self.file_path = "data/roulette/russian.json"
         self.system = dataIO.load_json(self.file_path)
-        self.version = "2.2.02"
+        self.version = "2.3"
+        self.wallet = self.wallet_login()
+
+    def wallet_login(self):
+        """Vérifie si Wallet est connecté"""
+        try:
+            wallet = self.bot.get_cog("Wallet").api
+            return wallet if wallet.pong() else None
+        except:
+            return None
 
     @commands.group(pass_context=True, no_pm=True)
     async def setroulette(self, ctx):
         """Paramètres de la roulette russe"""
-
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
@@ -84,18 +92,6 @@ class Russianroulette:
         else:
             msg = "**Erreur** ─ La valeur doit être supérieure à 0"
         await self.bot.say(msg)
-
-    @setroulette.command(name="payping", pass_context=True)
-    @checks.admin_or_permissions(manage_server=True)
-    async def _pay_verify(self, ctx):
-        """Vérifie que le système Turing Pay est connecté"""
-        pay = self.bot.get_cog("Pay").pay
-        try:
-            pay.pong()
-        except:
-            await self.bot.say("**Erreur** ─ L'API Pay ne répond pas")
-            return
-        await self.bot.say("**Connectée** ─ L'API Pay répond correctement")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_server=True)
@@ -115,77 +111,79 @@ class Russianroulette:
         user = ctx.message.author
         server = ctx.message.server
         settings = self.check_server_settings(server)
-        pay = self.bot.get_cog("Pay").pay
-        if await pay.account_dial(user):
-            if await self.logic_checks(settings, user, bet):
-                if settings["System"]["Roulette Initial"]:
-                    if user.id in settings["Players"]:
-                        msg = "**Déjà présent·e** ─ Tu es déjà dans la partie"
-                    elif len(settings["Players"].keys()) >= 6:
-                        msg = "**Maximum** ─ Le nombre maximal de joueurs est de 6"
-                    else:
-                        if bet >= settings["System"]["Start Bet"]:
-                            self.player_add(settings, user, bet)
-                            self.subtract_credits(settings, user, bet)
-                            msg = "─ **{}** a rejoint la partie".format(user.name)
+        if self.wallet:
+            if await self.wallet.sign_up(user):
+                if await self.logic_checks(settings, user, bet):
+                    if settings["System"]["Roulette Initial"]:
+                        if user.id in settings["Players"]:
+                            msg = "**Déjà présent·e** ─ Tu es déjà dans la partie"
+                        elif len(settings["Players"].keys()) >= 6:
+                            msg = "**Maximum** ─ Le nombre maximal de joueurs est de 6"
                         else:
-                            start_bet = settings["System"]["Start Bet"]
-                            msg = "**Offre** ─ L'offre doit être supérieure ou égale à **{}** bits".format(start_bet)
-                    await self.bot.say(msg)
-                else:
-                    self.initial_set(settings, bet)
-                    self.player_add(settings, user, bet)
-                    self.subtract_credits(settings, user, bet)
-                    txt = "{} a lancé une partie de Roulette avec une offre de départ de **{}** bits.".format(user.mention, bet)
-                    em = discord.Embed(title="Roulette russe", description=txt, color=0x6b554e)
-                    em.set_footer(text="Le jeu commence dans 45 secondes ou si 5 autres joueurs y participe. "
-                                       "({}rr <offre>)".format(ctx.prefix))
-                    await self.bot.say(embed=em)
-                    await asyncio.sleep(45)
-                    if len(settings["Players"].keys()) == 1:
-                        seultxt = ["Désolé mais je ne vais pas vous laisser tirer une "
-                                   "balle dans la tête sans personne pour y assister.",
-                                   "La Roulette russe c'est plus fun à plusieurs, là vous êtes seul·e.",
-                                   "Non, je ne vais pas vous laisser vous suicider...",
-                                   "Je suis sadique, mais pas au point de vous laisser mourir seul·e et sans amis.",
-                                   "Personne ne vous a rejoint, on dirait qu'ils ne sont pas aussi fous que vous.",
-                                   "Vous avez de la chance, on dirait que vous ne pouvez "
-                                   "pas participer vu que vous êtes seul·e.",
-                                   "Dommage que vous soyez seul·e, plus on est de fous plus on rit.",
-                                   "J'étais pret mais apparemment vous êtes seul·e... inutile."]
-                        await self.bot.say("**Seul·e...** ─ {}".format(random.choice(seultxt)))
-                        player = list(settings["Players"].keys())[0]
-                        mobj = server.get_member(player)
-                        initial_bet = settings["Players"][player]["Bet"]
-                        pay.add_credits(mobj, initial_bet, "Remboursement roulette (partie vide)")
-                        self.reset_game(settings)
+                            if bet >= settings["System"]["Start Bet"]:
+                                self.player_add(settings, user, bet)
+                                self.subtract_credits(settings, user, bet)
+                                msg = "─ **{}** a rejoint la partie".format(user.name)
+                            else:
+                                start_bet = settings["System"]["Start Bet"]
+                                msg = "**Offre** ─ L'offre doit être supérieure ou égale à **{}** golds".format(start_bet)
+                        await self.bot.say(msg)
                     else:
-                        settings["System"]["Active"] = True
-                        m = None
-                        etapes = ["Le jeu va pouvoir démarrer !",
-                                  "Je vais mettre une balle dans ce **revolver**...",
-                                  "...puis **le faire tourner** un coup...",
-                                  "...et vous allez **vous le passer l'un après l'autre**...",
-                                  "...jusqu'à que l'un de vous **s'explose la tête** !",
-                                  "Le dernier en vie a gagné. **Bonne chance !**"]
-                        for i in range(6):
-                            if i + 1 < len(settings["Players"].keys()):
-                                balles = "•" * (i + 1)
-                            else:
-                                balles = "•" * (len(settings["Players"].keys()))
-                            em = discord.Embed(title="Préparation de la Roulette".format(user.name), description=etapes[i],
-                                               color=0x6b554e)
-                            em.set_footer(text=balles)
-                            if not m:
-                                m = await self.bot.say(embed=em)
-                            else:
-                                await self.bot.edit_message(m, embed=em)
-                            await asyncio.sleep(2)
-                        await asyncio.sleep(1)
-                        await self.roulette_game(settings, server)
-                        self.reset_game(settings)
+                        self.initial_set(settings, bet)
+                        self.player_add(settings, user, bet)
+                        self.subtract_credits(settings, user, bet)
+                        txt = "{} a lancé une partie de Roulette avec une offre de départ de **{}** golds.".format(user.mention, bet)
+                        em = discord.Embed(title="Roulette russe", description=txt, color=0x6b554e)
+                        em.set_footer(text="Le jeu commence dans 45 secondes ou si 5 autres joueurs y participe. "
+                                           "({}rr <offre>)".format(ctx.prefix))
+                        await self.bot.say(embed=em)
+                        await asyncio.sleep(45)
+                        if len(settings["Players"].keys()) == 1:
+                            seultxt = ["Désolé mais je ne vais pas vous laisser tirer une "
+                                       "balle dans la tête sans personne pour y assister.",
+                                       "La Roulette russe c'est plus fun à plusieurs, là vous êtes seul·e.",
+                                       "Non, je ne vais pas vous laisser vous suicider...",
+                                       "Je suis sadique, mais pas au point de vous laisser mourir seul·e et sans amis.",
+                                       "Personne ne vous a rejoint, on dirait qu'ils ne sont pas aussi fous que vous.",
+                                       "Vous avez de la chance, on dirait que vous ne pouvez "
+                                       "pas participer vu que vous êtes seul·e.",
+                                       "Dommage que vous soyez seul·e, plus on est de fous plus on rit.",
+                                       "J'étais pret mais apparemment vous êtes seul·e... inutile."]
+                            await self.bot.say("**Seul·e...** ─ {}".format(random.choice(seultxt)))
+                            player = list(settings["Players"].keys())[0]
+                            mobj = server.get_member(player)
+                            initial_bet = settings["Players"][player]["Bet"]
+                            self.wallet.add_credits(mobj, initial_bet, "Remboursement roulette (partie vide)", "roulette")
+                            self.reset_game(settings)
+                        else:
+                            settings["System"]["Active"] = True
+                            m = None
+                            etapes = ["Le jeu va pouvoir démarrer !",
+                                      "Je vais mettre une balle dans ce **revolver**...",
+                                      "...puis **le faire tourner** un coup...",
+                                      "...et vous allez **vous le passer l'un après l'autre**...",
+                                      "...jusqu'à que l'un de vous **s'explose la tête** !",
+                                      "Le dernier en vie a gagné. **Bonne chance !**"]
+                            for i in range(6):
+                                if i + 1 < len(settings["Players"].keys()):
+                                    balles = "•" * (i + 1)
+                                else:
+                                    balles = "•" * (len(settings["Players"].keys()))
+                                em = discord.Embed(title="Préparation de la Roulette".format(user.name), description=etapes[i],
+                                                   color=0x6b554e)
+                                em.set_footer(text=balles)
+                                if not m:
+                                    m = await self.bot.say(embed=em)
+                                else:
+                                    await self.bot.edit_message(m, embed=em)
+                                await asyncio.sleep(2)
+                            await asyncio.sleep(1)
+                            await self.roulette_game(settings, server)
+                            self.reset_game(settings)
+            else:
+                await self.bot.say("**Impossible** ─ Il te faut un compte *Wallet* valide pour y jouer.")
         else:
-            await self.bot.say("**Impossible** ─ Il te faut un compte *Pay* valide pour y jouer.")
+            await self.bot.say("**Erreur** ─ Wallet n'est pas connecté")
 
     async def logic_checks(self, settings, user, bet):
         if settings["System"]["Active"]:
@@ -215,15 +213,14 @@ class Russianroulette:
                 turn += 1
                 await self.roulette_round(settings, server, players, turn)
             else:
-                pay = self.bot.get_cog("Pay").pay
                 winner = players[0]
                 txt = "Bravo {}, tu es la dernière personne en vie.\n" \
-                      "Tu gagnes **{}** bits.".format(winner.mention, pot)
+                      "Tu gagnes **{}** golds.".format(winner.mention, pot)
                 em = discord.Embed(title="Roulette russe ─ Gagnant", description=txt, color=0x6b554e)
-                em.set_footer(text="{}B ont été déposés sur le compte de {}".format(
+                em.set_footer(text="{}g ont été déposés sur le compte de {}".format(
                     pot, winner.name))
                 await self.bot.say(embed=em)
-                pay.add_credits(winner, pot, "Gain Roulette")
+                self.wallet.add_credits(winner, pot, "Gain Roulette", "roulette")
                 break
 
     async def roulette_round(self, settings, server, players, turn):
@@ -284,12 +281,10 @@ class Russianroulette:
         settings["System"]["Roulette Initial"] = True
 
     def subtract_credits(self, settings, user, bet):
-        pay = self.bot.get_cog("Pay").pay
-        pay.remove_credits(user, bet, "Offre partie de Roulette")
+        self.wallet.remove_credits(user, bet, "Offre partie de Roulette", False, "roulette")
 
     def enough_credits(self, user, amount):
-        pay = self.bot.get_cog("Pay").pay
-        return pay.enough_credits(user, amount)
+        return self.wallet.enough_credits(user, amount)
 
     def check_server_settings(self, server):
         if server.id not in self.system["Servers"]:
