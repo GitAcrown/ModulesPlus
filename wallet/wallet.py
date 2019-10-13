@@ -35,12 +35,12 @@ class WalletAPI:
     def pong(self):
         return datetime.now()
 
-    def import_from_pay(self):
+    def import_from_pay(self, force: bool = False):
         """Réimporte les informations à partir de Pay"""
         try:
             pay = dataIO.load_json("data/pay/data.json")
             for server in pay:
-                if server not in self.data:
+                if server not in self.data or force:
                     self.data[server] = {"USERS": {},
                                          "GUILDS": {},
                                          "SYS": {"roles_settings": {},
@@ -1156,6 +1156,13 @@ class Wallet: # MODULE WALLET ==================================================
         """Efface toutes les données du module"""
         self.api.reset_all()
         await self.bot.say("**Données du module reset.**")
+
+    @_modwallet.command(pass_context=True, hidden=True)
+    @checks.is_owner()
+    async def globalimport(self, ctx):
+        """Réimporte les données de Pay (13/10/2019)"""
+        self.api.import_from_pay(True)
+        await self.bot.say("**Données du module Pay importées.**")
 
     async def onmessage(self, message):
         author = message.author
