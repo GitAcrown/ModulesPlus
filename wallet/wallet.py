@@ -944,8 +944,11 @@ class Wallet: # MODULE WALLET ==================================================
                     if i not in ["hermitpurple", "kingcrimson", "bitesthedust"]: # Chuuuuuut.
                         await self.bot.say("**Erreur** ─ Le code special `{}` n'existe pas.".format(i))
                         return
-            self.api.set_role(role, bonus_rj, prix, special)
-            await self.bot.say("**Succès** ─ Le rôle a été configuré selon les paramètres donnés")
+            if bonus_rj <= 100:
+                self.api.set_role(role, bonus_rj, prix, special)
+                await self.bot.say("**Succès** ─ Le rôle a été configuré selon les paramètres donnés")
+            else:
+                await self.bot.say("**Erreur** ─ Le bonus de revenu doit être inférieur ou égal au revenu de base (100g)")
         else:
             await self.bot.say("**Erreur** ─ Rôle introuvable ou inaccessible")
 
