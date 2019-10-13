@@ -756,7 +756,7 @@ class Wallet: # MODULE WALLET ==================================================
             if "last_revenu" not in data["cache"]:
                 data["cache"]["last_revenu"] = None
             total = 0
-            txt = "```fix\n"
+            txt = "```python\n"
 
             if data["cache"]["last_revenu"] != today:
                 total += rj
