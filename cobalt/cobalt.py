@@ -465,7 +465,7 @@ class Cobalt:
             txt += "*{}*\n\n".format(item["desc"])
         txt +=  "• **Type**: {}\n".format(typetxt)
         if "value" in item:
-            txt += "• **Valeur**: {}{}".format(item["value"], "B/unité" if item["type"] != "ITEM" else "B")
+            txt += "• **Valeur**: {}{}".format(item["value"], "G/unité" if item["type"] != "ITEM" else "G")
         if "qte" in item:
             if item["qte"] > 1:
                 txt += " (lot de {})".format(item["qte"])
@@ -691,7 +691,7 @@ class Cobalt:
             minerais = data["minerais"]
             for item in minerais:
                 nb += minerais[item]["qte"]
-                mtxt += "• {}x **{}** — {} b/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
+                mtxt += "• {}x **{}** — {} g/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
                                                      self.get_item(item)["value"])
         em.add_field(name="📦 Minerais ({}/{})".format(nb, data["max_capacite"]), value=mtxt)
 
@@ -746,7 +746,7 @@ class Cobalt:
                 items = []
                 for item in self.items["ITEM"]:
                     obj = self.items["ITEM"][item]
-                    txt += "{} — **{}** › **{}**B/{}\n".format(n, obj["name"], obj["value"],
+                    txt += "{} — **{}** › **{}**G/{}\n".format(n, obj["name"], obj["value"],
                                                               "unité" if obj["qte"] == 1 else "lot de " + str(obj["qte"]))
                     items.append([n, item])
                     n += 1
@@ -782,7 +782,7 @@ class Cobalt:
                 for m in minerais:
                     unival = self.get_item(m)["value"]
                     totm = unival * minerais[m]["qte"]
-                    txt += "{}x **{}** — {}B/unité 》 **{}**B\n".format(minerais[m]["qte"], minerais[m]["name"], unival,
+                    txt += "{}x **{}** — {}G/unité 》 **{}**G\n".format(minerais[m]["qte"], minerais[m]["name"], unival,
                                                                        totm)
                 em = discord.Embed(description=txt, color=0x0047AB)
                 em.set_footer(
@@ -822,7 +822,7 @@ class Cobalt:
                             self.del_item(ctx.message.author, mrep, qte)
                             self.save()
                             self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep), "cobalt")
-                            em.description = "Vente réalisée ! **{}**B ont été transférés sur votre compte.".format(val)
+                            em.description = "Vente réalisée ! **{}**G ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
                             if random.randint(1, 5) == 1:
                                 await self.disp_astuce()
@@ -850,7 +850,7 @@ class Cobalt:
             for m in minerais:
                 unival = self.get_item(m)["value"]
                 totm = unival * minerais[m]["qte"]
-                txt += "{}x **{}** — {} golds/unité 》 **{}**B\n".format(minerais[m]["qte"], minerais[m]["name"], unival, totm)
+                txt += "{}x **{}** — {} golds/unité 》 **{}**G\n".format(minerais[m]["qte"], minerais[m]["name"], unival, totm)
                 val += totm
             txt = "\nTotal de la vente ⟫ **{}** golds".format(val)
             em = discord.Embed(description=txt, color=0x0047AB)
@@ -978,7 +978,7 @@ class Cobalt:
         for m in equip:
             unival = round(self.get_item(m)["value"] / self.get_item(m)["qte"], 2)
             totm = round(unival * equip[m]["qte"], 2)
-            txt += "{}x **{}** — {} golds/unité 》 **{}**B\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
+            txt += "{}x **{}** — {} golds/unité 》 **{}**G\n".format(equip[m]["qte"], equip[m]["name"], unival, totm)
             val += totm
         val = int(val)
         txt += "\nTotal du remboursement ⟫ **{}** golds".format(val)
@@ -998,7 +998,7 @@ class Cobalt:
             self.reset_user_type(ctx.message.author, "items")
             self.save()
             self.wallet.add_credits(ctx.message.author, val, "Remboursement Cobalt", "cobalt")
-            em.description = "Revente réalisée ! **{}**B ont été transférés sur votre compte.".format(val)
+            em.description = "Revente réalisée ! **{}**G ont été transférés sur votre compte.".format(val)
             em.set_footer(text="")
             await self.bot.edit_message(msg, embed=em)
             await self.bot.clear_reactions(msg)

@@ -712,10 +712,10 @@ class Wallet: # MODULE WALLET ==================================================
                         if username.lower() == "none":
                             username = str(await self.bot.get_user_info(u[0]))
                         if u[0] == author.id:
-                            txt += "{}**{}** · {}b ─ *__{}__*\n".format(medal(n), n, u[1], username)
+                            txt += "{}**{}** · {}g ─ *__{}__*\n".format(medal(n), n, u[1], username)
                             found = True
                         else:
-                            txt += "{}**{}** · {}b ─ *{}*\n".format(medal(n), n, u[1], username)
+                            txt += "{}**{}** · {}g ─ *{}*\n".format(medal(n), n, u[1], username)
                         n += 1
                     except:
                         continue
@@ -724,9 +724,9 @@ class Wallet: # MODULE WALLET ==================================================
                 if data:
                     place = self.api.top_find(author)
                     if place:
-                        txt += "(...)\n{}**{}** · {}b ─ *__{}__*\n".format(medal(place), place, data.solde, author)
+                        txt += "(...)\n{}**{}** · {}g ─ *__{}__*\n".format(medal(place), place, data.solde, author)
                     else:
-                        txt += "(...)\nØ · {}b ─ *__{}__*\n".format(data.solde, author)
+                        txt += "(...)\nØ · {}g ─ *__{}__*\n".format(data.solde, author)
 
             em = discord.Embed(title="Top des plus riches du serveur", description=txt, timestamp=ctx.message.timestamp)
             total = self.api.total_credits_on(server)
@@ -838,7 +838,7 @@ class Wallet: # MODULE WALLET ==================================================
                         n = random.randint(3, 11)
                         cols.append([roue[n - 1], roue[n], roue[n + 1]])
                     centre = [cols[0][1], cols[1][1], cols[2][1]]
-                    disp = "**Offre:** {}B\n\n".format(base)
+                    disp = "**Offre:** {}G\n\n".format(base)
                     disp += "{}|{}|{}\n".format(cols[0][0], cols[1][0], cols[2][0])
                     disp += "{}|{}|{} **<<<**\n".format(cols[0][1], cols[1][1], cols[2][1])
                     disp += "{}|{}|{}\n".format(cols[0][2], cols[1][2], cols[2][2])
