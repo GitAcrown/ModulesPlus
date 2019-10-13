@@ -936,7 +936,7 @@ class Wallet: # MODULE WALLET ==================================================
         ;wr config @Squadra 30 10000 -> Donne un bonus de 30 au ;rj et permet d'acheter le rôle à 10k crédits
         ;wr config @Normalfag 0 0 autorj -> Donne la capacité de recueillir automatiquement le ;rj (exemple fictif)
         ;wr config @Random -> Reset les paramètres du rôle"""
-        server = discord.Server
+        server = ctx.message.server
         special = special if special else []
         if role in server.roles:
             if special:
