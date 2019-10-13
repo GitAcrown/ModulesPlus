@@ -324,23 +324,26 @@ class WalletAPI:
             return logs[:nb]
         return []
 
-    def day_trs_from(self, user: discord.Member, jour: str = None):
+    def day_trs_from(self, user: discord.Member, jour: str = None, ignore_tags = None):
         """Retourne les virements d'un jour d'un membre"""
         if not jour:
             jour = time.strftime("%d/%m/%Y", time.localtime())
+        if not ignore_tags:
+            ignore_tags = []
         data = self.get_account(user)
         if data:
             liste = []
             for t in data.logs:
                 if t.timestamp.jour == jour:
-                    liste.append([t.timestamp.float, t])
+                    if not [t for t in t.tags if t in [i for i in ignore_tags]]:
+                        liste.append([t.timestamp.float, t])
             sort = sorted(liste, key=operator.itemgetter(0), reverse=True)
             return [i[1] for i in sort]
         return False
 
-    def day_total_from(self, user: discord.Member, jour: str = None):
+    def day_total_from(self, user: discord.Member, jour: str = None, ignore_tags = None):
         """Retourne la valeur totale de tous les virements du jour visé"""
-        trs = self.day_trs_from(user, jour)
+        trs = self.day_trs_from(user, jour, ignore_tags)
         if trs:
             return sum([t.somme for t in trs])
         return 0
@@ -988,7 +991,7 @@ class Wallet: # MODULE WALLET ==================================================
                                 else:
                                     await self.bot.clear_reactions(dil)
                                     await self.bot.remove_roles(user, role)
-                                    self.api.add_credits(user, calc, "Vente de {}".format(role.name), "vente", "role")
+                                    self.api.add_credits(user, calc, "Vente de {}".format(role.name), "vente", "role", "noreset")
                                     em.description = "Rôle ***{}*** vendu ! **{}** golds ont été transférés sur " \
                                                      "votre compte.".format(role.name, calc)
                                     await self.bot.edit_message(dil, embed=em)
@@ -1003,7 +1006,7 @@ class Wallet: # MODULE WALLET ==================================================
                                         print(e)
                                         return
                                     self.api.remove_credits(user, sysroles[role.id]["price"],
-                                                            "Achat rôle {}".format(role.name), False, "achat", "role")
+                                                            "Achat rôle {}".format(role.name), False, "achat", "role", "noreset")
                                     await self.bot.say("Rôle ***{}*** obtenu avec succès !".format(role.name))
                                 else:
                                     await self.bot.say("Vous n'avez pas assez de crédits pour obtenir ce rôle.")
@@ -1035,7 +1038,7 @@ class Wallet: # MODULE WALLET ==================================================
     async def resetday(self, ctx):
         """Retourne le compte à l'état qu'il était ce matin à 00h00
 
-        N'efface pas les logs de ce qu'il s'est passé entre temps"""
+        N'efface pas les logs de ce qu'il s'est passé entre temps, ni les opérations tagués 'noreset'"""
         author = ctx.message.author
         if self.api.get_account(author):
             rolecheck = self.api.search_roles(ctx.message.server, "bitesthedust")
@@ -1043,7 +1046,7 @@ class Wallet: # MODULE WALLET ==================================================
             if check:
                 data = self.api.get_account(author, True)
                 data["cache"]["last_revenu"] = None
-                trs = self.api.day_total_from(author)
+                trs = self.api.day_total_from(author, ignore_tags=["noreset"])
                 today = datetime.now().strftime("%d/%m/%Y")
                 if trs > 0:
                     self.api.remove_credits(author, trs, "Reset du {}".format(today), False, "reset")
