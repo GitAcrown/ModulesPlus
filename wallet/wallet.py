@@ -673,7 +673,8 @@ class Wallet: # MODULE WALLET ==================================================
                         msg = None
                         for i in range(3):
                             points = "»" * (i + 1)
-                            txt = "**{}** `{}g` {} **{}**".format(debiteur.name, somme, points, creancier.name)
+                            compense = " " * (2 - i)
+                            txt = "**{}** `{}g` {}{} **{}**".format(debiteur.name, somme, points, compense, creancier.name)
                             if not msg:
                                 msg = await self.bot.say(txt)
                             else:
@@ -681,10 +682,10 @@ class Wallet: # MODULE WALLET ==================================================
                             await asyncio.sleep(0.4)
                         if self.api.transfert_credits(debiteur, creancier, somme, raison):
                             await asyncio.sleep(3)
-                            await self.bot.edit_message(msg, txt + "\n\n**Succès.**")
+                            await self.bot.edit_message(msg, txt + "\n**Succès.**")
                         else:
                             await asyncio.sleep(1.5)
-                            await self.bot.edit_message(msg, txt + "\n\n**Échec.** Réessayez plus tard.")
+                            await self.bot.edit_message(msg, txt + "\n**Échec.** Réessayez plus tard.")
                     else:
                         await self.bot.say("Vous n'avez pas cette somme sur votre compte, soyez plus raisonnable.")
                 else:
