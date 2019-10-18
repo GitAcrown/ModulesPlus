@@ -14,6 +14,9 @@ from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
+global_palette = {"electron": 0xeeff00,
+                  "error": 0xd24957,
+                  "success": 0x49d295}
 
 class WalletAPI:
     """API Wallet • Système de monnaie virtuelle"""
@@ -82,7 +85,7 @@ class WalletAPI:
         return 0
 
     def get_top(self, server: discord.Server, limit: int = 20):
-        """Renvoie un top des plus rihes du serveur"""
+        """Renvoie un top des plus riches du serveur"""
         if server.id in self.data:
             results = {}
             for user in self.data[server.id]["USERS"]:
@@ -551,7 +554,7 @@ class Wallet: # MODULE WALLET ==================================================
 
     @wallet_account.command(pass_context=True)
     async def account(self, ctx, user: discord.Member = None):
-        """Voir son Wallet
+        """Voir son Porte-monnaie Wallet
 
         [user] = Voir le compte du membre visé"""
         user = user if user else ctx.message.author
@@ -570,7 +573,7 @@ class Wallet: # MODULE WALLET ==================================================
                 em = discord.Embed(title=user.name, description=txt, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_thumbnail(url=user.avatar_url)
 
-                trs = self.api.get_transfers_from(user, 3)
+                trs = self.api.get_transfers_from(user, 5)
                 if trs:
                     reg = ""
                     for t in trs:
@@ -648,7 +651,7 @@ class Wallet: # MODULE WALLET ==================================================
                       "**Serveur** ─ {}\n" \
                       "**Opérations liées** ─ {}".format(trs.desc, tags, somme, details.name, details.server.name, link)
                 em = discord.Embed(title="Détails de l'opération » {}".format(trs.id), description=txt,
-                                   timestamp=trs.timestamp.brut)
+                                   timestamp=trs.timestamp.brut, color=global_palette["electron"])
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("Identifiant de l'opération introuvable ─ L'opération a peut-être expirée")
@@ -667,9 +670,15 @@ class Wallet: # MODULE WALLET ==================================================
             if self.api.get_account(creancier):
                 if await self.api.sign_up(debiteur):
                     if self.api.enough_credits(debiteur, somme):
-                        txt = ">>> __**Transfert de crédits**__\n**{}** » `{}g` » **{}**".format(
-                            debiteur.name, somme, creancier.name)
-                        msg = await self.bot.say(txt)
+                        msg = None
+                        for i in range(3):
+                            points = "»" * (i + 1)
+                            txt = "**{}** `{}g` {} **{}**".format(debiteur.name, somme, points, creancier.name)
+                            if not msg:
+                                msg = await self.bot.say(txt)
+                            else:
+                                await self.bot.edit_message(msg, txt)
+                            await asyncio.sleep(0.4)
                         if self.api.transfert_credits(debiteur, creancier, somme, raison):
                             await asyncio.sleep(3)
                             await self.bot.edit_message(msg, txt + "\n\n**Succès.**")
@@ -731,7 +740,8 @@ class Wallet: # MODULE WALLET ==================================================
                     else:
                         txt += "(...)\nØ · {}g ─ *__{}__*\n".format(data.solde, author)
 
-            em = discord.Embed(title="Top des plus riches du serveur", description=txt, timestamp=ctx.message.timestamp)
+            em = discord.Embed(title="Top des plus riches du serveur", description=txt, timestamp=ctx.message.timestamp,
+                               color=global_palette["electron"])
             total = self.api.total_credits_on(server)
             members = self.api.total_accounts_on(server)
             em.set_footer(text="Total = {}g avec {} comptes".format(total, members))
@@ -750,7 +760,7 @@ class Wallet: # MODULE WALLET ==================================================
         hier = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
 
         # Afin de pouvoir modifier facilement
-        rj = 100
+        rj = 120
         jc = 50
 
         if await self.api.sign_up(user):
@@ -903,11 +913,11 @@ class Wallet: # MODULE WALLET ==================================================
                         gain = offre - base
                         self.api.add_credits(user, gain, "Gain à la machine à sous", "slot")
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
-                                           color=0x49ff6a)
+                                           color=global_palette["success"])
                     else:
                         self.api.remove_credits(user, base, "Perte à la machine à sous", False, "slot")
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
-                                           color=0xff4971)
+                                           color=global_palette["error"])
                     em.set_footer(text=gaintxt.format(offre, "golds"))
                     await self.bot.delete_message(msg)
                     await self.bot.say(embed=em)
