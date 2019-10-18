@@ -573,7 +573,7 @@ class Wallet: # MODULE WALLET ==================================================
                 em = discord.Embed(title=user.name, description=txt, color=user.color, timestamp=ctx.message.timestamp)
                 em.set_thumbnail(url=user.avatar_url)
 
-                trs = self.api.get_transfers_from(user, 5)
+                trs = self.api.get_transfers_from(user, 4)
                 if trs:
                     reg = ""
                     for t in trs:
@@ -583,7 +583,7 @@ class Wallet: # MODULE WALLET ==================================================
                             somme = "+" + str(t.somme)
                         desc = t.desc if len(t.desc) <= 35 else t.desc[:35] + "..."
                         reg += "`{}` · **{}** ─ *{}*\n".format(t.id, somme, desc)
-                    em.add_field(name="Opérations", value=reg)
+                    em.add_field(name="Dernières opérations", value=reg)
                 await self.bot.say(embed=em)
             return
         await self.bot.say("Ce membre ne possède pas de compte *Wallet*.")
