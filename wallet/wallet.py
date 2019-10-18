@@ -681,10 +681,10 @@ class Wallet: # MODULE WALLET ==================================================
                                 await self.bot.edit_message(msg, txt)
                             await asyncio.sleep(0.4)
                         if self.api.transfert_credits(debiteur, creancier, somme, raison):
-                            await asyncio.sleep(3)
+                            await asyncio.sleep(1)
                             await self.bot.edit_message(msg, txt + "\n**Succès.**")
                         else:
-                            await asyncio.sleep(1.5)
+                            await asyncio.sleep(0.5)
                             await self.bot.edit_message(msg, txt + "\n**Échec.** Réessayez plus tard.")
                     else:
                         await self.bot.say("Vous n'avez pas cette somme sur votre compte, soyez plus raisonnable.")
