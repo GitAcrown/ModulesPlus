@@ -651,7 +651,7 @@ class Wallet: # MODULE WALLET ==================================================
                       "**Serveur** ─ {}\n" \
                       "**Opérations liées** ─ {}".format(trs.desc, tags, somme, details.name, details.server.name, link)
                 em = discord.Embed(title="Détails de l'opération » {}".format(trs.id), description=txt,
-                                   timestamp=trs.timestamp.brut, color=global_palette["electron"])
+                                   timestamp=trs.timestamp.raw, color=global_palette["electron"])
                 await self.bot.say(embed=em)
             else:
                 await self.bot.say("Identifiant de l'opération introuvable ─ L'opération a peut-être expirée")
