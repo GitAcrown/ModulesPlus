@@ -987,7 +987,7 @@ class Wallet: # MODULE WALLET ==================================================
                                 calc = round(sysroles[role.id]["price"] / 2)
                                 txt = "Voulez-vous vendre le rôle {} ?\nVous obtiendrez 50% du prix d'origine, " \
                                       "c'est-à-dire **{}** golds.".format(role.name, calc)
-                                em = discord.Embed(description=txt)
+                                em = discord.Embed(description=txt, color=global_palette["electron"])
                                 em.set_author(name="Boutique de rôles ─ Vente", icon_url=user.avatar_url)
                                 dil = await self.bot.say(embed=em)
                                 await asyncio.sleep(0.1)
@@ -1036,7 +1036,7 @@ class Wallet: # MODULE WALLET ==================================================
                     rolename = role.mention if role.mentionable else "**@{}**".format(role.name)
                     prix = sys["roles_settings"][role.id]["price"] if sys["roles_settings"][role.id]["price"] > 0 else "Indisponible"
                     txt += "{} ─ {} (BRJ = {})\n".format(rolename, prix, sys["roles_settings"][role.id]["bonus_rj"])
-                em = discord.Embed(description=txt)
+                em = discord.Embed(description=txt, color=global_palette["electron"])
                 em.set_author(name="Boutique de rôles ─ Liste", icon_url=user.avatar_url)
                 em.set_footer(text="Obtenir un rôle = ;wr shop <role>")
                 await self.bot.say(embed=em)
