@@ -496,12 +496,13 @@ class WalletAPI:
 
     def prune_users(self, server: discord.Server):
         """Purge les membres absents d'un serveur"""
-        data = self.get_server(server, "USERS")
+        origin = self.get_server(server, "USERS")
+        data = deepcopy(origin)
         allusers = [u.id for u in server.members]
         liste = []
         for uid in data:
             if uid not in allusers:
-                del data[uid]
+                del origin[uid]
                 liste.append(uid)
         self.save(True)
         return liste
