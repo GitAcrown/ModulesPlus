@@ -7,6 +7,7 @@ import time
 import discord
 from collections import namedtuple
 from datetime import datetime, timedelta
+from copy import deepcopy
 
 from __main__ import send_cmd_help
 from discord.ext import commands
