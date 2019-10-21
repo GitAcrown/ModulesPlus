@@ -1092,7 +1092,7 @@ class Wallet: # MODULE WALLET ==================================================
         """Purge les comptes Wallet des membres qui ne sont plus sur le serveur"""
         server = ctx.message.server
 
-        def check(self, reaction, user):
+        def check(reaction, user):
             return not user.bot
 
         msg = await self.bot.say("**Attention** ─ Cette commande efface __définitivement__ les comptes Wallet des membres absents du serveur.\n"
