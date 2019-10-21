@@ -906,14 +906,20 @@ class Cobalt:
                         qte = int(rep.content)
                         if qte <= mine["qte"]:
                             val = self.get_item(itemid)["value"] * qte
-                            self.del_item(ctx.message.author, itemid, qte)
-                            self.save()
-                            self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {} [{}]".format(item["name"], itemid), "cobalt")
-                            em.description = "Vente réalisée ! **{}** golds ont été transférés sur votre compte.".format(val)
-                            await self.bot.edit_message(msg, embed=em)
-                            if random.randint(1, 5) == 1:
-                                await self.disp_astuce()
-                            return
+                            if self.wallet.add_credits(ctx.message.author, val,
+                                                       "Vente Cobalt › {} [{}]".format(item["name"], itemid), "cobalt"):
+                                self.del_item(ctx.message.author, itemid, qte)
+                                self.save()
+                                em.description = "Vente réalisée ! **{}** golds ont été transférés sur votre compte.".format(val)
+                                await self.bot.edit_message(msg, embed=em)
+                                if random.randint(1, 5) == 1:
+                                    await self.disp_astuce()
+                                return
+                            else:
+                                em.description = "**Erreur** — Il semblerait que la connexion à Wallet ait été perdue.\n" \
+                                                 "Ceci est un bug connu, contactez Acrown#4424 avant de retenter la vente."
+                                await self.bot.edit_message(msg, embed=em)
+                                return
                         else:
                             em.description = "**Impossible** — Vous n'avez pas une telle quantité dans votre inventaire !"
                             await self.bot.edit_message(msg, embed=em)
