@@ -1097,6 +1097,8 @@ class Wallet: # MODULE WALLET ==================================================
 
         msg = await self.bot.say("**Attention** ─ Cette commande efface __définitivement__ les comptes Wallet des membres absents du serveur.\n"
                                  "Cette action est irréversible. Voulez-vous continuer ?")
+        await self.bot.add_reaction(msg, "✔")
+        await self.bot.add_reaction(msg, "✖")
         rep = await self.bot.wait_for_reaction(["✔", "✖"], message=msg, timeout=20, check=check, user=ctx.message.author)
         if rep is None or rep.reaction.emoji == "✖":
             await self.bot.delete_message(msg)
