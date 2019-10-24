@@ -535,19 +535,14 @@ class Wallet: # MODULE WALLET ==================================================
         print("Wallet - Sauvegarde effectuée")
 
     @commands.group(name="wallet", aliases=["w", "b"], pass_context=True, invoke_without_command=True, no_pm=True)
-    async def wallet_account(self, ctx, arg):
+    async def wallet_account(self, ctx, membre: discord.Member = None):
         """Ensemble de commandes relatives à Wallet (économie virtuelle)
 
         En absence de mention, renvoie les détails du compte de l'invocateur"""
         if ctx.invoked_subcommand is None:
-            if not arg:
-                await ctx.invoke(self.account, user=ctx.message.author)
-            elif type(arg) == discord.Member:
-                await ctx.invoke(self.account, user=arg)
-            elif type(arg) == str:
-                await ctx.invoke(self.guild, guild=arg)
-            else:
-                await send_cmd_help(ctx)
+            if not membre:
+                membre = ctx.message.author
+            await ctx.invoke(self.account, user=membre)
 
     @wallet_account.command(pass_context=True)
     async def new(self, ctx):
@@ -558,12 +553,6 @@ class Wallet: # MODULE WALLET ==================================================
         else:
             await self.api.create_account(ctx.message.author)
             await self.bot.say("**Compte créé ─ Consultez-le avec `;wallet`")
-
-    @wallet_account.command(pass_context=True)
-    async def guild(self, ctx, guild: str):
-        """Voir la guilde liée à l'identifiant"""
-        if guild.startswith("lel"):
-            await self.bot.say("Guilde : lel")
 
     @wallet_account.command(pass_context=True)
     async def account(self, ctx, user: discord.Member = None):
