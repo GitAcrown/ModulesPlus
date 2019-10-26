@@ -244,7 +244,7 @@ class Hanged:
                         msg = "Le mot était **{}**".format(mot.literal)
                         unord = []
                         for p in session["players"]:
-                            perte = session["players"][p]["-"]
+                            perte = session["players"][p]["-"] * 10
                             unord.append([perte, p])
                         classt = sorted(unord, key=operator.itemgetter(0), reverse=True)
                         txt = ""
@@ -262,7 +262,7 @@ class Hanged:
                         msg = "***Bravo !*** Le mot est bien **{}**".format(mot.literal)
                         unord = []
                         for p in session["players"]:
-                            bonus = session["players"][p]["+"]
+                            bonus = session["players"][p]["+"] * 10
                             unord.append([bonus, p])
                         classt = sorted(unord, key=operator.itemgetter(0), reverse=True)
                         txt = ""
