@@ -219,6 +219,7 @@ class Hanged:
                     session["vies"] = 6 + len(themes)
                     session["players"][author.id] = {"+": 0, "-": 0}
                     session["timeout"] = 0
+                    session["avancement"] = mot.encode
                     session["channel"] = ctx.message.channel
                     session["on"] = True
                     if self.gen_embed(server):
