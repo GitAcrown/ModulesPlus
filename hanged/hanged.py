@@ -182,7 +182,7 @@ class Hanged:
         if session["on"]:
             txt = "**Vies** — {}\n".format("\💟" * session["vies"])
             txt += "**Joueurs** — {}\n".format(" ".join(["`{}`".format(server.get_member(i).name) for i in session["players"]]))
-            txt += "\n{}".format("".join(session["avancement"]))
+            txt += "\n[{}]".format("".join(session["avancement"]))
 
             em = discord.Embed(title="Pendu — {}".format(", ".join(session["themes"])), description=txt, color=0x7289DA)
             if session["propose"]:
@@ -219,6 +219,7 @@ class Hanged:
                     session["vies"] = 6 + len(themes)
                     session["players"][author.id] = {"+": 0, "-": 0}
                     session["timeout"] = 0
+                    session["mot"] = mot
                     session["avancement"] = mot.encode
                     session["channel"] = ctx.message.channel
                     session["on"] = True
