@@ -251,7 +251,7 @@ class Hanged:
                         for u in classt:
                             user = server.get_member(u[1])
                             self.wallet.remove_credits(user, u[0], "Partie perdue au pendu", True, "pendu")
-                            txt += "*{}*  — **-{}**g\n".format(user.name, u[0])
+                            txt += "*{}*  — **{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Échec", description=msg, color=0xe15555)
                         em.add_field(name="Perdants", value=txt)
                         em.set_footer(text=self.msg_bye())
