@@ -962,6 +962,245 @@ class Wallet: # MODULE WALLET ==================================================
         else:
             await self.bot.say("Un compte Wallet est nécessaire pour jouer à la machine à sous.")
 
+    @commands.command(pass_context=True)
+    async def fontaine(self, ctx):
+        """Que vous réserve la fontaine aujourd'hui ?"""
+        user = ctx.message.author
+        if await self.api.sign_up(user):
+            if self.api.enough_credits(user, 1):
+                cool = self.api.get_cooldown(user, "fontaine")
+                if not cool:
+                    intro = random.choice(["Vous lancez une pièce", "Vous posez une pièce au fond",
+                                           "Voilà une pièce de plus dans la fontaine", "Vous jetez une pièce"])
+                    msg = None
+                    for i in range(3):
+                        points = "•" * (i + 1)
+                        txt = "**Fontaine** ─ {} {}".format(intro, points)
+                        if not msg:
+                            msg = await self.bot.say(txt)
+                        else:
+                            await self.bot.edit_message(msg, txt)
+                        await asyncio.sleep(0.4)
+
+                    async def send_result(txt):
+                        em = discord.Embed(description=txt, color=0xFFEADB)
+                        em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                        await self.bot.say(embed=em)
+
+                    event = random.randint(1, 10)
+                    if 1 <= event <= 5:
+                        txt = random.choice(["Et... rien ne se passe.", "Vous avez gaché votre argent.",
+                                             "Vous n'avez clairement pas de chance, il ne s'est rien produit.",
+                                             "Mince, c'est loupé.", "Dommage, il n'y a rien.", "Et... R. A. S.",
+                                             "Comme prévu, il ne se passe rien.", "♪ Non, rien de rien... ♫",
+                                             "Vous avez beau bien regarder et croiser les doigts, il ne se passe rien.",
+                                             "`Erreur 402, payez davantage.`",
+                                             "Continuez de perdre votre argent inutilement.",
+                                             "La chance sourit aux audacieux, dit-on."])
+                        self.api.remove_credits(user, 1, "Fontaine", False, "fontaine")
+                        self.api.add_cooldown(user, "fontaine", 120)
+                        await send_result(txt)
+                    elif event == 6:
+                        txt = random.choice(
+                            ["Vous n'aviez pas vu que la fontaine était vide... Vous récuperez votre pièce.",
+                             "Quelqu'un vous arrête : vous ne **devez pas** lancer des pièces dans cette fontaine ! (Vous récuperez votre pièce)",
+                             "Vous changez d'avis, finalement vous gardez votre pièce.",
+                             "Vous loupez bêtement la fontaine et vous récuperez la pièce...",
+                             "Oups ! Dans votre confusion vous avez confondu la fontaine et vos WC. Vous récuperez la pièce.",
+                             "La chose que vous avez lancé n'était peut-être pas une pièce, finalement... (Vous ne dépensez rien)"])
+                        self.api.add_cooldown(user, "fontaine", 60)
+                        await send_result(txt)
+                    elif event == 7:
+                        txt = random.choice([
+                                                "Miracle ! Votre banquière vous informe qu'un inconnu a transféré {} crédits sur votre compte !",
+                                                "Vous trouvez sur le chemin du retour un ticket de loto gagnant de {} bits !",
+                                                "Vous trouvez sur le chemin du retour une pièce rare, valant {} bits !",
+                                                "Avec cette chance, vous gagnez un pari important et vous obtenez {} bits !",
+                                                "Vous croisez Bill Gates qui vous donne {} crédits !",
+                                                "Vous croisez Elon Musk qui vous donne {} crédits (et promet un tour de fusée)."])
+                        self.api.add_cooldown(user, "fontaine", 180)
+                        val = random.randint(10, 100)
+                        self.pay.add_credits(user, val - 1, "Fontaine", "fontaine")
+                        await send_result(txt.format(val))
+                    elif event == 8 or event == 9:
+                        self.api.add_cooldown(user, "fontaine", 180)
+                        situation = random.randint(1, 3)
+
+                        if situation == 1:
+                            txt = "Sur le retour, vous apercevez un musicien de rue qui semble avoir remporté pas mal d'argent aujourd'hui et il a le dos tourné, occupé à arranger son instrument.\n" \
+                                  "**Prenez-vous le risque de lui voler ses gains ?**"
+                            em = discord.Embed(description=txt, color=0xFFEADB)
+                            em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                            dil = await self.bot.say(embed=em)
+                            await asyncio.sleep(0.1)
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
+                            rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
+                            if rep is None or rep.reaction.emoji == "❎":
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(["En faisant demi-tour vous êtes rattrapé par un caméraman : "
+                                                         "c'était une scène en caméra cachée ! Vous gagnez {} bits pour vous récompenser.",
+                                                         "Sur le chemin du retour vous recevez un appel : vous êtes un des gagnant d'une grande lotterie nationale ! Vous remportez {} bits.",
+                                                         "L'homme vous rattrape : il a bien vu votre intention et décide de vous donner une partie de ses gains ! (+{} bits)"])
+                                    val = random.randint(10, 30)
+                                    self.api.add_credits(user, val - 1, "Fontaine", "fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice(["L'homme se remet à jouer et vous restez là, à le regarder.",
+                                                         "L'homme se retourne et se met à chanter du Bigflo et Oli, c'est dommage.",
+                                                         "L'homme se retourne et se met à chanter du Justin Bieber, c'était pourtant mérité...",
+                                                         "L'homme vous regarde d'un air louche et s'enfuit en emportant ses gains."])
+                                    self.api.remove_credits(user, 1, "Fontaine", False, "fontaine")
+                                    await send_result(txt)
+                            else:
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(["Il ne vous a pas vu ! Vous partez avec {} crédits !",
+                                                         "C'est un succès, vous récuperez {} bits.",
+                                                         "Bien joué, il ne vous a pas repéré ! Vous récuperez {} bits !",
+                                                         "Vous subtilisez avec succès {} crédits de sa gamelle !"])
+                                    val = random.randint(5, 60)
+                                    self.api.add_credits(user, val - 1, "Fontaine", "fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice([
+                                                            "Oups, c'est un échec cuisant. Il appelle la police et vous lui devez {} crédits...",
+                                                            "L'homme vous rattrape et vous perdez {} crédits en plus de ceux que vous avez tenté de lui voler...",
+                                                            "~~C'est un succès~~ vous trébuchez et l'homme vous rattrape et vous tabasse. Vous perdez {} crédits.",
+                                                            "Une vieille dame vous assomme avec son sac alors que vous étiez en train de ramasser les pièces. A votre réveil vous aviez perdu {} bits."])
+                                    val = random.randint(20, 80)
+                                    self.api.remove_credits(user, val + 1, "Fontaine", True, "fontaine")
+                                    await send_result(txt.format(val))
+                        elif situation == 2:
+                            txt = "En rentrant chez vous, une femme laisse tomber un porte-monnaie devant vous.\n" \
+                                  "**Est-ce que vous le gardez ?**"
+                            em = discord.Embed(description=txt, color=0xFFEADB)
+                            em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                            dil = await self.bot.say(embed=em)
+                            await asyncio.sleep(0.1)
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
+                            rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
+                            if rep is None or rep.reaction.emoji == "❎":
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice([
+                                                            "Vous la rattrapez et vous lui rendez le porte-monnaie. Pour vous remercier elle vous donne quelques pièces. (+{} bits)",
+                                                            "Vous essayez de la rattraper mais votre embonpoint vous en empêche et elle disparaît. Finalement, vous le gardez. (+{} bits)",
+                                                            "Vous lui rendez le porte-monnaie. Pour vous remercier elle vous donne un ticket de loto qui s'avère être gagnant ! (+{} bits)"])
+                                    val = random.randint(8, 40)
+                                    self.api.add_credits(user, val - 1, "Fontaine", "fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice([
+                                                            "Vous lui rendez avec succès le porte-monnaie et elle s'en va prendre un taxi de luxe.",
+                                                            "Vous arrivez à la rattraper, vous lui rendez le porte-monnaie mais il était de toute manière vide, il n'y avait que des photos !",
+                                                            "Vous tentez de la rattraper mais vous échouez. Vous regardez le porte-monnaie mais il est vide..."])
+                                    self.api.remove_credits(user, 1, "Fontaine", True, "fontaine")
+                                    await send_result(txt)
+                            else:
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(
+                                        ["Super ! Le porte-monnaie est plein de liquide ! Vous gagnez {} crédits.",
+                                         "Le porte-monnaie est plutôt vide, mais vous vous contentez des restes. (+{} bits)",
+                                         "Vous récuperez rapidement le porte-monnaie. Miracle ! Vous y trouvez {} bits.",
+                                         "Vous vous sentez mal mais au moins, vous récuperez {} crédits !"])
+                                    val = random.randint(30, 90)
+                                    self.api.add_credits(user, val - 1, "Fontaine", "fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice([
+                                                            "Vous essayez de le récuperer mais la femme s'est retournée et le ramasse avant vous. Elle vous donne une claque qui vous met K.O. (-{} bits de frais médicaux)",
+                                                            "Ayant eu l'impression d'être suivie, la femme appelle la police et ceux-ci vous arrêtent en possession de son porte-monnaie ! Vous perdez {} crédits.",
+                                                            "Vous ramassez le porte-monnaie sur le bord du trottoir avant de vous faire renverser ! Le porte-monnaie, vide, ne vous servira pas pour payer le frais d'hospitalisation... (-{} bits)"])
+                                    val = random.randint(40, 120)
+                                    self.api.remove_credits(user, val + 1, "Fontaine", True, "fontaine")
+                                    await send_result(txt.format(val))
+                        elif situation == 3:
+                            txt = "Il semblerait que la fontaine soit tombée en panne à cause de votre lancer de pièce.\n" \
+                                  "**Tentez-vous de la réparer ?**"
+                            em = discord.Embed(description=txt, color=0xFFEADB)
+                            em.set_author(name="Fontaine", icon_url=user.avatar_url)
+                            dil = await self.bot.say(embed=em)
+                            await asyncio.sleep(0.1)
+                            await self.bot.add_reaction(dil, "✅")
+                            await self.bot.add_reaction(dil, "❎")
+                            rep = await self.bot.wait_for_reaction(["✅", "❎"], message=dil, timeout=30, user=user)
+                            if rep is None or rep.reaction.emoji == "❎":
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(["Vous vous en allez, sans que personne n'ai rien vu.",
+                                                         "Vous faîtes semblant de n'avoir rien vu, en vous décalant discrètement sur le côté.",
+                                                         "Vous vous éclipsez discrètement afin de ne pas être remarqué.",
+                                                         "Vous dissumulez votre visage en courant au loin."])
+                                    self.api.remove_credits(user, 1, "Fontaine", True)
+                                    await send_result(txt)
+                                else:
+                                    txt = random.choice([
+                                                            "Vous essayez de fuir mais un passant vous rattrape : va falloir payer la réparation ! (-{} bits)",
+                                                            "Alors que vous tentez de vous éclipser discrètement, un passant vous pointe du doigt... Vous êtes repéré ! (-{} bits)",
+                                                            "En tentant de fuir de manière discrète vous trébuchez sur la fontaine et vous perdez {} bits..."])
+                                    val = random.randint(30, 80)
+                                    self.api.remove_credits(user, val + 1, "Fontaine", False, "fontaine")
+                                    await send_result(txt.format((val)))
+                            else:
+                                await self.bot.delete_message(dil)
+                                result = random.choice(["success", "fail"])
+                                if result == "success":
+                                    txt = random.choice(
+                                        [
+                                            "Vous arrivez à déboucher le trou créé avec toutes les pièces jetées. Vous en profitez pour en prendre une poignée. (+{} bits)",
+                                            "Vous réussissez à réparer la fontaine : la mairie vous remercie avec un chèque de {} crédits.",
+                                            "Grâce à votre talent (ou votre chance, qui sait ?) vous réussissez à réparer la fontaine. Pour vous récompenser, la ville vous verse {} bits."])
+                                    val = random.randint(20, 80)
+                                    self.api.add_credits(user, val - 1, "Fontaine", "fontaine")
+                                    await send_result(txt.format(val))
+                                else:
+                                    txt = random.choice(
+                                        ["Vous tentez de déboucher la fontaine mais c'est un échec cuisant."
+                                         " Vous allez devoir payer les techniciens qui vont le faire à votre place. (-{} bits)",
+                                         "Après avoir essayé plusieurs fois, vous abandonnez. La ville vous demande alors de payer {} bits de frais de réparation.",
+                                         "Malheureusement pour vous, un touriste qui passait faire la "
+                                         "même chose que vous s'est énervé de voir la fontaine dans un tel état et vous casse le nez. (-{} bits de frais médicaux)"])
+                                    val = random.randint(20, 60)
+                                    self.api.remove_credits(user, val + 1, "Fontaine", True, "fontaine")
+                                    await send_result(txt.format(val))
+                    else:
+                        txt = random.choice(
+                            ["Tout d'un coup vous avez le vertige... vous tombez dans les pommes... (-{} bits)",
+                             "Un policier vous arrête : c'est interdit de lancer des pièces dans une fontaine historique ! Vous recevez une amende de {} bits.",
+                             "Exaspéré de voir qu'il ne se produit rien, vous donnez un coup de pied sur un rocher : vous vous brisez la jambe, ça va coûter cher en frais médicaux ! (-{} bits)",
+                             "Exaspéré de voir qu'il ne s'est rien produit, vous roulez à 110 sur une route à 80 : vous recevez une amende de {} crédits le lendemain.",
+                             "Votre banquier vous appelle : il y a eu une erreur concernant votre dernier virement, vous allez devoir payer de nouveau... (-{} bits)"])
+                        val = random.randint(10, 75)
+                        self.api.remove_credits(user, val + 1, "Fontaine", True, "fontaine")
+                        await send_result(txt.format(val))
+                else:
+                    txt = random.choice(["Vous êtes trop fatigué pour lancer des pièces dans une fontaine...",
+                                         "La fontaine est fermée pour travaux ",
+                                         "Une impressionnante queue vous empêche de faire un voeux.",
+                                         "Vous n'allez quand même pas passer la journée à lancer des pièces, si ?",
+                                         "Il semblerait que la chance, ça se mérite.",
+                                         "**P A S  E N C O R E.**",
+                                         "Ceci est un easter-egg.",
+                                         "La fontaine n'est pas encore prête à vous accueillir.",
+                                         "`Une fontaine est d'abord le lieu d'une source, d'une « eau vive qui sort "
+                                         "de terre », selon le premier dictionnaire de l'Académie française. C'est "
+                                         "également une construction architecturale, généralement accompagnée d'un bassin, d'où jaillit de l'eau.`",
+                                         "Vous ne semblez pas assez patient pour mériter cette action.",
+                                         "Où trouvez-vous tout ce temps pour gâcher votre argent comme ça ?!",
+                                         "Et puis d'ailleurs, elle vient d'où cette pratique qui consiste à jeter de l'argent dans une fontaine ?",
+                                         "**Le saviez-vous** : la coutume de lancer une pièce dans la fontaine vient de la *fontana di Trevi* à Rome.\nIl est de coutume de jeter une pièce de monnaie par le bras droit en tournant le dos à la fontaine avant de quitter « la ville éternelle », une superstition associée à la fontaine étant que celui qui fait ce geste est assuré de revenir dans la capitale italienne afin de retrouver cette pièce."])
+                    txt += " (Cooldown {})".format(cool.string)
+                    await self.bot.say(txt)
+
     # ROLES WALLET ====================================================================
     @commands.group(name="walletroles", aliases=["wr"], pass_context=True, no_pm=True)
     async def _wallet_roles(self, ctx):
