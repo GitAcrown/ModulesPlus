@@ -941,7 +941,7 @@ class Wallet: # MODULE WALLET ==================================================
                                            color=global_palette["success"])
                     else:
                         rolecheck = self.api.search_roles(ctx.message.server, "lovetrain")
-                        check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
+                        check = [n for n in user.roles if n.id in [u.id for u in rolecheck]]
                         if check:
                             em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
                                                color=global_palette["error"])
