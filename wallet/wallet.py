@@ -661,6 +661,28 @@ class Wallet: # MODULE WALLET ==================================================
             await self.bot.say("Identifiant de l'opération invalide ─ "
                                "Les identifiants d'opérations sont composés de 5 symboles (chiffres & lettres)")
 
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>< GUILDES ><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    @commands.group(name="guilde", aliases=["g"], pass_context=True, invoke_without_command=True, no_pm=True)
+    async def wallet_guild(self, ctx, guild: str = None):
+        """Ensemble de commandes relatives à Wallet (économie virtuelle)
+
+        En absence de mention, renvoie les détails du compte de l'invocateur"""
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.infos, guild=guild)
+
+    @wallet_guild.command(pass_context=True)
+    async def create(self, ctx):
+        """Créer une nouvelle guilde"""
+
+    @wallet_guild.command(pass_context=True)
+    async def infos(self, ctx, guild: str = None):
+        """Affiche les informations sur la guilde visée"""
+
+
+
+
+# AUTRES -------------------------------------------------------------------
 
     @commands.command(pass_context=True, no_pm=True)
     async def give(self, ctx, creancier: discord.Member, somme: int, *raison):
@@ -902,7 +924,7 @@ class Wallet: # MODULE WALLET ==================================================
                     if base == 28: intro = "Un nombre parfait pour jouer"
                     if base == 161: intro = "Le nombre d'or pour porter chance"
                     if base == 420: intro = "420BLAZEIT"
-                    if base == 314: intro = "π."
+                    if base == 314: intro = "π"
                     msg = None
                     for i in range(3):
                         points = "•" * (i + 1)
@@ -918,9 +940,18 @@ class Wallet: # MODULE WALLET ==================================================
                         em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
                                            color=global_palette["success"])
                     else:
-                        self.api.remove_credits(user, base, "Perte à la machine à sous", False, "slot")
-                        em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
-                                           color=global_palette["error"])
+                        rolecheck = self.api.search_roles(ctx.message.server, "lovetrain")
+                        check = [n for n in author.roles if n.id in [u.id for u in rolecheck]]
+                        if check:
+                            em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
+                                               color=global_palette["error"])
+                            gaintxt = random.choice(["Tiens, on dirait que la machine est cassée... Vous n'avez pas perdu d'argent.",
+                                                     "Quelle chance, on dirait bien que vous n'avez rien perdu !",
+                                                     "Dirty Deeds Done Dirt Cheap (Vous ne perdez rien)"])
+                        else:
+                            self.api.remove_credits(user, base, "Perte à la machine à sous", False, "slot")
+                            em = discord.Embed(title="Machine à sous ─ {}".format(user.name), description=disp,
+                                               color=global_palette["error"])
                     em.set_footer(text=gaintxt.format(offre, "golds"))
                     await self.bot.delete_message(msg)
                     await self.bot.say(embed=em)
@@ -957,7 +988,7 @@ class Wallet: # MODULE WALLET ==================================================
         if role in server.roles:
             if special:
                 for i in special:
-                    if i not in ["hermitpurple", "kingcrimson", "bitesthedust"]: # Chuuuuuut.
+                    if i not in ["hermitpurple", "kingcrimson", "bitesthedust", "lovetrain"]: # Chuuuuuut.
                         await self.bot.say("**Erreur** ─ Le code special `{}` n'existe pas.".format(i))
                         return
             if bonus_rj <= 100:

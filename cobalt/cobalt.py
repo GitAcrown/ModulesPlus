@@ -821,7 +821,7 @@ class Cobalt:
                             val = self.get_item(mrep)["value"] * qte
                             self.del_item(ctx.message.author, mrep, qte)
                             self.save()
-                            self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep), "cobalt")
+                            self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep), "cobalt", "noreset")
                             em.description = "Vente réalisée ! **{}**G ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
                             if random.randint(1, 5) == 1:
@@ -907,7 +907,7 @@ class Cobalt:
                         if qte <= mine["qte"]:
                             val = self.get_item(itemid)["value"] * qte
                             if self.wallet.add_credits(ctx.message.author, val,
-                                                       "Vente Cobalt › {} [{}]".format(item["name"], itemid), "cobalt"):
+                                                       "Vente Cobalt › {} [{}]".format(item["name"], itemid), "cobalt", "noreset"):
                                 self.del_item(ctx.message.author, itemid, qte)
                                 self.save()
                                 em.description = "Vente réalisée ! **{}** golds ont été transférés sur votre compte.".format(val)
@@ -938,7 +938,7 @@ class Cobalt:
                         self.del_item(ctx.message.author, itemid, qte)
                         self.save()
                         self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(item["name"]),
-                                                "cobalt")
+                                                "cobalt", "noreset")
                         em = discord.Embed(description="Vente réalisée ! **{}** golds ont été transférés sur votre compte."
                                                        "".format(val),
                                            color=0x0047AB)
