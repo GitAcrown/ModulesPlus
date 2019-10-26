@@ -172,9 +172,9 @@ class Hanged:
         if session["on"]:
             if not msg.author.bot:
                 if msg.author.id in session["players"]:
-                    if msg.content.lower()[0] not in ["?", "!", ";;", "&", "\\", ":", ">", ";", "."] and len(
-                            msg.content.split(" ")) > 1:
-                        return True
+                    if msg.content.lower()[0] not in ["?", "!", ";;", "&", "\\", ":", ">", ";", "."]:
+                        if len(msg.content.split(" ")) == 1:
+                            return True
         return False
 
     def gen_embed(self, server: discord.Server):
