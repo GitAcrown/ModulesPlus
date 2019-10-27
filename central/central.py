@@ -85,9 +85,9 @@ class CentralAPI:
             self.meta["cb_waitlist"].remove(self.meta["cb_waitlist"][0])
         return False
 
-    def clever_isnext(self, author: discord.Member):
+    def clever_isnext(self, author: discord.Member, msg: str):
         if self.meta["cb_waitlist"]:
-            if self.meta["cb_waitlist"][0][0] == author:
+            if self.meta["cb_waitlist"][0] == [author, msg]:
                 return True
         return False
 
@@ -116,7 +116,7 @@ class Central:
         self.save_sys(True)
         return True
 
-    @commands.command(pass_context=True)
+    @commands.command(aliases=["t"], pass_context=True)
     async def talk(self, ctx, *msg):
         """Discutez avec le bot (utilise Cleverbot + Base de données locale)"""
         msg = " ".join(msg)
