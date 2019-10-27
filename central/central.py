@@ -20,7 +20,7 @@ class CentralAPI:
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
-        self.meta = {"last_save": 0, "cb_sess": False}
+        self.meta = {"last_save": 0, "cb_sess": False, "cb_waitlist": []}
         self.clever = cleverbotfree.cbfree.Cleverbot()
 
     def save(self, force: bool = False):
@@ -37,31 +37,59 @@ class CentralAPI:
             self.save()
         return self.data[user.id]
 
-    def check_clever_session(self):
-        return self.meta["cb_sess"]
-
-    def get_clever_session(self):
+    def get_clever(self):
         if not self.meta["cb_sess"]:
             try:
                 self.clever.browser.get(self.clever.url)
                 self.meta["cb_sess"] = True
+                self.meta["cb_waitlist"] = []
             except:
                 self.clever.browser.close()
                 return False
         return True
 
-    def chat(self, userInput: str):
-        if self.get_clever_session():
+    def check_clever(self):
+        return self.meta["cb_sess"]
+
+    def reset_clever(self):
+        self.meta["cb_sess"] = False
+        self.meta["cb_waitlist"] = []
+        self.clever.browser.close()
+        return True
+
+    def clever_chat(self, msg):
+        if self.get_clever():
             try:
                 self.clever.get_form()
             except:
                 return False
-            if userInput in ["quit", "quitter", "fermer"]:
-                self.clever.browser.close()
-                return "Bye :wave:"
-            self.clever.send_input(userInput)
+            if msg in ["quit", "quitter", "stop"]:
+                self.reset_clever()
+                return "**Fin de session** ─ Bye :wave:"
+            self.clever.send_input(msg)
             bot = self.clever.get_response()
             return bot
+        return False
+
+    def clever_waitlist_add(self, author: discord.Member, msg: str):
+        self.meta["cb_waitlist"].append([author, msg])
+        return self.meta["cb_waitlist"]
+
+    def clever_waitlist_next(self):
+        if len(self.meta["cb_waitlist"]) > 0:
+            return self.meta["cb_waitlist"][0]
+        return False
+
+    def clever_waitlist_nextpop(self):
+        if len(self.meta["cb_waitlist"]) > 0:
+            self.meta["cb_waitlist"].remove(self.meta["cb_waitlist"][0])
+        return False
+
+    def clever_isnext(self, author: discord.Member):
+        if self.meta["cb_waitlist"]:
+            if self.meta["cb_waitlist"][0][0] == author:
+                return True
+        return False
 
 class Central:
     """Assistant personnel embarqué - Pour vous servir"""
@@ -87,6 +115,30 @@ class Central:
         self.sys = {}
         self.save_sys(True)
         return True
+
+    @commands.command(pass_context=True)
+    async def talk(self, ctx, *msg):
+        """Discutez avec le bot (utilise Cleverbot + Base de données locale)"""
+        msg = " ".join(msg)
+        if self.ctr.check_clever() is False:
+            await self.bot.say("**Initialisation** ─ Veuillez patienter...")
+        if len(msg) >= 1:
+            self.ctr.clever_waitlist_add(ctx.message.author, msg)
+            while not self.ctr.clever_isnext(ctx.message.author):
+                await asyncio.sleep(1)
+            next = self.ctr.clever_waitlist_next()
+            author, msg = next[0], next[1]
+            rep = self.ctr.clever_chat(msg)
+            if rep:
+                waiting = len(str(rep)) / 25
+                await self.bot.send_typing(ctx.message.channel)
+                await asyncio.sleep(waiting)
+                await self.bot.say("> **{}**: {}\n".format(author.name, msg) + str(rep))
+                self.ctr.clever_waitlist_nextpop()
+            else:
+                await self.bot.say("`[Aucune réponse appropriée n'a été trouvée]`")
+        else:
+            await self.bot.say("`[Impossible de répondre à un fichier]`")
 
     def get_sys(self, server: discord.Server):
         """Renvoie les paramètres du serveur"""
@@ -248,23 +300,6 @@ class Central:
                                             await self.bot.delete_message(notif)
                                     return
 
-    @commands.command(pass_context=True)
-    async def talk(self, ctx, *msg):
-        """Parlez avec le bot..."""
-        msg = " ".join(msg)
-        if self.ctr.check_clever_session() is False:
-            await self.bot.say("> **Initialisation** ─ Veuillez patienter...")
-        if len(msg) >= 1:
-            rep = self.ctr.chat(msg)
-            if rep:
-                waiting = len(str(rep)) / 20
-                await self.bot.send_typing(ctx.message.channel)
-                await asyncio.sleep(waiting)
-                await self.bot.say("> " + str(rep))
-            else:
-                await self.bot.say("> `[Aucune réponse appropriée n'a été trouvée]`")
-        else:
-            await self.bot.say("> `[Impossible de répondre à un fichier]`")
 
     @commands.command(pass_context=True)
     async def testimg(self, ctx):
