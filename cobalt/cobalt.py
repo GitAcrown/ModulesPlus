@@ -53,11 +53,6 @@ class Cobalt:
         self.items = items_list
         self.glob = {"buy_queue": {}}
         self.heartbeat = {}
-        try:
-            self.wallet = self.bot.get_cog("Wallet").api
-        except:
-            print("COBALT - Impossible de charger Wallet")
-            self.wallet = None
 
     def save(self):
         fileIO("data/cobalt/data.json", "save", self.data)
@@ -71,6 +66,13 @@ class Cobalt:
                                          "journal": [],
                                          "user_nrj": {}}
         return self.heartbeat[server.id]
+
+    def wallet_api(self):
+        try:
+            wallet = self.bot.get_cog("Wallet").api
+            return wallet
+        except:
+            return None
 
     def get_energy_sess(self, user: discord.Member):
         hb = self.get_heartbeat(user.server)
@@ -283,6 +285,7 @@ class Cobalt:
         item = self.get_item(itemid)
         server = channel.server
         hb = self.get_heartbeat(server)
+        wallet = self.wallet_api()
         if item["type"] is "MINERAI":
             await asyncio.sleep(random.randint(1, 4))
             qte = random.randint(1, item["max"])
@@ -403,7 +406,7 @@ class Cobalt:
                     em.description = "{} a tenté de miner **{}** mais n'avait pas assez d'énergie ! " \
                                      "Sa pioche est cassée.".format(rep.user, item["name"])
                     try:
-                        self.wallet.remove_credits(rep.user, perte, "Malus pioche cassée", True, "cobalt")
+                        wallet.remove_credits(rep.user, perte, "Malus pioche cassée", True, "cobalt")
                         em.set_footer(text="Vous perdez {} golds.".format(perte))
                     except:
                         em.set_footer(text="Vous n'avez plus d'argent à perdre")
@@ -497,12 +500,13 @@ class Cobalt:
     async def buy_item(self, channel: discord.Channel, user: discord.Member, itemid, qte: int = None):
         item = self.get_item(itemid)
         data = self.get_user(user)
+        wallet = self.wallet_api()
         if item["type"] != "UNIQUE": # On ne peut pas acheter un item unique !
             if data:
-                if not self.wallet:
+                if not wallet:
                     await self.bot.send_message(channel, "**Erreur** — Impossible de contacter le module *Wallet*")
                     return
-                if await self.wallet.sign_up(user):
+                if await wallet.sign_up(user):
                     if not qte:
                         while True:
                             txt = ""
@@ -532,9 +536,9 @@ class Cobalt:
                             elif rep.content.isdigit():
                                 totalqte = int(rep.content) * item["qte"]
                                 prix = item["value"] * int(rep.content)
-                                if self.wallet.enough_credits(user, prix):
+                                if wallet.enough_credits(user, prix):
                                     if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
-                                        self.wallet.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]), False, "cobalt")
+                                        wallet.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]), False, "cobalt")
                                         em = discord.Embed(description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
                                                            color=0x00aa5e)
                                         em.set_author(name="Achat — {} [{}]".format(item["name"], itemid),
@@ -567,9 +571,9 @@ class Cobalt:
                     else:
                         totalqte = qte * item["qte"]
                         prix = item["value"] * qte
-                        if self.wallet.enough_credits(user, prix):
+                        if wallet.enough_credits(user, prix):
                             if self.add_item(user, id=item["id"], type=item["type"], name=item["name"], qte=totalqte):
-                                self.wallet.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]), False, "cobalt")
+                                wallet.remove_credits(user, prix, "Achat Cobalt › {}".format(item["id"]), False, "cobalt")
                                 em = discord.Embed(description="**Merci pour votre achat.** Le contenu a été déplacé dans votre inventaire.",
                                                    color=0x00aa5e)
                                 em.set_author(name="Achat — {} [{}]".format(item["name"], itemid),
@@ -651,10 +655,11 @@ class Cobalt:
     @commands.command(pass_context=True, aliases=["inv"], no_pm=True)
     async def sac(self, ctx):
         """Consulter son inventaire Cobalt"""
-        if not self.wallet:
+        wallet = self.wallet_api()
+        if not wallet:
             await self.bot.say("**Erreur** — Impossible de contacter le module *Wallet*.")
             return
-        if not await self.wallet.sign_up(ctx.message.author):
+        if not await wallet.sign_up(ctx.message.author):
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Wallet* valide.")
             return
 
@@ -674,7 +679,7 @@ class Cobalt:
         desc = "**Votre énergie** — {}\⚡ (max. {})\n".format(data["energie"], data["max_energie"])
         if data["status"]:
             desc += "**Items actifs** — {}\n".format(", ".join([self.get_item(i)["name"].lower() for i in data["status"]]))
-        desc += "**Solde Wallet** — {} golds\n".format(self.wallet.get_account(ctx.message.author).solde)
+        desc += "**Solde Wallet** — {} golds\n".format(wallet.get_account(ctx.message.author).solde)
         desc += "**Valeur estimée du stock** — {} golds".format(val)
         em = discord.Embed(description= desc, color=0x0047AB)
         if data["items"]:
@@ -710,6 +715,7 @@ class Cobalt:
 
         Pour aller plus vite, vous pouvez taper l'identifiant de l'item à vendre ou acheter"""
         stop = False
+        wallet = self.wallet_api()
         def check(reaction, user):
             return not user.bot
         user = self.get_user(ctx.message.author)
@@ -717,10 +723,10 @@ class Cobalt:
             "**Banni·e** — Vous ne pouvez pas consulter votre inventaire."
             return
 
-        if not self.wallet:
+        if not wallet:
             await self.bot.say("**Erreur** — Impossible de contacter le module *Wallet*.")
             return
-        if not await self.wallet.sign_up(ctx.message.author):
+        if not await wallet.sign_up(ctx.message.author):
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Wallet* valide.")
             return
 
@@ -821,7 +827,7 @@ class Cobalt:
                             val = self.get_item(mrep)["value"] * qte
                             self.del_item(ctx.message.author, mrep, qte)
                             self.save()
-                            self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep), "cobalt", "noreset")
+                            wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(mrep), "cobalt", "noreset")
                             em.description = "Vente réalisée ! **{}**G ont été transférés sur votre compte.".format(val)
                             await self.bot.edit_message(msg, embed=em)
                             if random.randint(1, 5) == 1:
@@ -869,7 +875,7 @@ class Cobalt:
             else:
                 self.reset_user_type(ctx.message.author, "minerais")
                 self.save()
-                self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › SellAll", "cobalt")
+                wallet.add_credits(ctx.message.author, val, "Vente Cobalt › SellAll", "cobalt")
                 em.description = "Vente réalisée ! **{}** golds ont été transférés sur votre compte.".format(val)
                 em.set_footer(text="")
                 await self.bot.edit_message(msg, embed=em)
@@ -906,7 +912,7 @@ class Cobalt:
                         qte = int(rep.content)
                         if qte <= mine["qte"]:
                             val = self.get_item(itemid)["value"] * qte
-                            if self.wallet.add_credits(ctx.message.author, val,
+                            if wallet.add_credits(ctx.message.author, val,
                                                        "Vente Cobalt › {} [{}]".format(item["name"], itemid), "cobalt", "noreset"):
                                 self.del_item(ctx.message.author, itemid, qte)
                                 self.save()
@@ -937,7 +943,7 @@ class Cobalt:
                         val = self.get_item(itemid)["value"] * qte
                         self.del_item(ctx.message.author, itemid, qte)
                         self.save()
-                        self.wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(item["name"]),
+                        wallet.add_credits(ctx.message.author, val, "Vente Cobalt › {}".format(item["name"]),
                                                 "cobalt", "noreset")
                         em = discord.Embed(description="Vente réalisée ! **{}** golds ont été transférés sur votre compte."
                                                        "".format(val),
@@ -967,14 +973,15 @@ class Cobalt:
     async def refundall(self, ctx):
         """Rembourse tous les items achetés"""
         user = self.get_user(ctx.message.author)
+        wallet = self.wallet_api()
         if not user:
             "**Banni·e** — Vous ne pouvez pas consulter votre inventaire."
             return
 
-        if not self.wallet:
+        if not wallet:
             await self.bot.say("**Erreur** — Impossible de contacter le module *Wallet*.")
             return
-        if not await self.wallet.account_dial(ctx.message.author):
+        if not await wallet.account_dial(ctx.message.author):
             await self.bot.say("**Impossible** — Vous devez avoir un compte *Wallet* valide.")
             return
 
@@ -1003,7 +1010,7 @@ class Cobalt:
         else:
             self.reset_user_type(ctx.message.author, "items")
             self.save()
-            self.wallet.add_credits(ctx.message.author, val, "Remboursement Cobalt", "cobalt")
+            wallet.add_credits(ctx.message.author, val, "Remboursement Cobalt", "cobalt")
             em.description = "Revente réalisée ! **{}**G ont été transférés sur votre compte.".format(val)
             em.set_footer(text="")
             await self.bot.edit_message(msg, embed=em)
@@ -1189,8 +1196,9 @@ class Cobalt:
     @commands.command(pass_context=True, hidden=True)
     async def pingwallet(self):
         """Teste la connexion avec le module Wallet"""
+        wallet = self.wallet_api()
         try:
-            if self.wallet.pong():
+            if wallet.pong():
                 await self.bot.say("Pong du module **Wallet** reçu")
             else:
                 await self.bot.say("Pong non reçu")

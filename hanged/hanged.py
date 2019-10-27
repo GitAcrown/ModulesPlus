@@ -17,7 +17,6 @@ class Hanged:
         self.bot = bot
         self.data = dataIO.load_json("data/hanged/data.json")
         self.session = {}
-        self.wallet = self.bot.get_cog("Wallet").api
 
     def save(self):
         fileIO("data/hanged/data.json", "save", self.data)
@@ -209,7 +208,8 @@ class Hanged:
         if not themes:
             themes = ["general"]
         session, sys = self.get_session(server), self.get_system(server)
-        if await self.wallet.sign_up(author):
+        wallet = self.bot.get_cog("Wallet").api
+        if await wallet.sign_up(author):
             if not session["on"]:
                 mots = self.load_themes(themes)
                 if mots:
@@ -250,7 +250,7 @@ class Hanged:
                         txt = ""
                         for u in classt:
                             user = server.get_member(u[1])
-                            self.wallet.remove_credits(user, u[0], "Partie perdue au pendu", True, "pendu")
+                            wallet.remove_credits(user, u[0], "Partie perdue au pendu", True, "pendu")
                             txt += "*{}*  — **{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Échec", description=msg, color=0xe15555)
                         em.add_field(name="Perdants", value=txt)
@@ -268,7 +268,7 @@ class Hanged:
                         txt = ""
                         for u in classt:
                             user = server.get_member(u[1])
-                            self.wallet.add_credits(user, u[0], "Partie perdue au pendu", "pendu")
+                            wallet.add_credits(user, u[0], "Partie perdue au pendu", "pendu")
                             txt += "*{}*  — **+{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Victoire", description=msg, color=0x84e155)
                         em.add_field(name="Gagnants", value=txt)
