@@ -123,8 +123,12 @@ class Central:
         if self.ctr.check_clever() is False:
             await self.bot.say("**Initialisation** ─ Veuillez patienter...")
         if len(msg) >= 1:
+            if msg.split()[0] in ["stop", "quit", "quitter"]:
+                self.ctr.reset_clever()
+                await self.bot.say("**Fin de session** ─ Bye :wave:")
+                return
             self.ctr.clever_waitlist_add(ctx.message.author, msg)
-            while not self.ctr.clever_isnext(ctx.message.author):
+            while not self.ctr.clever_isnext(ctx.message.author, msg):
                 await asyncio.sleep(1)
             next = self.ctr.clever_waitlist_next()
             author, msg = next[0], next[1]
