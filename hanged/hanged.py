@@ -349,15 +349,15 @@ class Hanged:
         if sys["leaderboard"]:
             l = {}
             for u in sys["leaderboard"]:
-                if sys["leaderboard"][u]["victoire"] > 0:
-                    l[u] = round(sys["leaderboard"][u]["defaite"] / sys["leaderboard"][u]["victoire"] * 100, 2)
+                if sys["leaderboard"][u]["defaite"] > 0:
+                    l[u] = round(sys["leaderboard"][u]["victoire"] / sys["leaderboard"][u]["defaite"], 2)
                 else:
-                    l[u] = 0
+                    l[u] = 1
             ord = sorted(l.items(), key=lambda kv: kv[1], reverse=True)[:top]
             txt = ""
             for u in ord:
                 txt += "**{}** — {}\n".format(ctx.message.server.get_member(u[0]), u[1])
-            em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
+            em = discord.Embed(title="Pendu — Top (Ratio V/D)", description=txt, color=0x7289DA)
             date = wallet.ttd(sys["leaderboard_since"])
             em.set_footer(text="Depuis {1} {0}".format(date.heure, date.jour))
             try:
