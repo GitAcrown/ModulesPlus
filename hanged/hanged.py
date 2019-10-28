@@ -238,11 +238,26 @@ class Hanged:
         """Lance une partie de Pendu avec les thèmes sélectionnés"""
         server = ctx.message.server
         author = ctx.message.author
-        if not themes:
-            themes = ["general"]
         session, sys = self.get_session(server), self.get_system(server)
         wallet = self.bot.get_cog("Wallet").api
         if await wallet.sign_up(author):
+            if themes:
+                if themes[0].lower() == "stop":
+                    await self.bot.say("**Patientez...**")
+                    session["timeout"] = 999
+                    await asyncio.sleep(3)
+                    self.get_session(server, True)
+                    await self.bot.say("**Partie stoppée de force avec succès**")
+                    return
+                elif themes[0].lower() in ["list", "liste"]:
+                    themes = self.get_theme()
+                    txt = ">>> __**Thèmes disponibles**__\n"
+                    for t in themes:
+                        txt += "• **{}**\n".format(t.title())
+                    await self.bot.say(txt)
+                    return
+            else:
+                themes = ["general"]
             if not session["on"]:
                 mots = self.load_themes(themes)
                 if mots:
@@ -321,18 +336,6 @@ class Hanged:
                 session["players"][author.id] = {"+": 0, "-": 0}
                 em = discord.Embed(description="**{}** a rejoint la partie !".format(author.name), color=0x7289DA)
                 await self.bot.say(embed=em)
-            elif themes[0].lower() == "stop":
-                await self.bot.say("**Patientez...**")
-                session["timeout"] = 999
-                await asyncio.sleep(3)
-                self.get_session(server, True)
-                await self.bot.say("**Partie stoppée de force avec succès**")
-            elif themes[0].lower() in ["list", "liste"]:
-                themes = self.get_theme()
-                txt = ">>> __**Thèmes disponibles**__\n"
-                for t in themes:
-                    txt += "• **{}**\n".format(t.title())
-                await self.bot.say(txt)
             else:
                 await self.bot.say("**Refusé** — Finissez la partie en cours sur {} ou faîtes `;pendu stop`".format(session["channel"].name))
         else:
