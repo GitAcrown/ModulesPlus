@@ -317,7 +317,7 @@ class Hanged:
                         txt = ""
                         for u in classt:
                             user = server.get_member(u[1])
-                            wallet.add_credits(user, u[0], "Partie perdue au pendu", "pendu")
+                            wallet.add_credits(user, u[0], "Partie gagnée au pendu", "pendu")
                             self.add_victory(user)
                             txt += "*{}*  — **+{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Victoire", description=msg, color=0x84e155)
