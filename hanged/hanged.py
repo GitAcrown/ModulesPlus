@@ -358,7 +358,7 @@ class Hanged:
             txt = ""
             for u in ord:
                 txt += "**{}** — {}\n".format(ctx.message.server.get_member(u[0]), u[1])
-            em = discord.Embed(title="Pendu — Top (Ratio V/D)", description=txt, color=0x7289DA)
+            em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
             date = wallet.ttd(sys["leaderboard_since"])
             em.set_footer(text="Depuis {1} {0}".format(date.heure, date.jour))
             try:
