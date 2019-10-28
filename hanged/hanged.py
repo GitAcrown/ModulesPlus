@@ -356,8 +356,12 @@ class Hanged:
                     l[u] = 0
             ord = sorted(l.items(), key=lambda kv: kv[1], reverse=True)[:top]
             txt = ""
+            n = 1
             for u in ord:
-                txt += "**{}** — {}\n".format(ctx.message.server.get_member(u[0]), u[1])
+                user = ctx.message.server.get_member(u[0])
+                count = sys["leaderboard"][user.id]["victoire"] + sys["leaderboard"][user.id]["defaite"]
+                txt += "{}. **{}** — {} ({})\n".format(n, user.name, u[1], count)
+                n += 1
             em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
             date = wallet.ttd(sys["leaderboard_since"])
             em.set_footer(text="Depuis {1} {0}".format(date.heure, date.jour))
