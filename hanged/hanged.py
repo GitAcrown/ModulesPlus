@@ -341,7 +341,7 @@ class Hanged:
         else:
             await self.bot.say("Vous avez besoin d'un compte Wallet pour jouer au pendu")
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, aliases=["tp"])
     async def pendutop(self, ctx, top: int = 10):
         """Affiche le top des joueurs du pendu"""
         sys = self.get_system(ctx.message.server)
