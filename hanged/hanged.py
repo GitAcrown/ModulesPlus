@@ -349,7 +349,10 @@ class Hanged:
         if sys["leaderboard"]:
             l = {}
             for u in sys["leaderboard"]:
-                l[u] = round(sys["leaderboard"][u]["defaite"] / sys["leaderboard"][u]["victoire"] * 100, 2)
+                if sys["leaderboard"][u]["victoire"] > 0:
+                    l[u] = round(sys["leaderboard"][u]["defaite"] / sys["leaderboard"][u]["victoire"] * 100, 2)
+                else:
+                    l[u] = 0
             ord = sorted(l.items(), key=lambda kv: kv[1], reverse=True)[:top]
             txt = ""
             for u in ord:
