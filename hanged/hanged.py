@@ -1,13 +1,15 @@
 import asyncio
+import operator
 import os
-from .utils import checks
-import discord
+import random
+import time
 from collections import namedtuple
+
+import discord
 from __main__ import send_cmd_help
 from discord.ext import commands
-import time
-import operator
-import random
+
+from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
 
@@ -22,7 +24,7 @@ class Hanged:
         fileIO("data/hanged/data.json", "save", self.data)
         return True
 
-    def get_theme(self, nom: str):
+    def get_theme(self, nom: str = None):
         """Renvoie un thème"""
         themes = {"general": ['ANGLE', 'ARMOIRE', 'BANC', 'BUREAU', 'CABINET', 'CARREAU', 'CHAISE', 'CLASSE', 'CLEF',
                           'COIN', 'COULOIR', 'DOSSIER', 'EAU', 'ECOLE', 'ENTRER', 'ESCALIER', 'ETAGERE', 'EXTERIEUR',
@@ -80,17 +82,26 @@ class Hanged:
                           'COLLANT', 'COURONNE', 'CRAVATE', 'CULOTTE', 'ECHARPE', 'EPEE', 'FEE', 'FLECHE', 'FUSIL',
                           'GANT', 'HABIT', 'JEAN', 'JUPE', 'LACET', 'LAINE', 'LINGE', 'LUNETTES', 'MAGICIEN', 'MAGIE',
                           'MAILLOT', 'MANCHE', 'MANTEAU', 'MOUCHOIR', 'MOUFLE', 'NOEUD', 'PAIRE', 'PANTALON', 'PIED',
-                          'POCHE', 'PRINCE', 'PYJAMA', 'REINE', 'ROBE', 'ROI', 'RUBAN', 'SEMELLE', 'SOLDAT', 'SORCIERE']}
-        if nom.lower() in themes:
-            return themes[nom.lower()]
-        return []
+                          'POCHE', 'PRINCE', 'PYJAMA', 'REINE', 'ROBE', 'ROI', 'RUBAN', 'SEMELLE', 'SOLDAT', 'SORCIERE'],
+                  "halloween": ["BONBON", "CITROUILLE", "COSTUME", "MORT", "PEUR", "HALLOWEEN", "OCTOBRE", "FLIPPANT",
+                                "BONBONS", "ARAIGNEE", "SQUELETTE", "CRANE", "VAMPIRE", "FANTOME", "CERCUEIL", "BROUILLARD",
+                                "LUNE", "NUIT", "SPOOKY", "MONSTRE", "CREATURE", "MASQUE", "CLOWN", "ZOMBIE", "FETE", "CONFISERIE",
+                                "LANTERNE", "TOUSSAINT", "MALEFIQUE", "FARCE", "FRIANDISE", "BOUGIE", "EFFRAYER", "EFFRAYANT"]}
+        if nom:
+            if nom.lower() in themes:
+                return themes[nom.lower()]
+            return False
+        return themes
 
     def get_system(self, server: discord.Server):
         """Données système du jeu sur le serveur"""
         if server.id not in self.data:
             self.data[server.id] = {"encode_char": "•",
-                                    "leaderboard": [],
+                                    "leaderboard": {},
                                     "leaderboard_since": time.time()}
+            self.save()
+        if self.data[server.id]["leaderboard"] == []: # TODO: Temporaire, retirer au bout d'un moment
+            self.data[server.id]["leaderboard"] = {}
             self.save()
         return self.data[server.id]
 
@@ -127,6 +138,28 @@ class Hanged:
         mot = random.choice(words)
         Mot = namedtuple('Mot', ['literal', 'lettres', 'encode'])
         return Mot(mot.upper(), [self.normal(l).upper() for l in mot], [n for n in symb * len(mot)])
+
+    def add_victory(self, user: discord.Member):
+        """Ajoute une victoire"""
+        server = user.server
+        sys = self.get_system(server)["leaderboard"]
+        if user.id not in sys:
+            sys[user.id] = {"victoire": 0,
+                            "defaite": 0}
+        sys[user.id]["victoire"] += 1
+        self.save()
+        return True
+
+    def add_defeat(self, user: discord.Member):
+        """Ajoute une défaite"""
+        server = user.server
+        sys = self.get_system(server)["leaderboard"]
+        if user.id not in sys:
+            sys[user.id] = {"victoire": 0,
+                            "defaite": 0}
+        sys[user.id]["defaite"] += 1
+        self.save()
+        return True
 
     def normal(self, txt):
         ch1 = "àâçéèêëîïôöùûüÿ"
@@ -251,6 +284,7 @@ class Hanged:
                         for u in classt:
                             user = server.get_member(u[1])
                             wallet.remove_credits(user, u[0], "Partie perdue au pendu", True, "pendu")
+                            self.add_defeat(user)
                             txt += "*{}*  — **{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Échec", description=msg, color=0xe15555)
                         em.add_field(name="Perdants", value=txt)
@@ -269,6 +303,7 @@ class Hanged:
                         for u in classt:
                             user = server.get_member(u[1])
                             wallet.add_credits(user, u[0], "Partie perdue au pendu", "pendu")
+                            self.add_victory(user)
                             txt += "*{}*  — **+{}**g\n".format(user.name, u[0])
                         em = discord.Embed(title="Pendu — Victoire", description=msg, color=0x84e155)
                         em.add_field(name="Gagnants", value=txt)
@@ -292,10 +327,40 @@ class Hanged:
                 await asyncio.sleep(3)
                 self.get_session(server, True)
                 await self.bot.say("**Partie stoppée de force avec succès**")
+            elif themes[0].lower() in ["list", "liste"]:
+                themes = self.get_theme()
+                txt = ">>> __**Thèmes disponibles**__\n"
+                for t in themes:
+                    txt += "• **{}**\n".format(t.title())
+                await self.bot.say(txt)
             else:
                 await self.bot.say("**Refusé** — Finissez la partie en cours sur {} ou faîtes `;pendu stop`".format(session["channel"].name))
         else:
             await self.bot.say("Vous avez besoin d'un compte Wallet pour jouer au pendu")
+
+    @commands.command(pass_context=True)
+    async def pendutop(self, ctx, top: int = 10):
+        """Affiche le top des joueurs du pendu"""
+        sys = self.get_system(ctx.message.server)
+        wallet = self.bot.get_cog("Wallet").api
+        if sys["leaderboard"]:
+            l = {}
+            for u in sys["leaderboard"]:
+                l[u] = round(sys["leaderboard"][u]["defaite"] / sys["leaderboard"][u]["victoire"] * 100, 2)
+            ord = sorted(l.items(), key=lambda kv: kv[1], reverse=True)[:top]
+            txt = ""
+            for u in ord:
+                txt += "**{}** — {}\n".format(ctx.message.server.get_member(u[0]), u[1])
+            em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
+            date = wallet.ttd(sys["leaderboard_since"])
+            em.set_footer(text="Depuis {1} {0}".format(date.heure, date.jour))
+            try:
+                await self.bot.say(embed=em)
+            except:
+                await self.bot.say("Le top demandé est trop élevé, essayez un top plus petit.")
+        else:
+            await self.bot.say("**Vide** — Il n'y a aucun top à afficher")
+
 
     async def grab_msg(self, message):
         author = message.author
@@ -356,7 +421,10 @@ class Hanged:
                                 if em:
                                     await self.bot.send_message(message.channel, embed=em)
                     elif content == "".join(mot.literal):
-                        session["players"][author.id]["+"] += 2 * session["avancement"].count(sys["encode_char"])
+                        if session["avancement"].count(sys["encode_char"]) >= len(mot.lettres) / 2:
+                            session["players"][author.id]["+"] += 3 * session["avancement"].count(sys["encode_char"])
+                        else:
+                            session["players"][author.id]["+"] += 1 * session["avancement"].count(sys["encode_char"])
                         session["avancement"] = mot.lettres
                     else:
                         session["vies"] -= 1
@@ -368,6 +436,32 @@ class Hanged:
                         if em:
                             await self.bot.send_message(message.channel, embed=em)
 
+    @commands.group(name="modpendu", pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(ban_members=True)
+    async def _modpendu(self, ctx):
+        """Paramètres du pendu"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @_modpendu.command(pass_context=True)
+    async def resettop(self, ctx):
+        """Reset le top du pendu"""
+        sys = self.get_system(ctx.message.server)
+        sys["leaderboard"] = {}
+        sys["leaderboard_since"] = time.time()
+        self.save()
+        await self.bot.say("**Le leaderboard a été reset**")
+
+    @_modpendu.command(pass_context=True)
+    async def encodechar(self, ctx, char: str):
+        """Change le caractère utilisé pour encoder le mot caché"""
+        sys = self.get_system(ctx.message.server)
+        if char[0] not in ["*", "_", "~", "{", "}", "|", "`"]:
+            sys["encode_char"] = char[0]
+            self.save()
+            await self.bot.say("**Caractère d'encodage modifié pour** `{}`".format(char[0]))
+        else:
+            await self.bot.say("**Impossible** — Ce symbole est déjà utilisé par Discord et pourrait causer des problèmes d'affichages")
 
 def check_folders():
     if not os.path.exists("data/hanged/"):
