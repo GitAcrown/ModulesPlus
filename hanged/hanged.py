@@ -295,7 +295,7 @@ class Hanged:
                     if not session["vies"]:
                         msg = "Le mot était **{}**".format(mot.literal)
                         unord = []
-                        mult = 10 + (10 - len(mot.literal)) + (len(session["players"]) - 1) * 2
+                        mult = 10 + (5 - len(mot.literal)) + (len(session["players"]) - 1) * 2
                         for p in session["players"]:
                             perte = session["players"][p]["-"] * mult
                             unord.append([perte, p])
