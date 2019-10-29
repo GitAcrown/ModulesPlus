@@ -264,7 +264,11 @@ class Hanged:
                     session = self.get_session(server, True) # Reset
                     mot = self.get_mot(server, mots)
                     session["themes"] = [i.title() for i in themes]
-                    session["vies"] = 6 + len(themes)
+                    if len(mot.literal) <= 5:
+                        vies = 6
+                    else:
+                        vies = 5
+                    session["vies"] = vies + len(themes)
                     session["players"][author.id] = {"+": 0, "-": 0}
                     session["timeout"] = 0
                     session["mot"] = mot
@@ -291,8 +295,9 @@ class Hanged:
                     if not session["vies"]:
                         msg = "Le mot était **{}**".format(mot.literal)
                         unord = []
+                        mult = 10 + (10 - len(mot.literal)) + (len(session["players"]) - 1) * 2
                         for p in session["players"]:
-                            perte = session["players"][p]["-"] * 10
+                            perte = session["players"][p]["-"] * mult
                             unord.append([perte, p])
                         classt = sorted(unord, key=operator.itemgetter(0), reverse=True)
                         txt = ""
@@ -310,8 +315,9 @@ class Hanged:
                     elif "".join(session["avancement"]) == mot.literal:
                         msg = "***Bravo !*** Le mot est bien **{}**".format(mot.literal)
                         unord = []
+                        mult = 10 + (10 - len(mot.literal)) + (len(session["players"]) - 1) * 2
                         for p in session["players"]:
-                            bonus = session["players"][p]["+"] * 10
+                            bonus = session["players"][p]["+"] * mult
                             unord.append([bonus, p])
                         classt = sorted(unord, key=operator.itemgetter(0), reverse=True)
                         txt = ""
