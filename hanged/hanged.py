@@ -354,23 +354,28 @@ class Hanged:
         wallet = self.bot.get_cog("Wallet").api
         if sys["leaderboard"]:
             l = {}
+            all = 0
             for u in sys["leaderboard"]:
                 if sys["leaderboard"][u]["victoire"] + sys["leaderboard"][u]["defaite"] > 0:
                     l[u] = round(100 - sys["leaderboard"][u]["defaite"] / (sys["leaderboard"][u]["victoire"] +
                                                                            sys["leaderboard"][u]["defaite"]) * 100, 2)
+                    all += sys["leaderboard"][u]["victoire"] + sys["leaderboard"][u]["defaite"]
                 else:
                     l[u] = 0
             ord = sorted(l.items(), key=lambda kv: kv[1], reverse=True)[:top]
             txt = ""
             n = 1
             for u in ord:
-                user = ctx.message.server.get_member(u[0])
-                count = sys["leaderboard"][user.id]["victoire"] + sys["leaderboard"][user.id]["defaite"]
-                txt += "{}. **{}** — {} ({})\n".format(n, user.name, u[1], count)
+                id = u[0]
+                username = str(ctx.message.server.get_member(u[0]))
+                if username.lower() == "none":
+                    username = str(await self.bot.get_user_info(u[0]))
+                count = sys["leaderboard"][id]["victoire"] + sys["leaderboard"][id]["defaite"]
+                txt += "{}. **{}** — {} ({})\n".format(n, username, u[1], count)
                 n += 1
             em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
             date = wallet.ttd(sys["leaderboard_since"])
-            em.set_footer(text="Depuis {1} {0}".format(date.heure, date.jour))
+            em.set_footer(text="{} parties — Depuis le {2} à {1}".format(round(all), date.heure, date.jour))
             try:
                 await self.bot.say(embed=em)
             except:
