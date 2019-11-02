@@ -375,7 +375,7 @@ class Hanged:
                 n += 1
             em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
             date = wallet.ttd(sys["leaderboard_since"])
-            em.set_footer(text="{} parties — Depuis le {2} à {1}".format(round(all), date.heure, date.jour))
+            em.set_footer(text="{0} parties — Depuis le {2} à {1}".format(round(all), date.heure, date.jour))
             try:
                 await self.bot.say(embed=em)
             except:
