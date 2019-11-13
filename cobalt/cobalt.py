@@ -1,14 +1,16 @@
-import discord
-from discord.ext import commands
-from .utils.dataIO import fileIO, dataIO
-from .utils import checks
-from __main__ import send_cmd_help, settings
-import re
-import random
 import asyncio
+import os
+import random
+import re
 import time
 from copy import deepcopy
-import os
+
+import discord
+from __main__ import send_cmd_help
+from discord.ext import commands
+
+from .utils import checks
+from .utils.dataIO import fileIO, dataIO
 
 items_list = {
   "MINERAI":{
@@ -688,7 +690,7 @@ class Cobalt:
             for item in items:
                 mequip += "• {}x **{}** — *{}*\n".format(items[item]["qte"], items[item]["name"],
                                                        self.get_item(item)["desc"])
-        em.add_field(name="⚒ Equipement", value=mequip)
+        em.add_field(name="⚒ Equipement", value=mequip, inline=False)
 
         nb = 0
         if data["minerais"]:
@@ -698,7 +700,7 @@ class Cobalt:
                 nb += minerais[item]["qte"]
                 mtxt += "• {}x **{}** — {} g/unité\n".format(minerais[item]["qte"], minerais[item]["name"],
                                                      self.get_item(item)["value"])
-        em.add_field(name="📦 Minerais ({}/{})".format(nb, data["max_capacite"]), value=mtxt)
+        em.add_field(name="📦 Minerais ({}/{})".format(nb, data["max_capacite"]), value=mtxt, inline=False)
 
         if data["uniques"]:
             utxt = ""
