@@ -105,7 +105,7 @@ class Scan:
         else:
             sys["on"] = True
             await self.bot.say("**Détecteur de repost** ─ Service activé")
-        self.api.save()
+        self.api.save(True)
 
     @repost.command(pass_context=True)
     async def delete(self, ctx, delai: int = 0):
@@ -121,7 +121,7 @@ class Scan:
             sys["delete_delay"] = delai
         else:
             await self.bot.say("Le délai ne peut pas être supérieur à 300s (5 minutes) ou inférieur à 1s.")
-        self.api.save()
+        self.api.save(True)
 
     @repost.command(pass_context=True)
     async def archive(self, ctx, jours: int = 14):
@@ -134,11 +134,11 @@ class Scan:
             sys["cache_days"] = jours
         else:
             await self.bot.say("Impossible d'archiver plus de **60 jours** de reposts et moins d'un jour.")
-        self.api.save()
+        self.api.save(True)
 
     @repost.group(pass_context=True, no_pm=True)
     async def whitelist(self, ctx):
-        """Gestion de la whitelist repost"""
+        """Gestion de la whitelist repost (;help repost whitelist)"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
@@ -162,7 +162,7 @@ class Scan:
             sys.remove(user.id)
             await self.bot.say("**Détecteur de repost** › **Whitelist** ─ {} n'est plus immunisé "
                                "contre le détecteur".format(user.name))
-        self.api.save()
+        self.api.save(True)
 
     @whitelist.command(pass_context=True)
     async def channel(self, ctx, channel: discord.Channel = None):
@@ -182,7 +182,7 @@ class Scan:
         else:
             sys.remove(channel.id)
             await self.bot.say("**Détecteur de repost** › **Whitelist** ─ #{} est de nouveau scanné".format(channel.name))
-        self.api.save()
+        self.api.save(True)
 
     @whitelist.command(pass_context=True)
     async def link(self, ctx, url: str = None):
@@ -202,7 +202,7 @@ class Scan:
         else:
             sys.remove(url)
             await self.bot.say("**Détecteur de repost** › **Whitelist** ─ `{}` n'est plus ignoré".format(url))
-        self.api.save()
+        self.api.save(True)
 
     @whitelist.command(pass_context=True)
     async def role(self, ctx, role: discord.Role = None):
@@ -224,7 +224,7 @@ class Scan:
             sys.remove(role.id)
             await self.bot.say("**Détecteur de repost** › **Whitelist** ─ Le rôle {} n'est plus immunisé "
                                "contre le détecteur".format(role.name))
-        self.api.save()
+        self.api.save(True)
 
     @commands.group(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_messages=True)
@@ -243,7 +243,7 @@ class Scan:
         else:
             sys["on"] = True
             await self.bot.say("**Messages chronométrés** ─ Service activé")
-        self.api.save()
+        self.api.save(True)
 
     @chrono.command(pass_context=True)
     async def max(self, ctx, max: int = 30):
@@ -256,7 +256,7 @@ class Scan:
             sys["max_delay"] = max
         else:
             await self.bot.say("Le délai maximum ne peut être supérieur à 300s (5 minutes) ou inférieur à 1s.")
-        self.api.save()
+        self.api.save(True)
 
     async def _scan_repost(self, message: discord.Message):
         """Détecteur de reposts"""
@@ -268,7 +268,7 @@ class Scan:
 
             if message.author.id not in service["whitelist"]["users"]:
                 if message.channel.id not in service["whitelist"]["channels"]:
-                    if [r.id for r in message.author.roles if r.id not in service["whitelist"]["roles"]]:
+                    if not [r.id for r in message.author.roles if r.id in service["whitelist"]["roles"]]:
 
                         if "http" in content:
                             scan = re.compile(r'(https?://\S*\.\S*)', re.DOTALL | re.IGNORECASE).findall(content)
