@@ -95,8 +95,8 @@ class Scan:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @repost.command()
-    async def toggle(self, ctx):
+    @repost.command(pass_context=True, name="toggle")
+    async def toggle_repost(self, ctx):
         """Active/Désactive le détecteur de reposts"""
         sys = self.api.get_server(ctx.message.server)["repost"]
         if sys["on"]:
@@ -233,8 +233,8 @@ class Scan:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @chrono.command()
-    async def toggle(self, ctx):
+    @chrono.command(pass_context=True, name="toggle")
+    async def toggle_chrono(self, ctx):
         """Active/Désactive la faculté de chronométrer ses messages"""
         sys = self.api.get_server(ctx.message.server)["chrono"]
         if sys["on"]:
