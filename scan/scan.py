@@ -312,19 +312,18 @@ class Scan:
         server = message.server
         service = self.api.get_service(server, "chrono")
         if service:
-            max = service["max_delay"]
+            maxi = service["max_delay"]
             content = message.content
-            if "!" in content:
-                scan = re.compile(r'!(\d+)s', re.DOTALL | re.IGNORECASE).findall(content)
-                if scan:
-                    temps = int(scan[1]) if int(scan[1]) <= max else max
-                    await self.bot.add_reaction(message, "⌛")
-                    await asyncio.sleep(temps)
-                    try:
-                        await self.bot.delete_message(message)
-                    except:
-                        await self.bot.send_message(message.channel, "Je n'ai pas pu supprimer le message chronométré.\n"
-                                                                     "Soit je n'ai pas les droits, soit on veut me mettre au chômage.")
+            scan = re.compile(r'!(\d+)s', re.DOTALL | re.IGNORECASE).findall(content)
+            if scan:
+                temps = int(scan[0]) if int(scan[0]) <= maxi else maxi
+                await self.bot.add_reaction(message, "⌛")
+                await asyncio.sleep(temps)
+                try:
+                    await self.bot.delete_message(message)
+                except:
+                    await self.bot.send_message(message.channel, "Je n'ai pas pu supprimer le message chronométré.\n"
+                                                                 "Soit je n'ai pas les droits, soit on veut me mettre au chômage.")
 
     async def on_msg(self, message):
         if message.server:
