@@ -95,8 +95,8 @@ class Scan:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @repost.command(pass_context=True)
-    async def toggle(self):
+    @repost.command()
+    async def toggle(self, ctx):
         """Active/Désactive le détecteur de reposts"""
         sys = self.api.get_server(ctx.message.server)["repost"]
         if sys["on"]:
