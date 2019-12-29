@@ -150,7 +150,7 @@ class Scan:
             txt = ""
             for i in sys:
                 txt += "@{}\n".format(ctx.message.server.get_member(i))
-            em = discord.Embed(title="Membres dans la whitelist", description=txt)
+            em = discord.Embed(title="Membres dans la whitelist", description=txt if txt else "Aucun")
             await self.bot.say(embed=em)
             return
 
@@ -172,7 +172,7 @@ class Scan:
             txt = ""
             for i in sys:
                 txt += "#{}\n".format(self.bot.get_channel(i))
-            em = discord.Embed(title="Salons dans la whitelist", description=txt)
+            em = discord.Embed(title="Salons dans la whitelist", description=txt if txt else "Aucun")
             await self.bot.say(embed=em)
             return
 
@@ -192,7 +192,7 @@ class Scan:
             txt = ""
             for i in sys:
                 txt += "`{}`\n".format(i)
-            em = discord.Embed(title="Liens dans la whitelist", description=txt)
+            em = discord.Embed(title="Liens dans la whitelist", description=txt if txt else "Aucun")
             await self.bot.say(embed=em)
             return
 
@@ -211,8 +211,8 @@ class Scan:
         if not role:
             txt = ""
             for i in sys:
-                txt += "@{}\n".format(discord.utils.get(ctx.message.server.roles, id=role).name)
-            em = discord.Embed(title="Rôles dans la whitelist", description=txt)
+                txt += "@{}\n".format(discord.utils.get(ctx.message.server.roles, id=i).name)
+            em = discord.Embed(title="Rôles dans la whitelist", description=txt if txt else "Aucun")
             await self.bot.say(embed=em)
             return
 
