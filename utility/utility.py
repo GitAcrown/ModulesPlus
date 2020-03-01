@@ -86,11 +86,12 @@ class Utility:
         if texte:
             texte = " ".join(texte)
             texte = texte.replace(r"\n", "\n")
-            sys["joinmsg"] = texte
+            self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = texte
             await self.bot.say("**Notification d'arrivée modifiée avec succès** • Voici une prévisualisation...")
-            await self.bot.say(embed=self._get_join_embed(ctx.message.server))
+            em = self._get_join_embed(ctx.message.server)
+            await self.bot.say(embed=em)
         else:
-            sys["joinmsg"] = ""
+            self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = ""
             await self.bot.say("**Notification d'arrivée désactivée**")
         self.save_sys()
 
@@ -113,10 +114,10 @@ class Utility:
         """Active/Désactive l'affichage de notifications de départ sur le salon mentionné"""
         sys = self.get_server_sys(ctx.message.server)["welcome"]
         if channel:
-            sys["quitmsg"] = channel.id
+            self.get_server_sys(ctx.message.server)["welcome"]["quitmsg"] = channel.id
             await self.bot.say("**Notifications de départ activées** • Elles s'afficheront sur {}".format(channel.mention))
         else:
-            sys["quitmsg"] = False
+            self.get_server_sys(ctx.message.server)["welcome"]["quitmsg"] = False
             await self.bot.say("**Notifications de départ désactivées**")
         self.save_sys()
 
