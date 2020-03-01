@@ -63,8 +63,8 @@ class Utility:
             total = sum([a.count for a in answers])
             for a in answers:
                 prc = a.count / total if round(total) > 0 else 0
-                ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
+                ans_txt += "\{} — **{}**\n".format(a.emoji, a.name)
+                stats_txt += "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
 
             em = discord.Embed(color=base_em["color"])
             em.set_author(name=base_em["author"]["name"], icon_url=base_em["author"]["icon_url"])
@@ -93,16 +93,18 @@ class Utility:
         color = int("".join([random.choice(string.digits + "abcdef") for _ in range(6)]), 16)
 
         if termes:
+            if termes[0].lower() == "stop" and int(termes[1]) in polls:
+                poll = polls[int(termes[1])]
+                try:
+                    if poll[
+                        "author"].id == ctx.message.author.id or ctx.message.author.server_permissions.manage_messages:
+                        poll["on"] = False
+                except:
+                    await self.bot.say("**Permissions manquantes** — Vous devez être l'auteur du sondage ou "
+                                       "avoir la permission `Gérer les messages` pour l'arrêter.")
+                return
+
             if "?" in " ".join(termes) and len(" ".join(termes).split("?")[1]) <= 11:
-                if termes[0].lower() == "stop" and int(termes[1]) in polls:
-                    poll = polls[int(termes[1])]
-                    try:
-                        if poll["author"].id == ctx.message.author.id or ctx.message.author.server_permissions.manage_messages:
-                            poll["on"] = False
-                    except:
-                        await self.bot.say("**Permissions manquantes** — Vous devez être l'auteur du sondage ou "
-                                           "avoir la permission `Gérer les messages` pour l'arrêter.")
-                    return
 
                 termes = " ".join(termes)
                 souple = pin = mobile = confirm = recap = False
@@ -207,8 +209,8 @@ class Utility:
                 total = sum([a.count for a in answers])
                 for a in answers:
                     prc = a.count / total if round(total) > 0 else 0
-                    ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                    stats_txt = "\{} — **{}** · {}%\n".format(a.emoji, a.count, round(prc * 100, 1))
+                    ans_txt += "\{} — **{}**\n".format(a.emoji, a.name)
+                    stats_txt += "\{} — **{}** · {}%\n".format(a.emoji, a.count, round(prc * 100, 1))
 
                 em = discord.Embed(color=color)
                 em.set_author(name="RÉSULTATS #{} · {}".format(num, question.capitalize()),
@@ -270,8 +272,8 @@ class Utility:
                     total = sum([a.count for a in answers])
                     for a in answers:
                         prc = a.count / total if round(total) > 0 else 0
-                        ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                        stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
+                        ans_txt += "\{} — **{}**\n".format(a.emoji, a.name)
+                        stats_txt += "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
                     txt = "**POLL #{}** — ***{}***\n".format(num, poll["question"])
                     txt += "• Réponses\n" + ans_txt + "\n• Stats\n" + stats_txt + "\n*Tu peux voter en cliquant sur " \
                                                                                   "les réactions correspondantes sous " \
