@@ -155,7 +155,7 @@ class Utility:
                     ans_txt = stats_txt = ""
                     for i in [r.capitalize() for r in qr[1:]]:
                         index = qr[1:].index(i)
-                        emoji = letters_emojis[answers[i]["index"]]
+                        emoji = letters_emojis[qr[1:].index(i)]
                         answers[i] = {"count": 0,
                                       "emoji": emoji,
                                       "voters": [],
