@@ -65,8 +65,8 @@ class Utility:
     def _get_join_embed(self, server):
         sys = self.get_server_sys(server)["welcome"]
         if sys["joinmsg"]:
-            em = discord.Embed(color=sys["joinmsg_color"], description=sys["joinmsg"])
-            em.set_author(name="Message de " + server.name, icon_url=server.icon)
+            em = discord.Embed(color=0xE5E5E5, description=sys["joinmsg"])
+            em.set_author(name= "Message de " + str(server.name), icon_url=server.icon)
             return em
         return False
 
@@ -89,7 +89,6 @@ class Utility:
             self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = texte
             await self.bot.say("**Notification d'arrivée modifiée avec succès** • Voici une prévisualisation...")
             em = self._get_join_embed(ctx.message.server)
-            print(texte)
             await self.bot.say(embed=em)
         else:
             self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = ""
@@ -452,5 +451,6 @@ def setup(bot):
     n = Utility(bot)
     bot.add_cog(n)
     bot.add_listener(n.get_member_join, "on_member_join")
+    bot.add_listener(n.get_memver_quit, "on_member_quit")
     bot.add_listener(n.get_reaction_add, "on_reaction_add")
     bot.add_listener(n.get_reaction_remove, "on_reaction_remove")
