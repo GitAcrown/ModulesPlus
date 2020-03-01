@@ -451,6 +451,6 @@ def setup(bot):
     n = Utility(bot)
     bot.add_cog(n)
     bot.add_listener(n.get_member_join, "on_member_join")
-    bot.add_listener(n.get_memver_quit, "on_member_quit")
+    bot.add_listener(n.get_member_quit, "on_member_quit")
     bot.add_listener(n.get_reaction_add, "on_reaction_add")
     bot.add_listener(n.get_reaction_remove, "on_reaction_remove")
