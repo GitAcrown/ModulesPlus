@@ -9,9 +9,32 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 
 import discord
+from __main__ import send_cmd_help
 from discord.ext import commands
 
+from .utils import checks
 from .utils.dataIO import fileIO, dataIO
+
+DEFAULT_QUIT_LIST = ["{user.name} s'envole vers d'autres cieux.",
+                     "L'agent n°{user.id} (a.k.a. *{user.name}*) a quitté notre monde.",
+                     "{user.name} vient de quitter le serveur.",
+                     "{user.name} a mystérieusement disparu de la liste des membres.",
+                     "{user.name} est parti.",
+                     "{user.name} est mort, tué par Covid-19.",
+                     "{user.name} ~~a été suicidé de deux bans dans le dos~~ est parti.",
+                     "{user.name} n'a pas survécu à cette communauté.",
+                     "Plus besoin de bloquer {user.name}, il est parti tout seul !",
+                     "Ce n'est qu'un au revoir {user.name}...",
+                     "{user.name} n'a pas supporté l'odeur du serveur.",
+                     "{server.name} se sépare en ce jour de {user.name}...",
+                     "Ci-gît {user.name}, enième random ayant quitté le serveur.",
+                     "{user.name} n'a pas survécu à la vague de bienveillance des membres de ce serveur.",
+                     "{user.name} a préféré voir ailleurs.",
+                     "{user.name} a roulé jusqu'en bas de la falaise, RIP.",
+                     "{user.name} s'est noyé.",
+                     "La mort est venue chercher {user.name}.",
+                     "La vraie vie est venue chercher {user.name}.",
+                     "{user.name} est parti, il préfère ses **vrais** amis."]
 
 
 class Utility:
@@ -25,6 +48,77 @@ class Utility:
         if server.id not in self.cache:
             self.cache[server.id] = {"poll": {}}
         return self.cache[server.id][key] if key else self.cache[server.id]
+
+    def get_server_sys(self, server):
+        if server.id not in self.sys:
+            self.sys[server.id] = {"welcome": {"users": [],
+                                               "joinmsg": "",
+                                               "joinmsg_color": 0xE5E5E5,
+                                               "quitmsg": False,
+                                               "quitmsg_list": []}}
+        return self.sys[server.id]
+
+    def save_sys(self):
+        fileIO("data/utility/sys.json", "save", self.sys)
+
+
+    def _get_join_embed(self, server):
+        sys = self.get_server_sys(server)["welcome"]
+        if sys["joinmsg"]:
+            em = discord.Embed(color=sys["joinmsg_color"], description=sys["joinmsg"])
+            em.set_author(name="Message de " + server.name, icon_url=server.icon)
+            return em
+        return False
+
+    @commands.group(name="welcome", pass_context=True)
+    @checks.admin_or_permissions(manage_messages=True)
+    async def welcomeset(self, ctx):
+        """Gestion des messages d'arrivées et de départ"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @welcomeset.command(pass_context=True)
+    async def joinmsg(self, ctx, *texte):
+        """Modifie le texte envoyé aux nouveaux membres
+
+        Laisser [texte] vide pour désactiver cette fonctionnalité"""
+        sys = self.get_server_sys(ctx.message.server)["welcome"]
+        if texte:
+            texte = " ".join(texte)
+            texte = texte.replace(r"\n", "\n")
+            sys["joinmsg"] = texte
+            await self.bot.say("**Notification d'arrivée modifiée avec succès** • Voici une prévisualisation...")
+            await self.bot.say(embed=self._get_join_embed(ctx.message.server))
+        else:
+            sys["joinmsg"] = ""
+            await self.bot.say("**Notification d'arrivée désactivée**")
+        self.save_sys()
+
+    @welcomeset.command(pass_context=True)
+    async def joinmsgcolor(self, ctx, couleur):
+        """Modifie la couleur qu'on retrouve sur la notification d'arrivée du serveur"""
+        await self.bot.say("Bientôt disponible.")
+
+    @welcomeset.command(pass_context=True)
+    async def joincache(self, ctx):
+        """Vide le cache d'entrées
+
+        Un cache enregistre tous les membres ayant déjà reçu le message d'arrivée afin d'empêcher qu'ils en recoivent un nouveau. Cette commande reset ce cache."""
+        self.get_server_sys(ctx.message.server)["welcome"]["users"] = []
+        self.save_sys()
+        await self.bot.say("**Cache d'entrées vidé avec succès !**")
+
+    @welcomeset.command(pass_context=True)
+    async def quitmsg(self, ctx, channel: discord.Channel = None):
+        """Active/Désactive l'affichage de notifications de départ sur le salon mentionné"""
+        sys = self.get_server_sys(ctx.message.server)["welcome"]
+        if channel:
+            sys["quitmsg"] = channel.id
+            await self.bot.say("**Notifications de départ activées** • Elles s'afficheront sur {}".format(channel.mention))
+        else:
+            sys["quitmsg"] = False
+            await self.bot.say("**Notifications de départ désactivées**")
+        self.save_sys()
 
     def _get_answers(self, server, num):
         polls = self.get_server_cache(server, "poll")
@@ -240,6 +334,30 @@ class Utility:
             em = discord.Embed(title="Aide — Créer un poll", description=txt, color=0x43c8e0)
             await self.bot.say(embed=em)
 
+    async def get_member_join(self, user):
+        server = user.server
+        if not user.bot:
+            if self.get_server_sys(server)["welcome"]["joinmsg"]:
+                sys = self.get_server_sys(server)["welcome"]
+                em = self._get_join_embed(server)
+                if user.id not in sys["users"]:
+                    sys["users"].append(user.id)
+                    try:
+                        await self.bot.send_message(user, embed=em)
+                    except:
+                        pass
+
+    async def get_member_quit(self, user):
+        server = user.server
+        if not user.bot:
+            if self.get_server_sys(server)["welcome"]["quitmsg"]:
+                sys = self.get_server_sys(server)["welcome"]
+                channel = self.bot.get_channel(sys["quitmsg"])
+                quit_txt = sys["quitmsg_list"] if sys["quitmsg_list"] else DEFAULT_QUIT_LIST
+                quitmsg = random.choice(quit_txt)
+                em = discord.Embed(color=user.color, description="\📢 " + quitmsg.format(user=user, server=server, channel=channel))
+                await self.bot.send_message(channel, embed=em)
+
     async def get_reaction_add(self, reaction, user):
         message = reaction.message
         server = message.server
@@ -331,5 +449,6 @@ def setup(bot):
     check_files()
     n = Utility(bot)
     bot.add_cog(n)
+    bot.add_listener(n.get_member_join, "on_member_join")
     bot.add_listener(n.get_reaction_add, "on_reaction_add")
     bot.add_listener(n.get_reaction_remove, "on_reaction_remove")
