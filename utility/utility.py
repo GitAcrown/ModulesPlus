@@ -77,7 +77,7 @@ class Utility:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @welcomeset.command(pass_context=True)
+    @welcomeset.command(pass_context=True, hidden=True)
     async def joinmsg(self, ctx, *texte):
         """Modifie le texte envoyé aux nouveaux membres
 
@@ -95,12 +95,12 @@ class Utility:
             await self.bot.say("**Notification d'arrivée désactivée**")
         self.save_sys()
 
-    @welcomeset.command(pass_context=True)
+    @welcomeset.command(pass_context=True, hidden=True)
     async def joinmsgcolor(self, ctx, couleur):
         """Modifie la couleur qu'on retrouve sur la notification d'arrivée du serveur"""
         await self.bot.say("Bientôt disponible.")
 
-    @welcomeset.command(pass_context=True)
+    @welcomeset.command(pass_context=True, hidden=True)
     async def joincache(self, ctx):
         """Vide le cache d'entrées
 
@@ -451,6 +451,6 @@ def setup(bot):
     n = Utility(bot)
     bot.add_cog(n)
     bot.add_listener(n.get_member_join, "on_member_join")
-    bot.add_listener(n.get_member_quit, "on_member_quit")
+    bot.add_listener(n.get_member_quit, "on_member_remove")
     bot.add_listener(n.get_reaction_add, "on_reaction_add")
     bot.add_listener(n.get_reaction_remove, "on_reaction_remove")
