@@ -89,6 +89,7 @@ class Utility:
             self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = texte
             await self.bot.say("**Notification d'arrivée modifiée avec succès** • Voici une prévisualisation...")
             em = self._get_join_embed(ctx.message.server)
+            print(texte)
             await self.bot.say(embed=em)
         else:
             self.get_server_sys(ctx.message.server)["welcome"]["joinmsg"] = ""
