@@ -31,9 +31,9 @@ class Utility:
         if num in polls:
             objs = []
             answers = polls[num]["answers"]
-            ans_list = [[r, answers[r]["nb"], answers[r]["emoji"], answers[r]["voters"], answers[r]["index"]] for r in answers]
+            ans_list = [[r, answers[r]["count"], answers[r]["emoji"], answers[r]["voters"], answers[r]["index"]] for r in answers]
             ans_list = sorted(ans_list, key=operator.itemgetter(4))
-            Answer = namedtuple('Answer', ['name', 'nb', 'emoji', 'voters'])
+            Answer = namedtuple('Answer', ['name', 'count', 'emoji', 'voters'])
             for r in ans_list:
                 objs.append(Answer(r[0], r[1], r[2], r[3]))
             return objs
@@ -60,11 +60,11 @@ class Utility:
             ts_txt = poll["expire"]
             ans_txt = stats_txt = ""
             answers = self._get_answers(message.server, num)
-            total = sum([a.nb for a in answers])
+            total = sum([a.count for a in answers])
             for a in answers:
-                prc = a.nb / total if round(total) > 0 else 0
+                prc = a.count / total if round(total) > 0 else 0
                 ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.nb, round(prc * 100, 1))
+                stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
 
             em = discord.Embed(color=base_em["color"])
             em.set_author(name=base_em["author"]["name"], icon_url=base_em["author"]["icon_url"])
@@ -140,11 +140,11 @@ class Utility:
                 answers = {}
                 emojis = []
                 if len(qr) == 1:
-                    answers = {"Oui": {"nb": 0,
+                    answers = {"Oui": {"count": 0,
                                     "emoji": "👍",
                                     "voters": [],
                                     "index": 0},
-                            "Non": {"nb": 0,
+                            "Non": {"count": 0,
                                     "emoji": "👎",
                                     "voters": [],
                                     "index": 1}}
@@ -204,11 +204,11 @@ class Utility:
                     await self.bot.say("**Absence de permission :** `Impossible de désépingler automatiquement le sondage`")
                 ans_txt = stats_txt = ""
                 answers = self._get_answers(server, num)
-                total = sum([a.nb for a in answers])
+                total = sum([a.count for a in answers])
                 for a in answers:
-                    prc = a.nb / total if round(total) > 0 else 0
+                    prc = a.count / total if round(total) > 0 else 0
                     ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                    stats_txt = "\{} — **{}** · {}%\n".format(a.emoji, a.nb, round(prc * 100, 1))
+                    stats_txt = "\{} — **{}** · {}%\n".format(a.emoji, a.count, round(prc * 100, 1))
 
                 em = discord.Embed(color=color)
                 em.set_author(name="RÉSULTATS #{} · {}".format(num, question.capitalize()),
@@ -249,7 +249,7 @@ class Utility:
                     if not self._find_voter(num, user):
                         for a in poll["answers"]:
                             if reaction.emoji == poll["answers"][a]["emoji"]:
-                                poll["answers"][a]["nb"] += 1
+                                poll["answers"][a]["count"] += 1
                                 poll["answers"][a]["voters"].append(user.id)
                                 await self.bot.edit_message(message, embed=self._update_poll(message))
                                 if poll["options"]["confirm"]:
@@ -267,11 +267,11 @@ class Utility:
                 elif reaction.emoji == "📱":
                     ans_txt = stats_txt = ""
                     answers = self._get_answers(message.server, num)
-                    total = sum([a.nb for a in answers])
+                    total = sum([a.count for a in answers])
                     for a in answers:
-                        prc = a.nb / total if round(total) > 0 else 0
+                        prc = a.count / total if round(total) > 0 else 0
                         ans_txt = "\{} — **{}**\n".format(a.emoji, a.name)
-                        stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.nb, round(prc * 100, 1))
+                        stats_txt = "\{} — ||**{}** · {}%||\n".format(a.emoji, a.count, round(prc * 100, 1))
                     txt = "**POLL #{}** — ***{}***\n".format(num, poll["question"])
                     txt += "• Réponses\n" + ans_txt + "\n• Stats\n" + stats_txt + "\n*Tu peux voter en cliquant sur " \
                                                                                   "les réactions correspondantes sous " \
@@ -304,7 +304,7 @@ class Utility:
                     for a in poll["answers"]:
                         if reaction.emoji == poll["answers"][a]["emoji"]:
                             if user.id in poll["answers"][a]["voters"]:
-                                poll["answers"][a]["nb"] -= 1
+                                poll["answers"][a]["count"] -= 1
                                 poll["answers"][a]["voters"].remove(user.id)
                                 await self.bot.edit_message(message, embed=self._update_poll(message))
                                 if poll["options"]["confirm"]:
