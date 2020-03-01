@@ -104,7 +104,7 @@ class Utility:
                                        "avoir la permission `Gérer les messages` pour l'arrêter.")
                 return
 
-            if "?" in " ".join(termes) and len(" ".join(termes).split("?")[1]) <= 11:
+            if "?" in " ".join(termes):
 
                 termes = " ".join(termes)
                 souple = pin = mobile = confirm = recap = False
@@ -223,8 +223,7 @@ class Utility:
                 await self.bot.say(embed=em)
                 del polls[num]
             else:
-                await self.bot.say("La question doit contenir un point d'interrogation et il ne peut y avoir plus de "
-                                   "10 éléments (réponses et options) après celui-ci.")
+                await self.bot.say("La question doit contenir un point d'interrogation")
         else:
             txt = "__**Format :**__ `{}sondage Question ?; Réponse 1; Réponse 2; Réponse N [...] + options`\n\n**Remarques :**\n" \
                   "• Si la question est binaire et qu'aucune réponse n'est fournie, le bot s'adaptera automatiquement.\n" \
