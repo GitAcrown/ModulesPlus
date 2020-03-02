@@ -261,7 +261,7 @@ class Utility:
                         stats_txt += "\{} — ||**0** · 0%||\n".format(emoji)
                         emojis.append(emoji)
 
-                num = sorted([p for p in polls], reverse=True)[0] + 1 if len(polls) > 1 else 1
+                num = sorted([p for p in polls], reverse=True)[0] + 1 if len(polls) >= 1 else 1
                 em = discord.Embed(color=color)
                 em.set_author(name="#{} · {}".format(num, question.capitalize()), icon_url=ctx.message.author.avatar_url)
                 em.add_field(name="Réponses", value=ans_txt)
