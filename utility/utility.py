@@ -34,7 +34,12 @@ DEFAULT_QUIT_LIST = ["{user.name} s'envole vers d'autres cieux.",
                      "{user.name} s'est noyé.",
                      "La mort est venue chercher {user.name}.",
                      "La vraie vie est venue chercher {user.name}.",
-                     "{user.name} est parti, il préfère ses **vrais** amis."]
+                     "{user.name} est parti, il préfère ses **vrais** amis.",
+                     "{user.name} est mort d'une overdose de chloroquine.",
+                     "{user.name} a décidé de se sacrifier pour la gloire du Dr. Raoult.",
+                     "Bip boop, je ne détecte plus {user.name} sur ce serveur...",
+                     "On m'informe à l'oreillette que {user.name} est parti.",
+                     "{user.name} prend la fuite."]
 
 
 class Utility:
