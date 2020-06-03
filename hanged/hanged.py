@@ -4,6 +4,7 @@ import os
 import random
 import time
 from collections import namedtuple
+from datetime import datetime
 
 import discord
 from __main__ import send_cmd_help
@@ -82,7 +83,22 @@ class Hanged:
                           'COLLANT', 'COURONNE', 'CRAVATE', 'CULOTTE', 'ECHARPE', 'EPEE', 'FEE', 'FLECHE', 'FUSIL',
                           'GANT', 'HABIT', 'JEAN', 'JUPE', 'LACET', 'LAINE', 'LINGE', 'LUNETTES', 'MAGICIEN', 'MAGIE',
                           'MAILLOT', 'MANCHE', 'MANTEAU', 'MOUCHOIR', 'MOUFLE', 'NOEUD', 'PAIRE', 'PANTALON', 'PIED',
-                          'POCHE', 'PRINCE', 'PYJAMA', 'REINE', 'ROBE', 'ROI', 'RUBAN', 'SEMELLE', 'SOLDAT', 'SORCIERE'],
+                          'POCHE', 'PRINCE', 'PYJAMA', 'REINE', 'ROBE', 'ROI', 'RUBAN', 'SEMELLE', 'SOLDAT', 'SORCIERE',
+                          'ABANDON', 'ABBAYE', 'ABDOMEN', 'ABRICOT', 'ACAJOU', 'ALIBI', 'ALLURE', 'ALPES', 'ANCRE',
+                          'BASSIN', 'BEURRE', 'BLASON', 'BUREAU', 'CALCIUM', 'CATIMINI', 'CHEVALET', 'CIEL', 'CIGOGNE',
+                          'CLAIRON', 'COMBAT', 'COMPENSATION', 'CONCITOYEN', 'CORRECT', 'CRITIQUE', 'DECENNIE', 'DEFENDRE', 'DELICAT',
+                          'DIAPASON', 'DOIGT', 'EMPLOI', 'ENGAGER', 'ESCADRILLE', 'EUPHORIE', 'FAIBLE', 'FENOUIL',
+                          'FOURCHETTE', 'FUSTIGER', 'GESTE', 'GOBELIN', 'GREVE', 'GRILLON', 'HAUSSER', 'HIBOU', 'HYDROGENE',
+                          'IMAGE', 'IMPORTANT', 'INCOLORE', 'INCONNU', 'INFORMATION', 'JAVELOT', 'JOINT', 'KANAK', 'KRACH',
+                          'KYSTE', 'LABORATOIRE', 'LACUNE', 'LECTEUR', 'LIMER', 'LOINTAIN', 'LUNDI', 'MAGISTRAT',
+                          'MARRON', 'MOINEAU', 'MONUMENTAL', 'NARCOTIQUE', 'NATIONAL', 'NEON', 'NOBLESSE', 'OBUS',
+                          'OCTOBRE', 'ONCLE', 'OPINION', 'ORIGINAL', 'PAGAILLE', 'PANACHE', 'PAPETIER', 'PARISIEN',
+                          'PATINER', 'PERDRE', 'PERRUCHE', 'PURGE', 'QUERELLE', 'RADIUS', 'RARE', 'RECONSTRUCTION',
+                          'REGROUPER', 'RELIER', 'REMPART', 'REPAS', 'REVOLUTION', 'ROMAIN', 'SALETE', 'SALUBRE', 'SAXON',
+                          'SCEAU', 'SEMINAIRE', 'SENSIBLE', 'SEXUEL', 'SODIUM', 'SUCRE', 'SYNDROME', 'TARDIF', 'TELESCOPE',
+                          'THEOLOGIE', 'TRADUCTEUR', 'TRIUMVIRAT', 'TYRAN', 'USTENSILE', 'UTILE', 'VALABLE', 'VEGETATION',
+                          'VERIDIQUE', 'VICTIME', 'VICTOIRE', 'VILLAGEOISE', 'VISITEUR', 'WAGON', 'YEUX', 'YOGA', 'ZERO', 'ZIGZAG',
+                          'ZYGOTE'],
                   "halloween": ["BONBON", "CITROUILLE", "COSTUME", "MORT", "PEUR", "HALLOWEEN", "OCTOBRE", "FLIPPANT",
                                 "BONBONS", "ARAIGNEE", "SQUELETTE", "CRANE", "VAMPIRE", "FANTOME", "CERCUEIL", "BROUILLARD",
                                 "LUNE", "NUIT", "SPOOKY", "MONSTRE", "CREATURE", "MASQUE", "CLOWN", "ZOMBIE", "FETE", "CONFISERIE",
@@ -93,7 +109,7 @@ class Hanged:
             return False
         return themes
 
-    def get_system(self, server: discord.Server):
+    def get_system(self, server):
         """Données système du jeu sur le serveur"""
         if server.id not in self.data:
             self.data[server.id] = {"encode_char": "•",
@@ -105,7 +121,7 @@ class Hanged:
             self.save()
         return self.data[server.id]
 
-    def get_session(self, server: discord.Server, reset: bool = False):
+    def get_session(self, server, reset: bool = False):
         """Charge les données de la session en cours"""
         if server.id not in self.session or reset:
             self.session[server.id] = {"on": False,
@@ -131,7 +147,7 @@ class Hanged:
                     mots.extend(get)
         return mots
 
-    def get_mot(self, server: discord.Server, words: list):
+    def get_mot(self, server, words: list):
         """Génère un objet Mot()"""
         symb = self.get_system(server)["encode_char"]
         words = [w for w in words if len(w) >= 4]
@@ -197,7 +213,7 @@ class Hanged:
         elif status.lower() == "bad":
             return "**{}**".format(random.choice(["Loupé", "Dommage", "Incorrect", "Nope", "C'est pas ça"]))
         else:
-            return "**{}**".format(random.choice(["Désolé", "Invalide", "Oups...", "Pardon ?"]))
+            return "**{}**".format(random.choice(["Désolé", "Invalide", "Oups...", "FAUX"]))
 
     def verif(self, msg: discord.Message):
         session = self.get_session(msg.server)
@@ -209,7 +225,7 @@ class Hanged:
                             return True
         return False
 
-    def gen_embed(self, server: discord.Server):
+    def gen_embed(self, server):
         session = self.get_session(server)
         if session["on"]:
             txt = "**Vies** — {}\n".format("\💟" * session["vies"])
@@ -239,8 +255,9 @@ class Hanged:
         server = ctx.message.server
         author = ctx.message.author
         session, sys = self.get_session(server), self.get_system(server)
-        wallet = self.bot.get_cog("Wallet").api
-        if await wallet.sign_up(author):
+        cash = self.bot.get_cog("Cash").api
+        cur = cash.get_currency(server)
+        if await cash.login(author):
             if themes:
                 if themes[0].lower() == "stop":
                     await self.bot.say("**Patientez...**")
@@ -303,9 +320,9 @@ class Hanged:
                         txt = ""
                         for u in classt:
                             user = server.get_member(u[1])
-                            wallet.remove_credits(user, u[0], "Partie perdue au pendu", True, "pendu")
+                            cash.remove_credits(user, u[0], "Partie perdue au pendu", ["pendu"])
                             self.add_defeat(user)
-                            txt += "*{}*  — **{}**g\n".format(user.name, u[0])
+                            txt += "*{}*  — **{}**{}\n".format(user.name, u[0], cur.symbole)
                         em = discord.Embed(title="Pendu — Échec", description=msg, color=0xe15555)
                         em.add_field(name="Perdants", value=txt)
                         em.set_footer(text=self.msg_bye())
@@ -323,9 +340,9 @@ class Hanged:
                         txt = ""
                         for u in classt:
                             user = server.get_member(u[1])
-                            wallet.add_credits(user, u[0], "Partie gagnée au pendu", "pendu")
+                            cash.add_credits(user, u[0], "Partie gagnée au pendu", ["pendu"])
                             self.add_victory(user)
-                            txt += "*{}*  — **+{}**g\n".format(user.name, u[0])
+                            txt += "*{}*  — **+{}**{}\n".format(user.name, u[0], cur.symbole)
                         em = discord.Embed(title="Pendu — Victoire", description=msg, color=0x84e155)
                         em.add_field(name="Gagnants", value=txt)
                         em.set_footer(text=self.msg_bye())
@@ -345,13 +362,13 @@ class Hanged:
             else:
                 await self.bot.say("**Refusé** — Finissez la partie en cours sur {} ou faîtes `;pendu stop`".format(session["channel"].name))
         else:
-            await self.bot.say("Vous avez besoin d'un compte Wallet pour jouer au pendu")
+            await self.bot.say("Vous avez besoin d'un compte Cash pour jouer au pendu")
 
     @commands.command(pass_context=True, aliases=["tp"])
     async def pendutop(self, ctx, top: int = 10):
         """Affiche le top des joueurs du pendu"""
         sys = self.get_system(ctx.message.server)
-        wallet = self.bot.get_cog("Wallet").api
+        cash = self.bot.get_cog("Cash").api
         if sys["leaderboard"]:
             l = {}
             all = 0
@@ -374,7 +391,7 @@ class Hanged:
                 txt += "{}. **{}** — {} ({})\n".format(n, username, u[1], count)
                 n += 1
             em = discord.Embed(title="Pendu — Top (% de victoires)", description=txt, color=0x7289DA)
-            date = wallet.ttd(sys["leaderboard_since"])
+            date = self.ttd(sys["leaderboard_since"])
             em.set_footer(text="~ {0} parties — Depuis le {2} à {1}".format(round(all * 0.8), date.heure, date.jour))
             try:
                 await self.bot.say(embed=em)
@@ -382,6 +399,12 @@ class Hanged:
                 await self.bot.say("Le top demandé est trop élevé, essayez un top plus petit.")
         else:
             await self.bot.say("**Vide** — Il n'y a aucun top à afficher")
+
+    def ttd(self, timestamp: float):  # Ex: Transforme 1547147012 en 2019, 1, 10, 20, 3, 44
+        """Convertisseur timestamp-to-date"""
+        UniTimestamp = namedtuple('UniTimestamp', ["raw", "heure", "jour", "float"])
+        brut = datetime.fromtimestamp(timestamp)
+        return UniTimestamp(brut, brut.strftime("%H:%M"), brut.strftime("%d/%m/%Y"), timestamp)
 
 
     async def grab_msg(self, message):
@@ -478,7 +501,7 @@ class Hanged:
     async def encodechar(self, ctx, char: str):
         """Change le caractère utilisé pour encoder le mot caché"""
         sys = self.get_system(ctx.message.server)
-        if char[0] not in ["*", "_", "~", "{", "}", "|", "`"]:
+        if char[0] not in ["*", "_", "~", "{", "}", "|", "`", ">"]:
             sys["encode_char"] = char[0]
             self.save()
             await self.bot.say("**Caractère d'encodage modifié pour** `{}`".format(char[0]))
